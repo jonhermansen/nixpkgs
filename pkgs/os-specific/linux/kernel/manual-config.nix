@@ -201,6 +201,7 @@ let
         "KBUILD_BUILD_VERSION=1-NixOS"
         kernelConf.target
         "vmlinux"  # for "perf" and things like that
+        "scripts_gdb"
       ] ++ optional isModular "modules"
         ++ optionals buildDTBs ["dtbs" "DTC_FLAGS=-@"]
       ++ extraMakeFlags;
@@ -275,7 +276,7 @@ let
       ];
 
       postInstall = optionalString isModular ''
-        cp vmlinux $dev/
+        cp vmlinux vmlinux-gdb.py $dev/
         if [ -z "''${dontStrip-}" ]; then
           installFlagsArray+=("INSTALL_MOD_STRIP=1")
         fi
@@ -295,10 +296,10 @@ let
         # from a `try-run` call from the Makefile
         rm -f $dev/lib/modules/${modDirVersion}/build/.[0-9]*.d
 
-        # Keep some extra files on some arches (powerpc, aarch64)
-        for f in arch/powerpc/lib/crtsavres.o arch/arm64/kernel/ftrace-mod.o; do
-          if [ -f "$buildRoot/$f" ]; then
-            cp $buildRoot/$f $dev/lib/modules/${modDirVersion}/build/$f
+        # Keep some extra files
+        for f in arch/powerpc/lib/crtsavres.o arch/arm64/kernel/ftrace-mod.o scripts/gdb; do
+          if [ -e "$buildRoot/$f" ]; then
+            cp -R $buildRoot/$f $dev/lib/modules/${modDirVersion}/build/$f
           fi
         done
 
