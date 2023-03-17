@@ -156,8 +156,7 @@ let
       configurePhase = ''
         runHook preConfigure
 
-        mkdir build
-        export buildRoot="$(pwd)/build"
+        export buildRoot=$(mktemp -d)
 
         echo "manual-config configurePhase buildRoot=$buildRoot pwd=$PWD"
 
@@ -276,7 +275,6 @@ let
 
         # To save space, exclude a bunch of unneeded stuff when copying.
         (cd .. && rsync --archive --prune-empty-dirs \
-            --exclude='/build/' \
             * $dev/lib/modules/${modDirVersion}/source/)
 
         cd $dev/lib/modules/${modDirVersion}/source
