@@ -12191,7 +12191,7 @@ with pkgs;
       inherit (darwin.apple_sdk.libs) Xplugin;
       inherit (buildPackages.darwin) bootstrap_cmds;
       udev = if stdenv.hostPlatform.isLinux then udev else null;
-      libdrm = if stdenv.hostPlatform.isLinux then libdrm else null;
+      libdrm = if (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD) then libdrm else null;
     };
 
     generatedPackages = lib.callPackageWith __splicedPackages ../servers/x11/xorg/default.nix { };
@@ -12720,6 +12720,7 @@ with pkgs;
 
   udev =
     if (with stdenv.hostPlatform; isLinux && isStatic) then libudev-zero
+    else if stdenv.hostPlatform.isFreeBSD then freebsd.libudev-devd
     else systemdLibs;
 
   sysvtools = sysvinit.override {
@@ -18944,4 +18945,6 @@ with pkgs;
   biblioteca = callPackage ../by-name/bi/biblioteca/package.nix {
     webkitgtk = webkitgtk_6_0;
   };
+
+  accountsservice = if stdenv.hostPlatform.isFreeBSD then accountsservice-freebsd  else accountsservice-linux;
 }

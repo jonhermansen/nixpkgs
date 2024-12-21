@@ -1,6 +1,7 @@
 { egl-wayland
 , bash
 , libepoxy
+, evdev-proto
 , fetchurl
 , fontutil
 , lib
@@ -91,7 +92,6 @@ stdenv.mkDerivation rec {
     libXres
     libXt
     libdrm
-    libtirpc
     libxcb
     libxkbfile
     libxshmfence
@@ -99,13 +99,17 @@ stdenv.mkDerivation rec {
     mesa
     openssl
     pixman
-    systemd
     wayland
     wayland-protocols
     xkbcomp
     xorgproto
     xtrans
     zlib
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libtirpc
+    systemd
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    evdev-proto
   ] ++ lib.optionals withLibunwind [
     libunwind
   ];
@@ -130,6 +134,6 @@ stdenv.mkDerivation rec {
     license = licenses.mit;
     mainProgram = "Xwayland";
     maintainers = with maintainers; [ emantor k900 ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

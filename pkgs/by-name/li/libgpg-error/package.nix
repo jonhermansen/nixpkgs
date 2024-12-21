@@ -83,6 +83,7 @@ in stdenv.mkDerivation (rec {
 
     license = licenses.lgpl2Plus;
     platforms = platforms.all;
+    broken = stdenv.buildPlatform != stdenv.hostPlatform && stdenv.hostPlatform.isFreeBSD;
     maintainers = [ ];
   };
 } // genPosixLockObjOnlyAttrs)

@@ -6,7 +6,14 @@ stdenv.mkDerivation (finalAttrs: {
 
   outputs = [ "out" "dev" "devdoc" "info" ];
   nativeBuildInputs = [ pkg-config ];
-  buildInputs = [ libgcrypt curl gnutls libiconv libintl ];
+  buildInputs = lib.optionals (!stdenv.hostPlatform.isFreeBSD || stdenv.hostPlatform == stdenv.buildPlatform) [
+    libgcrypt
+  ] ++ [
+    curl
+    gnutls
+    libiconv
+    libintl
+  ];
 
   preCheck = ''
     # Since `localhost' can't be resolved in a chroot, work around it.

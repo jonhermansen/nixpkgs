@@ -2,6 +2,7 @@
 , autoreconfHook, perl
 , gdb, cctools, xnu, bootstrap_cmds
 , writeScript
+, freebsd
 }:
 
 stdenv.mkDerivation rec {
@@ -50,7 +51,7 @@ stdenv.mkDerivation rec {
 
   preConfigure = lib.optionalString stdenv.hostPlatform.isFreeBSD ''
     substituteInPlace configure --replace '`uname -r`' \
-        ${toString stdenv.hostPlatform.parsed.kernel.version}.0-
+        ${freebsd.versionData.release}
   '' + lib.optionalString stdenv.hostPlatform.isDarwin (
     let OSRELEASE = ''
       $(awk -F '"' '/#define OSRELEASE/{ print $2 }' \
@@ -122,7 +123,7 @@ stdenv.mkDerivation rec {
     maintainers = [ lib.maintainers.eelco ];
     platforms = with lib.platforms; lib.intersectLists
       (x86 ++ power ++ s390x ++ armv7 ++ aarch64 ++ mips)
-      (darwin ++ freebsd ++ illumos ++ linux);
+      (darwin ++ lib.platforms.freebsd ++ illumos ++ linux);
     badPlatforms = [ lib.systems.inspect.platformPatterns.isStatic ];
     broken = stdenv.hostPlatform.isDarwin; # https://hydra.nixos.org/build/128521440/nixlog/2
   };

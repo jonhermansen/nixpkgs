@@ -9,6 +9,7 @@
   udev,
   libevdev,
   libgudev,
+  evdev-proto,
   python3,
   valgrind,
 }:
@@ -45,6 +46,8 @@ stdenv.mkDerivation (finalAttrs: {
     udev
     libevdev
     libgudev
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    evdev-proto
   ];
 
   mesonFlags = [
@@ -70,7 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   meta = {
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     homepage = "https://linuxwacom.github.io/";
     changelog = "https://github.com/linuxwacom/libwacom/blob/${finalAttrs.src.rev}/NEWS";
     description = "Libraries, configuration, and diagnostic tools for Wacom tablets running under Linux";

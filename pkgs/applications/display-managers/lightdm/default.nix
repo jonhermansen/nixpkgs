@@ -1,6 +1,7 @@
 { lib, stdenv
 , buildPackages
 , fetchFromGitHub
+, freebsd
 , nix-update-script
 , substituteAll
 , plymouth
@@ -18,6 +19,7 @@
 , libgcrypt
 , audit
 , busybox
+, coreutils
 , polkit
 , accountsservice
 , gtk-doc
@@ -60,15 +62,18 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     accountsservice
-    audit
     glib
     libXdmcp
-    libgcrypt
     libxcb
     libxklavier
     pam
     polkit
-  ] ++ lib.optional withQt5 qtbase;
+  ] ++ lib.optionals withQt5 [
+    qtbase
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
+    audit
+    libgcrypt  # hmm
+  ];
 
   patches = [
     # Adds option to disable writing dmrc files
@@ -77,12 +82,34 @@ stdenv.mkDerivation rec {
       sha256 = "06f7iabagrsiws2l75sx2jyljknr9js7ydn151p3qfi104d1541n";
     })
 
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     # Hardcode plymouth to fix transitions.
     # For some reason it can't find `plymouth`
     # even when it's in PATH in environment.systemPackages.
     (substituteAll {
       src = ./fix-paths.patch;
       plymouth = "${plymouth}/bin/plymouth";
+    })
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    (freebsd.freebsd-lib.fetchPortsPatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/2c82e20330b9bf3fa0475d5bdd390577f374faa5/x11/lightdm/files/patch-liblightdm-gobject_language.c";
+      hash = "sha256-KX+Zybb9io7w+uGZZcaDDVze8/0HM6KTHOYqihwfIis=";
+    })
+    (freebsd.freebsd-lib.fetchPortsPatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/2c82e20330b9bf3fa0475d5bdd390577f374faa5/x11/lightdm/files/patch-src_session-child.c";
+      hash = "sha256-4PLuK6BwdY9MeLKzqJ12LkFlNwn46x83C24t0FCU0X4=";
+    })
+    (freebsd.freebsd-lib.fetchPortsPatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/2c82e20330b9bf3fa0475d5bdd390577f374faa5/x11/lightdm/files/patch-tests_src_libsystem.c";
+      hash = "sha256-vItXFqAS263PmlAq/FrOEoZsETlOIp8fvQGLcTE1v70=";
+    })
+    (freebsd.freebsd-lib.fetchPortsPatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/2c82e20330b9bf3fa0475d5bdd390577f374faa5/x11/lightdm/files/patch-src_x-server.c";
+      hash = "sha256-CDnANUhZLvpR90d+etCwlrOUqzLa+ar3T4pkrmvxLAU=";
+    })
+    (freebsd.freebsd-lib.fetchPortsPatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/2c82e20330b9bf3fa0475d5bdd390577f374faa5/x11/lightdm/files/patch-data_lightdm.conf";
+      hash = "sha256-UByI6G9fgbD4VNus9oCiDm4wIVpf126MxMswdCA8KaM=";
     })
   ];
 
@@ -102,12 +129,15 @@ stdenv.mkDerivation rec {
     "localstatedir=\${TMPDIR}"
   ];
 
-  prePatch = ''
+  prePatch = let
+  whichProvider = if stdenv.isLinux then buildPackages.busybox else buildPackages.which;
+  rmProvider = if stdenv.isLinux then busybox else coreutils;
+  in ''
     substituteInPlace autogen.sh \
-      --replace "which" "${buildPackages.busybox}/bin/which"
+      --replace "which" "${whichProvider}/bin/which"
 
     substituteInPlace src/shared-data-manager.c \
-      --replace /bin/rm ${busybox}/bin/rm
+      --replace /bin/rm ${rmProvider}/bin/rm
   '';
 
   postInstall = ''
@@ -123,7 +153,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     homepage = "https://github.com/canonical/lightdm";
     description = "Cross-desktop display manager";
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     license = licenses.gpl3;
     maintainers = with maintainers; [ ] ++ teams.pantheon.members;
   };

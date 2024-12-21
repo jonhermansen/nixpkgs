@@ -44,6 +44,6 @@ stdenv.mkDerivation rec {
     description = "Opensource implementation of the Khronos OpenMAX Integration Layer API to access multimedia components";
     mainProgram = "omxregister-bellagio";
     license = licenses.lgpl21Plus;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

@@ -19,7 +19,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/void-linux/musl-obstack";
     description =
       "An extraction of the obstack functions and macros from GNU libiberty for use with musl-libc";
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     license = licenses.lgpl21Plus;
     maintainers = [ maintainers.pjjw ];
   };

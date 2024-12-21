@@ -2,6 +2,9 @@
 , stdenv
 , fetchFromGitHub
 , fetchFromGitLab
+, basu
+, epoll-shim
+, evdev-proto
 , libevdev
 , libxkbcommon
 , meson
@@ -33,11 +36,16 @@ stdenv.mkDerivation rec {
   };
 
   buildInputs = [
-    libevdev
     libxkbcommon
     protobuf
     protobufc
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
+    libevdev
     systemd
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    basu
+    epoll-shim
+    evdev-proto
   ];
   nativeBuildInputs = [
     meson
@@ -64,6 +72,6 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.freedesktop.org/libinput/libei";
     license = licenses.mit;
     maintainers = [ maintainers.pedrohlc ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

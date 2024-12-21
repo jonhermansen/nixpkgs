@@ -68,6 +68,7 @@ stdenv.mkDerivation rec {
   doCheck = false;
 
   mesonFlags = [
+    (lib.strings.mesonEnable "introspection" withIntrospection)
     # Provide dbus-daemon fallback when it is not already running when
     # at-spi2-bus-launcher is executed. This allows us to avoid
     # including the entire dbus closure in libraries linked with
@@ -93,6 +94,9 @@ stdenv.mkDerivation rec {
       --prefix GIO_EXTRA_MODULES : "${lib.getLib dconf}/lib/gio/modules" \
       --prefix XDG_DATA_DIRS : ${gsettings-desktop-schemas}/share/gsettings-schemas/${gsettings-desktop-schemas.name}
   '';
+
+  # call to undeclared function 'gettimeofday'
+  env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isFreeBSD "-Wno-implicit-function-declaration";
 
   meta = with lib; {
     description = "Assistive Technology Service Provider Interface protocol definitions and daemon for D-Bus";

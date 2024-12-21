@@ -1,7 +1,7 @@
 # buildEnv creates a tree of symlinks to the specified paths.  This is
 # a fork of the hardcoded buildEnv in the Nix distribution.
 
-{ buildPackages, runCommand, lib, substituteAll, writeClosure }:
+{ buildPackages, runCommandCC, lib, substituteAll, writeClosure }:
 
 let
   builder = substituteAll {
@@ -76,7 +76,7 @@ let
     lib.flatten
     (lib.remove null)
   ];
-in runCommand name
+in runCommandCC name
   (rec {
     inherit manifest ignoreCollisions checkCollisionContents passthru
             meta pathsToLink extraPrefix postBuild

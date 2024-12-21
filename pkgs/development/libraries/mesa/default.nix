@@ -246,16 +246,17 @@ in stdenv.mkDerivation {
     llvmPackages.clang-unwrapped
     llvmPackages.libclc
     llvmPackages.libllvm
-    lm_sensors
     python3Packages.python # for shebang
     spirv-llvm-translator
-    udev
     vulkan-loader
     wayland
     wayland-protocols
     xcbutilkeysyms
     xorgproto
     zstd
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
+    lm_sensors
+    udev
   ] ++ lib.optionals withValgrind [
     valgrind-light
   ];

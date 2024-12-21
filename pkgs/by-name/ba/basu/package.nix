@@ -25,8 +25,9 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [ "out" "dev" "lib" ];
 
   buildInputs = [
-    audit
     gperf
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
+    audit
     libcap
   ];
 
@@ -36,6 +37,11 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     python3
     getent
+  ];
+
+  mesonFlags = lib.optionals stdenv.hostPlatform.isFreeBSD [
+    "-Daudit=disabled"
+    "-Dlibcap=disabled"
   ];
 
   preConfigure = ''
@@ -51,6 +57,6 @@ stdenv.mkDerivation (finalAttrs: {
     mainProgram = "basuctl";
     license = lib.licenses.lgpl21Only;
     maintainers = with lib.maintainers; [ AndersonTorres ];
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
   };
 })

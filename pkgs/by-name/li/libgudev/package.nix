@@ -1,6 +1,7 @@
 { stdenv
 , lib
 , fetchurl
+, fetchpatch
 , pkg-config
 , meson
 , ninja
@@ -30,6 +31,10 @@ stdenv.mkDerivation (finalAttrs: {
     # Conditionally disable one test that requires a locale implementation
     # https://gitlab.gnome.org/GNOME/libgudev/-/merge_requests/31
     ./tests-skip-double-test-on-stub-locale-impls.patch
+    (fetchpatch {
+      url = "https://github.com/GNOME/libgudev/commit/bd531e8622e2c98a1da3d28a0a6df59c844f25c0.patch";
+      hash = "sha256-ydp0LdbLmQ55UABTL1xq5tB4eJLua1w4tVsvxkTDFXY=";
+    })
   ];
 
   postPatch = lib.optionalString finalAttrs.finalPackage.doCheck ''
@@ -78,7 +83,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Library that provides GObject bindings for libudev";
     homepage = "https://gitlab.gnome.org/GNOME/libgudev";
     maintainers = teams.gnome.members;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     license = licenses.lgpl2Plus;
   };
 })

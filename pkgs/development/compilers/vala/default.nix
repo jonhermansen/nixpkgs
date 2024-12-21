@@ -49,14 +49,14 @@ let
     outputs = [ "out" "devdoc" ];
 
     nativeBuildInputs = [
-      pkg-config flex bison libxslt gobject-introspection
+      pkg-config flex bison libxslt
     ] ++ lib.optional (stdenv.hostPlatform.isDarwin) expat
       ++ lib.optional disableGraphviz autoreconfHook # if we changed our ./configure script, need to reconfigure
       ++ lib.optionals (stdenv.buildPlatform != stdenv.hostPlatform) [ vala ]
       ++ extraNativeBuildInputs;
 
     buildInputs = [
-      glib libiconv libintl
+      glib libiconv libintl gobject-introspection
     ] ++ lib.optional (withGraphviz) graphviz
       ++ extraBuildInputs;
 

@@ -3,6 +3,7 @@
   lib,
   stdenvNoCC,
   fetchzip,
+  fetchpatch,
   sourceData,
   versionData,
   buildFreebsd,
@@ -42,7 +43,7 @@ lib.packagesFromDirectoryRecursive {
         ]
       )
     );
-    inherit lib writeText;
+    inherit lib writeText fetchpatch;
   };
 
   # The manual callPackages below should in principle be unnecessary, but are

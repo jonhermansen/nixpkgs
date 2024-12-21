@@ -2,6 +2,7 @@
   version,
   lib,
   writeText,
+  fetchpatch,
 }:
 
 {
@@ -120,4 +121,11 @@
         derivedPatches;
     in
     lib.lists.concatMap splitPatch consolidated;
+
+    fetchPortsPatch = attrs: fetchpatch ({
+      extraPrefix = "";
+      postFetch = ''
+        substituteInPlace $out --replace-quiet ".orig" ""
+      '' + attrs.postFetch or "";
+    } // attrs);
 }

@@ -1,0 +1,25 @@
+# adapted from https://raw.githubusercontent.com/freebsd/freebsd-ports/aeaade466005efceda321b5fe9a1246eaf802517/devel/libgtop/files/patch-sysdeps_freebsd_procmap.c
+
+diff --git a/sysdeps/freebsd/procmap.c b/sysdeps/freebsd/procmap.c
+index 92ae9368..be8905fa 100644
+--- a/sysdeps/freebsd/procmap.c
++++ b/sysdeps/freebsd/procmap.c
+@@ -34,6 +34,9 @@
+ #include <vm/vm_map.h>
+ #include <vm/vm.h>
+
++#include <stdbool.h>
++#define __read_mostly
++
+ #define _KVM_VNODE
+ #include <sys/vnode.h>
+ #undef _KVM_VNODE
+@@ -100,7 +100,7 @@ _glibtop_sysdeps_freebsd_dev_inode (glibtop *server, s
+         *inum = 0;
+         *dev = 0;
+ 
+-        if (kvm_read (server->machine->kd, (gulong) &vnode->v_tag,
++        if (kvm_read (server->machine->kd, (gulong) &vnode->v_lock.lock_object.lo_name,
+  	             (char *) &tagptr, sizeof (tagptr)) != sizeof (tagptr) ||
+             kvm_read (server->machine->kd, (gulong) tagptr,
+ 		     (char *) tagstr, sizeof (tagstr)) != sizeof (tagstr))

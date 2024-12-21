@@ -302,6 +302,8 @@ let
           then "${pkgs.wasmtime}/bin/wasmtime"
           else if final.isMmix
           then "${pkgs.mmixware}/bin/mmix"
+          else if final.isFreeBSD && pkgs.stdenv.hostPlatform.isLinux && final.isx86_64 && pkgs.stdenv.hostPlatform.isx86_64
+          then lib.getExe (pkgs.writeShellScriptBin "exec" ''exec ${lib.getExe pkgs.lsf} -- "$@"'')
           else null;
       in {
         emulatorAvailable = pkgs: (selectEmulator pkgs) != null;
