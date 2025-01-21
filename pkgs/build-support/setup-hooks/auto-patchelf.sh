@@ -59,6 +59,13 @@ autoPatchelf() {
     concatTo patchelfFlagsArray patchelfFlags
     concatTo autoPatchelfFlagsArray autoPatchelfFlags
 
+    # shellcheck disable=SC2195
+    case "@hostPlatform@" in
+        *freebsd*|*openbsd*)
+            autoPatchelfFlagsArray+=( --keep-libc )
+            ;;
+    esac
+
     # Check if ignoreMissingDepsArray contains "1" and if so, replace it with
     # "*", printing a deprecation warning.
     for dep in "${ignoreMissingDepsArray[@]}"; do
