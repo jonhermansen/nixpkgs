@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  fetchpatch,
   cmake,
   openssl,
   zlib,
@@ -24,6 +25,19 @@ stdenv.mkDerivation rec {
     openssl
     zlib
   ];
+
+  patches = [(fetchpatch {
+    url = "https://github.com/capnproto/capnproto/commit/25aee2a610e5665953df826b26e543d4d430dc37.patch";
+    name = "bsd-ai_v4mapped.patch";
+    hash = "sha256-QZ65FW8ti6/IUzozSmQ5Y5n/3/8EBU3ecUSmSKEa4w0=";
+  })];
+
+  # https://github.com/capnproto/capnproto/pull/1907
+  # for openbsd compile errors
+  postPatch = ''
+    substituteInPlace c++/src/kj/cidr.c++ --replace-fail '__FreeBSD__' '__FreeBSD__ || __OpenBSD__'
+    substituteInPlace c++/src/kj/async-unix.h --replace-fail '__OpenBSD__ ||' ""
+  '';
 
   meta = with lib; {
     homepage = "https://capnproto.org/";
