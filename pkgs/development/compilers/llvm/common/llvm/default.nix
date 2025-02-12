@@ -346,7 +346,9 @@ stdenv.mkDerivation (finalAttrs: {
       "-DLLVM_INSTALL_CMAKE_DIR=${placeholder "dev"}/lib/cmake/llvm/"
     ] else [
       "-DLLVM_INSTALL_PACKAGE_DIR=${placeholder "dev"}/lib/cmake/llvm"
-    ]) ++ [
+    ]) ++ optionals ((stdenv.hostPlatform != stdenv.buildPlatform) && !(stdenv.buildPlatform.canExecute stdenv.hostPlatform)) [
+      "-DLLVM_TABLEGEN=${buildLlvmTools.llvm}/bin/llvm-tblgen"
+    ] ++ [
       "-DLLVM_ENABLE_RTTI=ON"
     ] ++ optionals enableSharedLibraries [
       "-DLLVM_LINK_LLVM_DYLIB=ON"
@@ -388,7 +390,6 @@ stdenv.mkDerivation (finalAttrs: {
     "-DCAN_TARGET_i386=false"
   ] ++ optionals ((stdenv.hostPlatform != stdenv.buildPlatform) && !(stdenv.buildPlatform.canExecute stdenv.hostPlatform)) [
     "-DCMAKE_CROSSCOMPILING=True"
-    "-DLLVM_TABLEGEN=${buildLlvmTools.llvm}/bin/llvm-tblgen"
     (
       let
         nativeCC = pkgsBuildBuild.targetPackages.stdenv.cc;
