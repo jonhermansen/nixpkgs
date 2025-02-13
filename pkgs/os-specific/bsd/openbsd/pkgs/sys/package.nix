@@ -47,6 +47,7 @@
       make obj
 
       cd conf
+      echo 'option TMPFS' >> ${baseConfig}  # hack
       config ${baseConfig}
       cd -
     '';
