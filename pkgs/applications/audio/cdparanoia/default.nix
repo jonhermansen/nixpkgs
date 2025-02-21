@@ -5,6 +5,7 @@
   fetchpatch,
   updateAutotoolsGnuConfigScriptsHook,
   autoreconfHook,
+  freebsd,
 }:
 
 stdenv.mkDerivation rec {
@@ -37,7 +38,7 @@ stdenv.mkDerivation rec {
       })
     ]
     ++ [
-      # Has to come after darwin patches
+      # Has to come after darwin patches and before freebsd patches
       ./fix_private_keyword.patch
       # Order does not matter
       ./configure.patch
@@ -62,12 +63,73 @@ stdenv.mkDerivation rec {
         hash = "sha256-krfprwls0L3hsNfoj2j69J5k1RTKEQtzE0fLYG9EJKo=";
       })
     ]
-    ++ lib.optional stdenv.hostPlatform.isMusl ./utils.patch;
+    ++ lib.optional stdenv.hostPlatform.isMusl ./utils.patch
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      (fetchpatch {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/42da4cdf2d9161fea8f7cdfc19aefda7707fadf4/audio/cdparanoia/files/patch-interface_low__interface.h";
+        hash = "sha256-TUVM+Kd4dk/Hh6yF7kvKyUbbQNffsbDymY8GVbh8eU4=";
+        extraPrefix = "";
+      })
+      (fetchpatch {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/42da4cdf2d9161fea8f7cdfc19aefda7707fadf4/audio/cdparanoia/files/patch-interface_scan__devices.c";
+        hash = "sha256-aCTPi2xLxtd0cwKb/9syQKmaaMH87CqmDvwK9cFc9DY=";
+        extraPrefix = "";
+        postFetch = ''
+          sed -E -i -e 's/\<private\>/private_data/g' $out
+        '';
+      })
+      (fetchpatch {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/42da4cdf2d9161fea8f7cdfc19aefda7707fadf4/audio/cdparanoia/files/patch-interface_cdda__interface.h";
+        hash = "sha256-0YoGBmrrrBitFFUTGgorEbj2dun13l1FX9GK+jwO7Is=";
+        extraPrefix = "";
+      })
+      (fetchpatch {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/42da4cdf2d9161fea8f7cdfc19aefda7707fadf4/audio/cdparanoia/files/patch-interface_common__interface.c";
+        hash = "sha256-WdDfKi7EH9gMnFSPxiHmNthmS8lUsJZQSiTNM8m0bDs=";
+        extraPrefix = "";
+      })
+      (fetchpatch {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/42da4cdf2d9161fea8f7cdfc19aefda7707fadf4/audio/cdparanoia/files/patch-interface_cooked__interface.c";
+        hash = "sha256-UiPBt3FD1m5Y/mkA+v/29E5jN/62GGjgcwpf2ftD4Sc=";
+        extraPrefix = "";
+      })
+      (fetchpatch {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/42da4cdf2d9161fea8f7cdfc19aefda7707fadf4/audio/cdparanoia/files/patch-interface_interface.c";
+        hash = "sha256-uRUpkqNsOFUXZVO8cwH55FuVoWNhUyycMAH4261deBI=";
+        extraPrefix = "";
+        postFetch = ''
+          sed -E -i -e 's/\<private\>/private_data/g' $out
+        '';
+      })
+      (fetchpatch {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/42da4cdf2d9161fea8f7cdfc19aefda7707fadf4/audio/cdparanoia/files/patch-interface_scsi__interface.c";
+        hash = "sha256-ko9AmmtfRJ9cuSplz+VJOChVDxgBJt90/H6/gAHUVmU=";
+        extraPrefix = "";
+        postFetch = ''
+          sed -E -i -e 's/\<private\>/private_data/g' $out
+        '';
+      })
+      (fetchpatch {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/42da4cdf2d9161fea8f7cdfc19aefda7707fadf4/audio/cdparanoia/files/patch-Makefile.in";
+        hash = "sha256-Wje2d58xrSWHJNktQRHcNSbh5yh6vMtpgc/3G4D1vrI=";
+        extraPrefix = "";
+      })
+    ];
 
   nativeBuildInputs = [
     updateAutotoolsGnuConfigScriptsHook
     autoreconfHook
   ];
+
+  propagatedBuildInputs = lib.optionals stdenv.hostPlatform.isFreeBSD [
+    freebsd.libcam
+  ];
+
+  env = lib.optionalAttrs stdenv.hostPlatform.isFreeBSD {
+    NIX_LDFLAGS = "-lcam";
+    BSD_INSTALL_PROGRAM = "install";
+    BSD_INSTALL_LIB = "install";
+  };
 
   # Build system reuses the same object file names for shared and static
   # library. Occasionally fails in the middle:
