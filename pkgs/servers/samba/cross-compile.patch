@@ -1,0 +1,29 @@
+--- samba-4.20.4/source3/wscript.orig	2025-02-23 21:52:00.204333000 -0700
++++ samba-4.20.4/source3/wscript	2025-02-23 21:52:50.518412000 -0700
+@@ -1306,7 +1306,7 @@
+                                     define='HAVE_STRUCT_SIGEVENT_SIGEV_VALUE_SIGVAL_PTR',
+                                     headers='signal.h');
+ 
+-    if os.path.exists('/proc/sys/kernel/core_pattern'):
++    if host_os.rfind("linux") > -1:
+         conf.DEFINE('HAVE_SYS_KERNEL_PROC_CORE_PATTERN', '1')
+ 
+     if conf.CHECK_CODE('''
+@@ -1592,7 +1592,7 @@
+                 ''',
+                                    cflags=conf.env['WERROR_CFLAGS'],
+                                    define='HAVE_QUOTACTL_4A',
+-                                   msg='for QUOTACTL_4A: long quotactl(int cmd, char *special, qid_t id, caddr_t addr)',
++                                   msg='for QUOTACTL_4A; long quotactl(int cmd, char *special, qid_t id, caddr_t addr)',
+                                    execute=True,
+                                    addmain=False):
+ 
+@@ -1603,7 +1603,7 @@
+                 ''',
+                                 cflags=conf.env['WERROR_CFLAGS'],
+                                 define='HAVE_QUOTACTL_4B',
+-                                msg='for QUOTACTL_4B:  int quotactl(const char *path, int cmd, int id, char *addr)',
++                                msg='for QUOTACTL_4B;  int quotactl(const char *path, int cmd, int id, char *addr)',
+                                 execute=True,
+                                 addmain=False)
+ 
