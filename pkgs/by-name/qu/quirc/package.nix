@@ -56,8 +56,8 @@ stdenv.mkDerivation (finalAttrs: {
         hash = "sha256-WLQK7vy34VmgJzppTnRjAcZoSGWVaXQSaGq9An8W0rw=";
       })
     ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      # Disable building of linux-only demos on darwin systems
+    ++ lib.optionals (!stdenv.hostPlatform.isLinux) [
+      # Disable building of linux-only demos on non-linux systems
       ./0001-Don-t-build-demos.patch
     ];
 
@@ -84,7 +84,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Small QR code decoding library";
     license = lib.licenses.isc;
     maintainers = [ lib.maintainers.raskin ];
-    platforms = lib.platforms.linux ++ [
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd ++ [
       "x86_64-darwin"
       "aarch64-darwin"
     ];
