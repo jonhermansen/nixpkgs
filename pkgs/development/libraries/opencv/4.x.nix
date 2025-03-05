@@ -574,6 +574,6 @@ effectiveStdenv.mkDerivation {
     homepage = "https://opencv.org/";
     license = if enableUnfree then lib.licenses.unfree else lib.licenses.bsd3;
     maintainers = with lib.maintainers; [ basvandijk ];
-    platforms = with lib.platforms; linux ++ darwin;
+    platforms = with lib.platforms; linux ++ darwin ++ freebsd;
   };
 }
