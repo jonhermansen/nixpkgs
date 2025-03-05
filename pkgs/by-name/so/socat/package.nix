@@ -27,6 +27,8 @@ stdenv.mkDerivation rec {
 
   configureFlags = lib.optionals (!stdenv.hostPlatform.isLinux) [
     "--disable-posixmq"
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    "--disable-dccp"
   ];
 
   buildInputs = [
