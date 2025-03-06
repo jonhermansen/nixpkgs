@@ -17,6 +17,7 @@ let
 
       # runtime dependencies
       darwin,
+      freebsd,
       glibc,
       libuuid,
       libxml2,
@@ -36,6 +37,7 @@ let
       makeWrapper,
       pkg-config,
       removeReferencesTo,
+      buildPackages,
 
       # passthru
       buildEnv,
@@ -125,6 +127,8 @@ let
           stdenv;
 
       pg_config = writeShellScriptBin "pg_config" (builtins.readFile ./pg_config.sh);
+
+      nativeBuild = buildPackages."postgresql_${lib.versions.major version}${lib.optionalString jitSupport "_jit"}";
     in
     stdenv'.mkDerivation (finalAttrs: {
       inherit version;
@@ -262,7 +266,7 @@ let
           "--with-system-tzdata=${tzdata}/share/zoneinfo"
           "--enable-debug"
           (lib.optionalString systemdSupport "--with-systemd")
-          "--with-uuid=e2fs"
+          (if stdenv.hostPlatform.isFreeBSD then "--with-uuid=bsd" else "--with-uuid=e2fs")
         ]
         ++ lib.optionals lz4Enabled [ "--with-lz4" ]
         ++ lib.optionals zstdEnabled [ "--with-zstd" ]
@@ -271,8 +275,8 @@ let
         ++ lib.optionals jitSupport [ "--with-llvm" ]
         ++ lib.optionals pamSupport [ "--with-pam" ]
         # This can be removed once v17 is removed. v18+ ships with it.
-        ++ lib.optionals (stdenv'.hostPlatform.isDarwin && atLeast "16" && olderThan "18") [
-          "LDFLAGS_EX_BE=-Wl,-export_dynamic"
+        ++ lib.optionals (stdenv'.cc.bintools.isLLVM && atLeast "16" && olderThan "18") [
+          "LDFLAGS_EX_BE=-Wl,--export-dynamic"
         ]
         ++ lib.optionals (atLeast "17" && !perlSupport) [ "--without-perl" ]
         ++ lib.optionals ldapSupport [ "--with-ldap" ]
@@ -306,7 +310,7 @@ let
 
           (replaceVars ./patches/locale-binary-path.patch {
             locale = "${
-              if stdenv.hostPlatform.isDarwin then darwin.adv_cmds else lib.getBin stdenv.cc.libc
+              if stdenv.hostPlatform.isDarwin then darwin.adv_cmds else if stdenv.hostPlatform.isFreeBSD then freebsd.locale else lib.getBin stdenv.cc.libc
             }/bin/locale";
           })
         ]
@@ -379,6 +383,15 @@ let
           # to their own output for installation, will then fail to find "postgres" during linking.
           substituteInPlace "$dev/lib/pgxs/src/Makefile.port" \
             --replace-fail '-bundle_loader $(bindir)/postgres' "-bundle_loader $out/bin/postgres"
+        '' + lib.optionalString (stdenv'.hostPlatform != stdenv.buildPlatform) ''
+          cp ${nativeBuild.dev}/bin/.pg_config-wrapped $dev/bin/.pg_config_native-wrapped
+          # wrapProgram will use the wrong shell. do it ourselves
+          cat >"$dev/bin/pg_config_native" <<EOF
+          #!${lib.getExe buildPackages.bash}
+          exec > >(sed ${lib.concatMapStringsSep " " (output: "-e s@${nativeBuild."${output}"}@${builtins.placeholder output}@g") finalAttrs.outputs})
+          exec -a "${builtins.placeholder "out"}/bin/pg_config" "${builtins.placeholder "dev"}/bin/.pg_config_native-wrapped" "\$@"
+          EOF
+          chmod +x "$dev/bin/pg_config_native"
         '';
 
       postFixup =
