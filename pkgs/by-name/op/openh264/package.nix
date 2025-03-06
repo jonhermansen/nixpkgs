@@ -1,6 +1,7 @@
 {
   lib,
   fetchFromGitHub,
+  fetchpatch,
   gtest,
   meson,
   nasm,
@@ -24,6 +25,14 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "dev"
+  ];
+
+  patches = [
+    (fetchpatch {
+      name = "freebsd-configure.patch";
+      url = "https://github.com/cisco/openh264/commit/ea8a1ad5791ee5c4e2ecf459aec235128d69b35b.patch";
+      hash = "sha256-pJvh9eRxFZQ+ob4WPu/x+jr1CCpgnug1uBViLfAtBDg=";
+    })
   ];
 
   postPatch = ''
@@ -62,6 +71,6 @@ stdenv.mkDerivation (finalAttrs: {
         ++ lib.platforms.aarch64
         ++ lib.platforms.loongarch64
         ++ lib.platforms.riscv64
-      ) (lib.platforms.linux ++ lib.platforms.darwin);
+      ) lib.platforms.unix;
   };
 })
