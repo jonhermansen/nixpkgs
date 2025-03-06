@@ -31,7 +31,8 @@ stdenv.mkDerivation rec {
     [ ]
     # Undocumented darwin hack (assembly is probably disabled due to an
     # issue with nasm, however yasm is now used)
-    ++ lib.optional stdenv.hostPlatform.isDarwin "--enable-macosx_module --disable-assembly";
+    ++ lib.optional stdenv.hostPlatform.isDarwin "--enable-macosx_module"
+    ++ lib.optional (stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD) "--disable-assembly";
 
   nativeBuildInputs = [ ] ++ lib.optional (!stdenv.hostPlatform.isDarwin) yasm;
 
