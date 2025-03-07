@@ -83,6 +83,7 @@ let
     exit 0
   '';
   maybeDebugFlag = lib.optionalString (buildType != "release") "--debug";
+  maybeTargetFlag = lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) "--target ${stdenv.hostPlatform.config}";
   maybeEnterBuildAndTestSubdir = lib.optionalString (buildAndTestSubdir != null) ''
     export CARGO_TARGET_DIR="$(pwd)/target"
     pushd "${buildAndTestSubdir}"
@@ -92,8 +93,10 @@ let
   pgrxPostgresMajor = lib.versions.major postgresql.version;
   preBuildAndTest = ''
     export PGRX_HOME="$(mktemp -d)"
+
     export PGDATA="$PGRX_HOME/data-${pgrxPostgresMajor}/"
-    cargo-pgrx pgrx init "--pg${pgrxPostgresMajor}" ${lib.getDev postgresql}/bin/pg_config
+    cargo-pgrx pgrx init "--pg${pgrxPostgresMajor}" ${lib.getDev postgresql}/bin/pg_config${lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) "_native --no-run"}
+  '' + lib.optionalString (stdenv.hostPlatform == stdenv.buildPlatform) ''
 
     # unix sockets work in sandbox, too.
     export PGHOST="$(mktemp -d)"
@@ -140,8 +143,8 @@ let
       PGRX_BUILD_FLAGS="--frozen -j $NIX_BUILD_CORES ${builtins.concatStringsSep " " cargoBuildFlags}" \
       ${lib.optionalString stdenv.hostPlatform.isDarwin ''RUSTFLAGS="''${RUSTFLAGS:+''${RUSTFLAGS} }-Clink-args=-Wl,-undefined,dynamic_lookup"''} \
       cargo pgrx package \
-        --pg-config ${lib.getDev postgresql}/bin/pg_config \
-        ${maybeDebugFlag} \
+        --pg-config ${lib.getDev postgresql}/bin/pg_config${lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) "_native"} \
+        ${maybeDebugFlag} ${maybeTargetFlag} \
         --features "${builtins.concatStringsSep " " buildFeatures}" \
         --out-dir "$out"
 
