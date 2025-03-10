@@ -17,6 +17,7 @@
 
   # passthru / meta
   postgresql,
+  buildPackages,
 
   # GSSAPI
   gssSupport ? with stdenv.hostPlatform; !isWindows && !isStatic,
@@ -102,16 +103,19 @@ stdenv.mkDerivation (finalAttrs: {
     ./patches/socketdir-in-run-13+.patch
   ];
 
+  postPatch = ''
+    cat ${./pg_config.env.mk} >> src/common/Makefile
+  '';
+
   installPhase = ''
     runHook preInstall
 
-    make -C src/bin/pg_config install
-    make -C src/common install
+    make -C src/common install pg_config.env
     make -C src/include install
     make -C src/interfaces/libpq install
     make -C src/port install
 
-    moveToOutput bin/pg_config "$dev"
+    install -D src/common/pg_config.env "$dev/nix-support/pg_config.env"
     moveToOutput "lib/*.a" "$dev"
 
     rm -rfv $out/share
@@ -131,6 +135,10 @@ stdenv.mkDerivation (finalAttrs: {
       "rm -rfv $dev/lib/*.a";
 
   doCheck = false;
+
+  passthru.pg_config = buildPackages.callPackage ./pg_config.nix {
+    inherit (finalAttrs) finalPackage;
+  };
 
   meta = {
     inherit (postgresql.meta)
