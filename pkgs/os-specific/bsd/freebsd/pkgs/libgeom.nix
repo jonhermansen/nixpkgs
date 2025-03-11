@@ -5,6 +5,9 @@
 }:
 mkDerivation {
   path = "lib/libgeom";
+
+  outputs = ["out" "man" "debug"];
+
   buildInputs = [
     libbsdxml
     libsbuf
