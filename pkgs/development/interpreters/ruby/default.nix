@@ -68,7 +68,7 @@ let
         atLeast32
         && (
           stdenv.hostPlatform.isx86_64 || (!stdenv.hostPlatform.isWindows && stdenv.hostPlatform.isAarch64)
-        );
+        ) && (stdenv.hostPlatform.config == stdenv.buildPlatform.config);
       rubyDrv = lib.makeOverridable (
         {
           stdenv,
@@ -279,6 +279,11 @@ let
             # it's not going to be used.
             export HOME=$TMPDIR
           '';
+
+          env = lib.optionalAttrs stdenv.hostPlatform.isFreeBSD {
+            # NOT CORRECT - instead patch extconf.rb to use the right headers
+            NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+          };
 
           # fails with "16993 tests, 2229489 assertions, 105 failures, 14 errors, 89 skips"
           # mostly TZ- and patch-related tests
