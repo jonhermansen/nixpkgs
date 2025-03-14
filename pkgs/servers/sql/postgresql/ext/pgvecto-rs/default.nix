@@ -81,7 +81,7 @@ in
     + (let patch = fetchpatch {
       name = "jemalloc-dep-shared-pthread.patch";
       url = "https://github.com/jemalloc/jemalloc/commit/86988bb5a8024854a91e27361b35af410019cdc4.patch";
-      hash = "";
+      hash = "sha256-7ffCaniNx7mIridHbWcX2NOTCEb6S09pYr/lPGm1gV4=";
     }; in ''
       for jemalloc in $(find .. -name jemalloc); do
         pushd $jemalloc
