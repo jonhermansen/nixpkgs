@@ -3,6 +3,7 @@
   buildPgrxExtension,
   cargo-pgrx_0_12_0_alpha_1,
   buildPackages,
+  pkgsBuildBuild,
   fetchFromGitHub,
   fetchpatch,
   nix-update-script,
@@ -105,8 +106,7 @@ in
       # Bypass rust nightly features not being available on rust stable
       RUSTC_BOOTSTRAP = 1;
 
-      "CC_${stdenv.buildPlatform.config}" = "${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}cc";
-      "CC_${stdenv.hostPlatform.config}" = "${stdenv.cc}/bin/${stdenv.cc.targetPrefix}cc";
+      "CC_${stdenv.buildPlatform.config}" = "${pkgsBuildBuild.clang_16}/bin/${pkgsBuildBuild.clang_16.targetPrefix}cc";
     };
 
     # This crate does not have the "pg_test" feature
