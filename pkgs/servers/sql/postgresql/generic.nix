@@ -41,7 +41,6 @@ let
 
       # passthru
       buildEnv,
-      buildPackages,
       newScope,
       nixosTests,
       postgresqlTestHook,
