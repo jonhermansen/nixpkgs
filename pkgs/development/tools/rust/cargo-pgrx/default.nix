@@ -14,6 +14,7 @@ let
       version,
       hash,
       cargoHash,
+      patches ? [],
     }:
     rustPlatform.buildRustPackage rec {
       pname = "cargo-pgrx";
@@ -34,6 +35,9 @@ let
       buildInputs = [
         openssl
       ];
+
+      inherit patches;
+      patchFlags = "-p2";
 
       preCheck = ''
         export PGRX_HOME=$(mktemp -d)
@@ -62,6 +66,10 @@ in
     version = "0.12.0-alpha.1";
     hash = "sha256-0m9oaqjU42RYyttkTihADDrRMjr2WoK/8sInZALeHws=";
     cargoHash = "sha256-zYjqE7LZLnTaVxWAPWC1ncEjCMlrhy4THtgecB7wBYY=";
+    patches = [
+      ./no-run-0-12-0-alpha1.patch
+      ./cross-target-0-12-0-alpha1.patch
+    ];
   };
 
   cargo-pgrx_0_12_5 = generic {

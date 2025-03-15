@@ -93,20 +93,7 @@ let
   preBuildAndTest = ''
     export PGRX_HOME="$(mktemp -d)"
     export PGDATA="$PGRX_HOME/data-${pgrxPostgresMajor}/"
-    cargo-pgrx pgrx init "--pg${pgrxPostgresMajor}" ${postgresql.pg_config}/bin/pg_config
-
-    # unix sockets work in sandbox, too.
-    export PGHOST="$(mktemp -d)"
-    cat > "$PGDATA/postgresql.conf" <<EOF
-    listen_addresses = ''\''
-    unix_socket_directories = '$PGHOST'
-    EOF
-
-    # This is primarily for Mac or other Nix systems that don't use the nixbld user.
-    export USER="$(whoami)"
-    pg_ctl start
-    createuser --superuser --createdb "$USER" || true
-    pg_ctl stop
+    cargo-pgrx pgrx init "--pg${pgrxPostgresMajor}" ${postgresql.pg_config}/bin/pg_config ${lib.optionalString (!(stdenv.buildPlatform.canExecute stdenv.hostPlatform)) "--no-run"}
   '';
 
   argsForBuildRustPackage = builtins.removeAttrs args [
@@ -143,6 +130,7 @@ let
         --pg-config ${postgresql.pg_config}/bin/pg_config \
         ${maybeDebugFlag} \
         --features "${builtins.concatStringsSep " " buildFeatures}" \
+        --target "${stdenv.hostPlatform.config}" \
         --out-dir "$out"
 
       ${maybeLeaveBuildAndTestSubdir}
@@ -150,7 +138,23 @@ let
       runHook postBuild
     '';
 
-    preCheck = preBuildAndTest + args.preCheck or "";
+    preCheck = ''
+      ${preBuildAndTest}
+      # unix sockets work in sandbox, too.
+      export PGHOST="$(mktemp -d)"
+      cat > "$PGDATA/postgresql.conf" <<EOF
+      listen_addresses = ''\''
+      unix_socket_directories = '$PGHOST'
+      EOF
+
+      # This is primarily for Mac or other Nix systems that don't use the nixbld user.
+      export USER="$(whoami)"
+      pg_ctl start
+      createuser --superuser --createdb "$USER" || true
+      pg_ctl stop
+
+      ${args.preCheck or ""}
+    '';
 
     installPhase = ''
       runHook preInstall

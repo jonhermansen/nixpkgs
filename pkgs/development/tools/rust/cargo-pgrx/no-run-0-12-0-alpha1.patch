@@ -1,0 +1,46 @@
+From 1b23603d7344a28fca0a19875292ddab21d7a9ac Mon Sep 17 00:00:00 2001
+From: Audrey Dutcher <audrey@rhelmot.io>
+Date: Mon, 3 Mar 2025 18:16:54 -0700
+Subject: [PATCH] add --no-run
+
+---
+ cargo-pgrx/src/command/init.rs | 19 ++++++++++++-------
+ 1 file changed, 12 insertions(+), 7 deletions(-)
+
+diff --git a/cargo-pgrx/src/command/init.rs b/cargo-pgrx/src/command/init.rs
+index de61e222fd..5fc18736a3 100644
+--- a/cargo-pgrx/src/command/init.rs
++++ b/cargo-pgrx/src/command/init.rs
+@@ -68,6 +68,9 @@ pub(crate) struct Init {
+     base_testing_port: Option<u16>,
+     #[clap(long, help = "Additional flags to pass to the configure script")]
+     configure_flag: Vec<String>,
++    /// Do not attempt to run any compiled postgresql binaries. Useful for cross compiling.
++    #[clap(long)]
++    no_run: bool,
+     /// Compile PostgreSQL with the necessary flags to detect a good amount of
+     /// memory errors when run under Valgrind.
+     ///
+@@ -213,13 +216,15 @@ pub(crate) fn init_pgrx(pgrx: &Pgrx, init: &Init) -> eyre::Result<()> {
+     for pg_config in output_configs.iter() {
+         validate_pg_config(pg_config)?;
+ 
+-        if is_root_user() {
+-            println!("{} initdb as current user is root user", "   Skipping".bold().green());
+-        } else {
+-            let datadir = pg_config.data_dir()?;
+-            let bindir = pg_config.bin_dir()?;
+-            if !datadir.try_exists()? {
+-                initdb(&bindir, &datadir)?;
++        if !init.no_run {
++            if is_root_user() {
++                println!("{} initdb as current user is root user", "   Skipping".bold().green());
++            } else {
++                let datadir = pg_config.data_dir()?;
++                let bindir = pg_config.bin_dir()?;
++                if !datadir.try_exists()? {
++                    initdb(&bindir, &datadir)?;
++                }
+             }
+         }
+     }

@@ -1,0 +1,302 @@
+From aa08d873a0100f88d6c41a383718ccbed85153de Mon Sep 17 00:00:00 2001
+From: Audrey Dutcher <audrey@rhelmot.io>
+Date: Thu, 6 Mar 2025 14:47:43 -0700
+Subject: [PATCH] Add --target for cross compiling
+
+---
+ cargo-pgrx/src/command/install.rs      | 15 ++++++++++++++-
+ cargo-pgrx/src/command/package.rs      | 11 ++++++++++-
+ cargo-pgrx/src/command/run.rs          |  5 +++++
+ cargo-pgrx/src/command/schema.rs       | 18 ++++++++++++++++--
+ cargo-pgrx/src/command/sudo_install.rs |  3 +++
+ 5 files changed, 48 insertions(+), 4 deletions(-)
+
+diff --git a/cargo-pgrx/src/command/install.rs b/cargo-pgrx/src/command/install.rs
+index 96b9b83258..cc13397584 100644
+--- a/cargo-pgrx/src/command/install.rs
++++ b/cargo-pgrx/src/command/install.rs
+@@ -54,6 +54,8 @@ pub(crate) struct Install {
+     sudo: bool,
+     #[clap(flatten)]
+     pub(crate) features: clap_cargo::Features,
++    #[clap(long)]
++    pub(crate) target: Option<String>,
+     #[clap(from_global, action = ArgAction::Count)]
+     pub(crate) verbose: u8,
+ }
+@@ -105,6 +107,7 @@ impl CommandExecute for Install {
+             self.test,
+             None,
+             &self.features,
++            self.target.as_ref().map(|x| x.as_str()),
+         )?;
+         Ok(())
+     }
+@@ -126,6 +129,7 @@ pub(crate) fn install_extension(
+     is_test: bool,
+     base_directory: Option<PathBuf>,
+     features: &clap_cargo::Features,
++    target: Option<&str>,
+ ) -> eyre::Result<Vec<PathBuf>> {
+     let mut output_tracking = Vec::new();
+     let base_directory = base_directory.unwrap_or_else(|| PathBuf::from("/"));
+@@ -145,7 +149,7 @@ pub(crate) fn install_extension(
+     let versioned_so = get_property(&package_manifest_path, "module_pathname")?.is_none();
+ 
+     let build_command_output =
+-        build_extension(user_manifest_path.as_ref(), user_package, profile, features)?;
++        build_extension(user_manifest_path.as_ref(), user_package, profile, features, target)?;
+     let build_command_bytes = build_command_output.stdout;
+     let build_command_reader = BufReader::new(build_command_bytes.as_slice());
+     let build_command_stream = cargo_metadata::Message::parse_stream(build_command_reader);
+@@ -229,6 +233,7 @@ pub(crate) fn install_extension(
+         profile,
+         is_test,
+         features,
++        target,
+         &extdir,
+         &base_directory,
+         true,
+@@ -293,6 +298,7 @@ pub(crate) fn build_extension(
+     user_package: Option<&String>,
+     profile: &CargoProfile,
+     features: &clap_cargo::Features,
++    target: Option<&str>,
+ ) -> eyre::Result<std::process::Output> {
+     let flags = std::env::var("PGRX_BUILD_FLAGS").unwrap_or_default();
+ 
+@@ -330,6 +336,11 @@ pub(crate) fn build_extension(
+         command.arg(arg);
+     }
+ 
++    if let Some(target) = target {
++        command.arg("--target");
++        command.arg(target);
++    }
++
+     let command = command.stderr(Stdio::inherit());
+     let command_str = format!("{command:?}");
+     println!("{} extension with features {}", "    Building".bold().green(), features_arg.cyan());
+@@ -367,6 +378,7 @@ fn copy_sql_files(
+     profile: &CargoProfile,
+     is_test: bool,
+     features: &clap_cargo::Features,
++    target: Option<&str>,
+     extdir: &Path,
+     base_directory: &Path,
+     skip_build: bool,
+@@ -383,6 +395,7 @@ fn copy_sql_files(
+         profile,
+         is_test,
+         features,
++        target,
+         Some(&dest),
+         Option::<String>::None,
+         None,
+diff --git a/cargo-pgrx/src/command/package.rs b/cargo-pgrx/src/command/package.rs
+index 43e548d8b0..c166948774 100644
+--- a/cargo-pgrx/src/command/package.rs
++++ b/cargo-pgrx/src/command/package.rs
+@@ -43,6 +43,8 @@ pub(crate) struct Package {
+     pub(crate) out_dir: Option<PathBuf>,
+     #[clap(flatten)]
+     pub(crate) features: clap_cargo::Features,
++    #[clap(long)]
++    pub(crate) target: Option<String>,
+     #[clap(from_global, action = ArgAction::Count)]
+     pub(crate) verbose: u8,
+ }
+@@ -79,7 +81,7 @@ impl Package {
+         let out_dir = if let Some(out_dir) = self.out_dir {
+             out_dir
+         } else {
+-            build_base_path(&pg_config, &package_manifest_path, &profile)?
++            build_base_path(&pg_config, &package_manifest_path, &profile, self.target.as_ref().map(|x| x.as_str()))?
+         };
+ 
+         let output_files = package_extension(
+@@ -91,6 +93,7 @@ impl Package {
+             &profile,
+             self.test,
+             &self.features,
++            self.target.as_ref().map(|x| x.as_str()),
+         )?;
+ 
+         Ok((out_dir, output_files))
+@@ -119,6 +122,7 @@ pub(crate) fn package_extension(
+     profile: &CargoProfile,
+     is_test: bool,
+     features: &clap_cargo::Features,
++    target: Option<&str>,
+ ) -> eyre::Result<Vec<PathBuf>> {
+     let out_dir_exists = out_dir.try_exists().wrap_err_with(|| {
+         format!("failed to access {} while packaging extension", out_dir.display())
+@@ -137,6 +141,7 @@ pub(crate) fn package_extension(
+         is_test,
+         Some(out_dir),
+         features,
++        target,
+     )
+ }
+ 
+@@ -144,11 +149,15 @@ pub(crate) fn build_base_path(
+     pg_config: &PgConfig,
+     manifest_path: impl AsRef<Path>,
+     profile: &CargoProfile,
++    target: Option<&str>,
+ ) -> eyre::Result<PathBuf> {
+     let mut target_dir = get_target_dir()?;
+     let pgver = pg_config.major_version()?;
+     let extname = get_property(manifest_path, "extname")?
+         .ok_or(eyre!("could not determine extension name"))?;
++    if let Some(target) = target {
++        target_dir.push(target);
++    }
+     target_dir.push(profile.target_subdir());
+     target_dir.push(format!("{extname}-pg{pgver}"));
+     Ok(target_dir)
+diff --git a/cargo-pgrx/src/command/run.rs b/cargo-pgrx/src/command/run.rs
+index 3f29f9ab49..42cfc0c573 100644
+--- a/cargo-pgrx/src/command/run.rs
++++ b/cargo-pgrx/src/command/run.rs
+@@ -43,6 +43,8 @@ pub(crate) struct Run {
+     profile: Option<String>,
+     #[clap(flatten)]
+     features: clap_cargo::Features,
++    #[clap(long)]
++    target: Option<String>,
+     #[clap(from_global, action = ArgAction::Count)]
+     verbose: u8,
+     /// Use an existing `pgcli` on the $PATH.
+@@ -86,6 +88,7 @@ impl CommandExecute for Run {
+             &profile,
+             self.pgcli,
+             &self.features,
++            self.target.as_ref().map(|x| x.as_str())
+         )
+     }
+ }
+@@ -104,6 +107,7 @@ pub(crate) fn run(
+     profile: &CargoProfile,
+     pgcli: bool,
+     features: &clap_cargo::Features,
++    target: Option<&str>,
+ ) -> eyre::Result<()> {
+     // stop postgres
+     stop_postgres(pg_config)?;
+@@ -118,6 +122,7 @@ pub(crate) fn run(
+         false,
+         None,
+         features,
++        target,
+     )?;
+ 
+     // restart postgres
+diff --git a/cargo-pgrx/src/command/schema.rs b/cargo-pgrx/src/command/schema.rs
+index e51221e23a..a02d493d28 100644
+--- a/cargo-pgrx/src/command/schema.rs
++++ b/cargo-pgrx/src/command/schema.rs
+@@ -55,6 +55,8 @@ pub(crate) struct Schema {
+     /// A path to output a produced GraphViz DOT file
+     #[clap(long, short, value_parser)]
+     dot: Option<PathBuf>,
++    #[clap(long)]
++    target: Option<String>,
+     #[clap(from_global, action = ArgAction::Count)]
+     verbose: u8,
+     /// Skip building a fresh extension shared object.
+@@ -103,6 +105,7 @@ impl CommandExecute for Schema {
+             &profile,
+             self.test,
+             &self.features,
++            self.target.as_ref().map(|x| x.as_str()),
+             self.out.as_ref(),
+             self.dot,
+             log_level,
+@@ -128,6 +131,7 @@ pub(crate) fn generate_schema(
+     profile: &CargoProfile,
+     is_test: bool,
+     features: &clap_cargo::Features,
++    target: Option<&str>,
+     path: Option<impl AsRef<std::path::Path>>,
+     dot: Option<impl AsRef<std::path::Path>>,
+     log_level: Option<String>,
+@@ -165,11 +169,12 @@ pub(crate) fn generate_schema(
+             is_test,
+             &features_arg,
+             &flags,
++            target,
+             &package_name,
+         )?;
+     };
+ 
+-    let symbols = compute_symbols(profile, &lib_filename)?;
++    let symbols = compute_symbols(profile, &lib_filename, target)?;
+ 
+     let mut out_path = None;
+     if let Some(path) = path.as_ref() {
+@@ -226,12 +231,15 @@ pub(crate) fn generate_schema(
+     Ok(())
+ }
+ 
+-fn compute_symbols(profile: &CargoProfile, lib_filename: &str) -> eyre::Result<Vec<String>> {
++fn compute_symbols(profile: &CargoProfile, lib_filename: &str, target: Option<&str>) -> eyre::Result<Vec<String>> {
+     use object::Object;
+     use std::collections::HashSet;
+ 
+     // Inspect the symbol table for a list of `__pgrx_internals` we should have the generator call
+     let mut lib_so = get_target_dir()?;
++    if let Some(target) = target {
++        lib_so.push(target);
++    }
+     lib_so.push(profile.target_subdir());
+     lib_so.push(lib_filename);
+ 
+@@ -322,6 +330,7 @@ fn first_build(
+     is_test: bool,
+     features_arg: &str,
+     flags: &str,
++    target: Option<&str>,
+     package_name: &str,
+ ) -> eyre::Result<()> {
+     let mut command = crate::env::cargo();
+@@ -367,6 +376,11 @@ fn first_build(
+         command.arg(arg);
+     }
+ 
++    if let Some(target) = target {
++        command.arg("--target");
++        command.arg(target);
++    }
++
+     let command_str = format!("{:?}", command);
+     eprintln!(
+         "{} for SQL generation with features `{}`",
+diff --git a/cargo-pgrx/src/command/sudo_install.rs b/cargo-pgrx/src/command/sudo_install.rs
+index 2e9302a644..bd8c0406ee 100644
+--- a/cargo-pgrx/src/command/sudo_install.rs
++++ b/cargo-pgrx/src/command/sudo_install.rs
+@@ -18,6 +18,7 @@ pub(crate) struct SudoInstall {
+     pg_config: Option<PathBuf>,
+     out_dir: Option<PathBuf>,
+     features: clap_cargo::Features,
++    target: Option<String>,
+     verbose: u8,
+ }
+ 
+@@ -32,6 +33,7 @@ impl From<Install> for SudoInstall {
+             pg_config: value.pg_config.map(PathBuf::from),
+             out_dir: None,
+             features: value.features,
++            target: value.target,
+             verbose: value.verbose,
+         }
+     }
+@@ -49,6 +51,7 @@ impl From<SudoInstall> for Package {
+             out_dir: value.out_dir,
+             features: value.features,
+             verbose: value.verbose,
++            target: value.target,
+         }
+     }
+ }
