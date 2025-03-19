@@ -12399,6 +12399,7 @@ with pkgs;
 
   udev =
     if lib.meta.availableOn stdenv.hostPlatform systemdLibs then systemdLibs
+      else if lib.meta.availableOn stdenv.hostPlatform freebsd.libudev-devd then freebsd.libudev-devd
     else libudev-zero;
 
   sysvtools = sysvinit.override {
