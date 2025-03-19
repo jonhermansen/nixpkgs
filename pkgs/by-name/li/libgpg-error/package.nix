@@ -34,6 +34,7 @@ stdenv.mkDerivation (
 
     postPatch = ''
       sed '/BUILD_TIMESTAMP=/s/=.*/=1970-01-01T00:01+0000/' -i ./configure
+      cp ${./lock-obj-pub.x86_64-unknown-freebsd.h} ./src/syscfg/lock-obj-pub.x86_64-unknown-freebsd.h
     '';
 
     hardeningDisable = [ "strictflexarrays3" ];
