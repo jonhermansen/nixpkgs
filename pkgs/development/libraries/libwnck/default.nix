@@ -4,6 +4,7 @@
   fetchurl,
   meson,
   mesonEmulatorHook,
+  buildPackages,
   ninja,
   pkg-config,
   gtk-doc,
@@ -20,7 +21,10 @@
   gettext,
   gobject-introspection,
   gnome,
+  withIntrospection ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform) || (stdenv.hostPlatform.emulatorAvailable buildPackages),
+  withGtkDoc ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform) || (stdenv.hostPlatform.emulatorAvailable buildPackages),
 }:
+
 
 stdenv.mkDerivation rec {
   pname = "libwnck";
@@ -29,6 +33,7 @@ stdenv.mkDerivation rec {
   outputs = [
     "out"
     "dev"
+  ] ++ lib.optionals withGtkDoc [
     "devdoc"
   ];
   outputBin = "dev";
@@ -44,12 +49,17 @@ stdenv.mkDerivation rec {
       ninja
       pkg-config
       gettext
-      gobject-introspection
-      gtk-doc
       docbook_xsl
       docbook_xml_dtd_412
+      glib
     ]
-    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    ++ lib.optionals withIntrospection [
+      gobject-introspection
+    ]
+    ++ lib.optionals withGtkDoc [
+      gtk-doc
+    ]
+    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform && stdenv.hostPlatform.emulatorAvailable buildPackages) [
       mesonEmulatorHook
     ];
 
@@ -69,6 +79,8 @@ stdenv.mkDerivation rec {
 
   mesonFlags = [
     "-Dgtk_doc=true"
+    (lib.mesonEnable "introspection" withIntrospection)
+    (lib.mesonBool "gtk_doc" withGtkDoc)
   ];
 
   passthru = {
@@ -80,7 +92,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "Library to manage X windows and workspaces (via pagers, tasklists, etc.)";
     license = licenses.lgpl21Plus;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     maintainers = with maintainers; [ liff ];
   };
 }
