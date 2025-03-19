@@ -207,7 +207,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/polkit-org/polkit";
     description = "Toolkit for defining and handling the policy that allows unprivileged processes to speak to privileged processes";
     license = licenses.lgpl2Plus;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     badPlatforms = [
       # mandatory libpolkit-gobject shared library
       lib.systems.inspect.platformPatterns.isStatic

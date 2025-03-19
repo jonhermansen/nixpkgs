@@ -45,7 +45,7 @@ stdenv.mkDerivation {
     '';
     homepage = "https://gitlab.freedesktop.org/wlroots/wlr-protocols";
     license = licenses.mit; # See file headers
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     maintainers = with maintainers; [ Scrumplex ];
   };
 }
