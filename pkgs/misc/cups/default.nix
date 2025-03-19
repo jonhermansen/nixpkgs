@@ -56,7 +56,7 @@ stdenv.mkDerivation rec {
 
   propagatedBuildInputs = [ gmp ];
 
-  configurePlatforms = lib.optionals stdenv.hostPlatform.isLinux [ "build" "host" ];
+  configurePlatforms = lib.optionals (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD) [ "build" "host" ];
   configureFlags = [
     "--localstatedir=/var"
     "--sysconfdir=/etc"
