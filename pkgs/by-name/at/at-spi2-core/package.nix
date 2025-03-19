@@ -84,6 +84,7 @@ stdenv.mkDerivation rec {
       # including the entire dbus closure in libraries linked with
       # the at-spi2-core libraries.
       "-Ddbus_daemon=/run/current-system/sw/bin/dbus-daemon"
+      (lib.mesonEnable "introspection" withIntrospection)
     ]
     ++ lib.optionals systemdSupport [
       # Same as the above, but for dbus-broker
