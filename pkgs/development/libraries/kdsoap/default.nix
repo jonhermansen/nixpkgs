@@ -5,6 +5,7 @@
   cmake,
   qtbase,
   wrapQtAppsHook,
+  kdsoap,
 }:
 
 let
@@ -29,6 +30,13 @@ stdenv.mkDerivation rec {
     cmake
     wrapQtAppsHook
   ];
+
+  # wants dev binaries for cross, but named without the suffix
+  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    mkdir -p $TMP/bin
+    ln -s ${kdsoap.__spliced.buildHost.dev}/bin/* $TMP/bin/kdwsdl2cpp
+    export PATH=$PATH:$TMP/bin
+  '';
 
   buildInputs = [ qtbase ];
 

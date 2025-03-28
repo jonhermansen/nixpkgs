@@ -13,11 +13,17 @@
 qtModule {
   pname = "qtdeclarative";
 
+  depsBuildBuild = [
+    # need qsb for QtQuick
+    qtshadertools
+  ];
   propagatedBuildInputs = [
-    qtbase
     qtlanguageserver
     qtshadertools
     openssl
+  ];
+  buildInputs = [
+    qtbase
   ];
   strictDeps = true;
 

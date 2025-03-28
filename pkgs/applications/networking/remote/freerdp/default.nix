@@ -50,6 +50,8 @@
   Carbon,
   Cocoa,
   CoreMedia,
+  epoll-shim,
+  evdev-proto,
   withUnfree ? false,
 
   # tries to compile and run generate_argument_docbook.c
@@ -177,6 +179,10 @@ stdenv.mkDerivation rec {
       Cocoa
       CoreMedia
     ]
+    ++ optionals stdenv.hostPlatform.isFreeBSD [
+      epoll-shim
+      evdev-proto
+    ]
     ++ optionals withUnfree [
       faac
     ];
@@ -197,6 +203,10 @@ stdenv.mkDerivation rec {
       "-Wno-dev"
       "-DCMAKE_INSTALL_LIBDIR=lib"
       "-DDOCBOOKXSL_DIR=${docbook-xsl-nons}/xml/xsl/docbook"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      # if you want a laugh, check src's CMakeLists.txt for this dep
+      "-DCMAKE_INCLUDE_PATH=${lib.getDev epoll-shim}/include/libepoll-shim"
     ]
     ++ lib.mapAttrsToList (k: v: "-D${k}=${cmFlag v}") {
       BUILD_TESTING = false; # false is recommended by upstream

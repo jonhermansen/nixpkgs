@@ -1,10 +1,14 @@
 {
+  lib,
+  stdenv,
   mkKdeDerivation,
   pkg-config,
   systemd,
   gdb,
   python3,
   replaceVars,
+  qtdeclarative,
+  kdeHostTools,
 }:
 let
   gdb' = gdb.override {
@@ -25,8 +29,12 @@ mkKdeDerivation {
     })
   ];
 
-  extraNativeBuildInputs = [ pkg-config ];
-  extraBuildInputs = [ systemd ];
+  extraNativeBuildInputs = [
+    kdeHostTools
+    qtdeclarative
+    pkg-config
+  ];
+  extraBuildInputs = lib.optional (lib.meta.availableOn stdenv.hostPlatform systemd) systemd;
 
   extraCmakeFlags = [
     "-DWITH_GDB12=1"

@@ -1,8 +1,11 @@
 {
+  lib,
+  stdenv,
   qtModule,
   qtbase,
   qtdeclarative,
   openssl,
+  qtquick3d,
 }:
 
 qtModule {
@@ -11,5 +14,12 @@ qtModule {
     qtbase
     qtdeclarative
   ];
-  buildInputs = [ openssl ];
+  buildInputs = [
+    openssl
+  ];
+  nativeBuildInputs = [
+    qtdeclarative
+  ] ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    qtquick3d
+  ];
 }

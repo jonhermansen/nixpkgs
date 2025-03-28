@@ -1,19 +1,30 @@
 {
+  lib,
+  stdenv,
   mkKdeDerivation,
   pkg-config,
   libksysguard,
   networkmanager-qt,
   lm_sensors,
   libnl,
+  kio,
+  freebsd,
 }:
 mkKdeDerivation {
   pname = "ksystemstats";
 
-  extraNativeBuildInputs = [ pkg-config ];
-  extraBuildInputs = [
-    networkmanager-qt
+  extraNativeBuildInputs = [
+    pkg-config
+    kio
+  ];
+  extraBuildInputs = lib.optionals stdenv.hostPlatform.isLinux [
     lm_sensors
     libnl
+    networkmanager-qt
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    freebsd.libdevinfo
+    freebsd.libgeom
   ];
 
   cmakeFlags = [

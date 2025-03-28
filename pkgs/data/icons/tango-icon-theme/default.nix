@@ -12,6 +12,8 @@
   hicolor-icon-theme,
 }:
 
+assert gtk.stdenv.hostPlatform == stdenv.buildPlatform;
+
 stdenv.mkDerivation rec {
   pname = "tango-icon-theme";
   version = "0.8.90";
@@ -26,11 +28,13 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     pkg-config
     intltool
+    librsvg
+    imagemagick
   ];
   buildInputs = [
     iconnamingutils
-    imagemagick
     librsvg
+    imagemagick
   ];
   propagatedBuildInputs = [
     gnome-icon-theme
@@ -47,7 +51,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "Basic set of icons";
     homepage = "https://tango.freedesktop.org/Tango_Icon_Library";
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     license = licenses.publicDomain;
   };
 }

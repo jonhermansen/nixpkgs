@@ -1,0 +1,21 @@
+--- gtk-4.16.12/gdk/wayland/gdkdisplay-wayland.c.orig	2025-03-21 22:40:34.908580098 -0700
++++ gtk-4.16.12/gdk/wayland/gdkdisplay-wayland.c	2025-03-21 22:44:40.658974615 -0700
+@@ -24,7 +24,9 @@
+ #include <errno.h>
+ #include <unistd.h>
+ #include <fcntl.h>
++#ifdef HAVE_SYS_SYSMACROS_H
+ #include <sys/sysmacros.h>
++#endif
+ 
+ #ifdef HAVE_LINUX_MEMFD_H
+ #include <linux/memfd.h>
+@@ -1943,7 +1945,7 @@
+       const char *schema_str;
+       GVariant *val;
+       GVariantIter *iter;
+-      const char *patterns[] = { "org.gnome.*", NULL }; 
++      const char *patterns[] = { "org.gnome.*", NULL };
+ 
+       display_wayland->settings_portal = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
+                                                                         G_DBUS_PROXY_FLAGS_NONE,

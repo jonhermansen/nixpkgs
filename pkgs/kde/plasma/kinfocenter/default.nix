@@ -4,6 +4,7 @@
   dmidecode,
   iproute2,
   lib,
+  stdenv,
   libdisplay-info,
   libusb1,
   mesa-demos,
@@ -18,6 +19,9 @@
   vulkan-tools,
   wayland-utils,
   xdpyinfo,
+  kio,
+  libdrm,
+  kdeHostTools,
 }:
 let
   tools = {
@@ -27,7 +31,6 @@ let
     dmidecode = lib.getExe' dmidecode "dmidecode";
     eglinfo = lib.getExe' mesa-demos "eglinfo";
     glxinfo = lib.getExe' mesa-demos "glxinfo";
-    ip = lib.getExe' iproute2 "ip";
     lsblk = lib.getExe' util-linux "lsblk";
     lspci = lib.getExe' pciutils "lspci";
     lscpu = lib.getExe' util-linux "lscpu";
@@ -36,6 +39,8 @@ let
     vulkaninfo = lib.getExe' vulkan-tools "vulkaninfo";
     waylandinfo = lib.getExe wayland-utils;
     xdpyinfo = lib.getExe xdpyinfo;
+  } // lib.optionalAttrs stdenv.hostPlatform.isLinux {
+    ip = lib.getExe' iproute2 "ip";
   };
 in
 mkKdeDerivation {
@@ -57,8 +62,15 @@ mkKdeDerivation {
       --replace-fail " aha " " ${lib.getExe aha} "
   '';
 
-  extraNativeBuildInputs = [ pkg-config ];
-  extraBuildInputs = [ libusb1 ];
+  extraNativeBuildInputs = [
+    pkg-config
+    kdeHostTools
+    kio
+  ];
+  extraBuildInputs = [
+    libusb1
+    libdrm
+  ];
 
   # fix wrong symlink of infocenter pointing to a 'systemsettings5' binary in
   # the same directory, while it is actually located in a completely different

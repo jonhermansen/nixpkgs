@@ -3,6 +3,7 @@
   stdenv,
   fetchurl,
   replaceVars,
+  buildPackages,
   pkg-config,
   glib,
   shadow,
@@ -18,6 +19,10 @@
   vala,
   gettext,
   libxcrypt,
+
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -58,14 +63,16 @@ stdenv.mkDerivation rec {
   nativeBuildInputs =
     [
       gettext
-      gobject-introspection
       meson
       ninja
       pkg-config
       python3
+      glib
+    ] ++ lib.optionals withIntrospection [
+      gobject-introspection
       vala
     ]
-    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform && stdenv.hostPlatform.emulatorAvailable buildPackages) [
       #  meson.build:88:2: ERROR: Can not run test applications in this cross environment.
       mesonEmulatorHook
     ];
@@ -93,6 +100,7 @@ stdenv.mkDerivation rec {
     "-Dadmin_group=wheel"
     "-Dlocalstatedir=/var"
     "-Dsystemdsystemunitdir=${placeholder "out"}/etc/systemd/system"
+    (lib.mesonBool "introspection" withIntrospection)
   ];
 
   postPatch = ''

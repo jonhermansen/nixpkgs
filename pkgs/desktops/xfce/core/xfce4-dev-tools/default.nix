@@ -59,6 +59,18 @@ stdenv.mkDerivation (finalAttrs: {
 
   enableParallelBuilding = true;
 
+  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    sed -E -i -e '/tests/d' configure.ac Makefile.am
+    substituteInPlace Makefile.am --replace-fail "xdt-csource \\" "xdt-csource"
+  '';
+
+  preConfigure = lib.optionalString stdenv.hostPlatform.isFreeBSD ''
+    mkdir -p $TMP/bin
+    ln -s $(type -p sed) $TMP/bin/gsed
+    ln -s $(type -p make) $TMP/bin/gmake
+    export PATH=$PATH:$TMP/bin
+  '';
+
   setupHook = ./setup-hook.sh;
 
   passthru.updateScript = gitUpdater {
@@ -71,6 +83,6 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Autoconf macros and scripts to augment app build systems";
     license = licenses.gpl2Plus;
     maintainers = with maintainers; [ ] ++ teams.xfce.members;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 })

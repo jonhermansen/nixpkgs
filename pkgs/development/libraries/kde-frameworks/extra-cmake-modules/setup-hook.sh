@@ -1,5 +1,6 @@
 ecmCMakeFlags() {
     appendToVar cmakeFlags "-DECM_DIR=@out@/share/ECM/cmake"
+    appendToVar cmakeFlags "-DECM_PKGCONFIG_INSTALL_DIR=${!outputDev}/lib/pkgconfig"
 }
 
 preConfigureHooks+=(ecmCMakeFlags)

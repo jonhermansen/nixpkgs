@@ -190,7 +190,7 @@ stdenv.mkDerivation rec {
     '';
     homepage = "http://www.sane-project.org/";
     license = lib.licenses.gpl2Plus;
-    platforms = lib.platforms.linux ++ lib.platforms.darwin;
+    platforms = lib.platforms.unix;
     maintainers = [ lib.maintainers.symphorien ];
   };
 }

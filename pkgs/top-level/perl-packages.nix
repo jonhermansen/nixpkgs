@@ -18,6 +18,7 @@ self:
 assert lib.versionAtLeast perl.version "5.30.3";
 let
   inherit (lib) maintainers teams;
+  buildPerlPackages = buildPackages."perl${lib.versions.major perl.version}${lib.versions.minor perl.version}Packages";
 
 in
 with self; {
@@ -28854,6 +28855,9 @@ with self; {
     patches = [ ../development/perl-modules/xml-parser-0001-HACK-Assumes-Expat-paths-are-good.patch ];
     postPatch = lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
       substituteInPlace Expat/Makefile.PL --replace 'use English;' '#'
+      mkdir -p $TMP/bin
+      ln -s $(type -p $CC) $TMP/bin/cc
+      export PATH=$PATH:$TMP/bin
     '' + lib.optionalString stdenv.hostPlatform.isCygwin ''
       sed -i -e "s@my \$compiler = File::Spec->catfile(\$path, \$cc\[0\]) \. \$Config{_exe};@my \$compiler = File::Spec->catfile(\$path, \$cc\[0\]) \. (\$^O eq 'cygwin' ? \"\" : \$Config{_exe});@" inc/Devel/CheckLib.pm
     '';
@@ -28974,9 +28978,12 @@ with self; {
       hash = "sha256-RQbDhwQ6pqd7RV8A9XQJ83IKp+VTSVqyU1JjtO0eoSo=";
     };
     propagatedBuildInputs = [ XMLNamespaceSupport XMLSAXBase ];
+    preInstall = ''
+      export PERL5LIB=$out/${perl.libPrefix}/${perl.version}:${buildPerlPackages.IO}/${perl.libPrefix}/${perl.version}:$PERL5LIB
+    '';
     postInstall = ''
       perl -MXML::SAX -e "XML::SAX->add_parser(q(XML::SAX::PurePerl))->save_parsers()"
-      '';
+    '';
     meta = {
       description = "Simple API for XML";
       license = with lib.licenses; [ artistic1 gpl1Plus ];

@@ -15,6 +15,7 @@ mkKdeDerivation rec {
   };
 
   extraBuildInputs = [ qtdeclarative ];
+  extraNativeBuildInputs = [ qtdeclarative ];
   extraPropagatedBuildInputs = [ qt5compat ];
 
   meta.license = with lib.licenses; [

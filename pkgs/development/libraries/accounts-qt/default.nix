@@ -30,14 +30,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
   buildInputs = [ qtbase ];
   nativeBuildInputs = [
+    qtbase
+    qmake
     doxygen
     pkg-config
-    qmake
     wrapQtAppsHook
   ];
 
+  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace accounts-qt.pro --replace-fail " tests" ""
+  '';
+
   # remove forbidden references to /build
-  preFixup = ''
+  preFixup = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" "$out"/bin/*
   '';
 
@@ -50,6 +55,6 @@ stdenv.mkDerivation (finalAttrs: {
     mainProgram = "accountstest";
     homepage = "https://gitlab.com/accounts-sso/libaccounts-qt";
     license = licenses.lgpl21;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 })

@@ -181,10 +181,13 @@ stdenv.mkDerivation rec {
       ++ lib.optional zeroconfSupport avahi
     );
 
-  env = lib.optionalAttrs (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17") {
+  env.NIX_LDFLAGS = lib.concatStringsSep " " (lib.optionals (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17") [
     # https://gitlab.freedesktop.org/pulseaudio/pulseaudio/-/issues/3848
-    NIX_LDFLAGS = "--undefined-version";
-  };
+    "--undefined-version"
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    # environ and __progname
+    "--allow-shlib-undefined"
+  ]);
 
   mesonFlags =
     [

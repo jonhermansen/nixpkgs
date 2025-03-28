@@ -1,0 +1,54 @@
+From b42daeeb3396df1a02c95d2f583058a74e7854e3 Mon Sep 17 00:00:00 2001
+From: Quentin Schulz <quentin.schulz@cherry.de>
+Date: Tue, 18 Mar 2025 15:07:53 +0100
+Subject: [PATCH] qt module: look for qt tools only on build machine
+
+Qt tools may be needed at build time, let's make their detection based
+on the build machine rather than the host machine as currently done.
+
+This incidentally fixes cross-compilation search for moc, rcc, uic and
+lrelease Qt tools because they are installed in libexec dir and that
+path is somehow not properly looked for otherwise.
+
+Before:
+
+"""
+Detecting Qt6 tools
+Run-time dependency qt6 (modules: Core) found: YES 6.8.1 (pkg-config)
+Program /usr/bin/moc found: NO
+Program /usr/lib/qt6/libexec/moc found: NO
+Program moc6 found: NO
+Program moc-qt6 found: NO
+Program moc found: NO
+"""
+
+After:
+
+"""
+Detecting Qt6 tools
+Found pkg-config: YES (/home/qschulz/work/upstream/buildroot/output/host/bin/pkg-config) 2.3.0
+Build-time dependency qt6 (modules: Core) found: YES 6.8.1 (pkg-config)
+Program /home/qschulz/work/upstream/buildroot/output/host/bin/moc found: NO
+Program /home/qschulz/work/upstream/buildroot/output/host/libexec/moc found: YES 6.8.1 6.8.1 (/home/qschulz/work/upstream/buildroot/output/host/libexec/moc)
+"""
+
+Suggested-by: Ross Burton <ross.burton@arm.com>
+Signed-off-by: Quentin Schulz <quentin.schulz@cherry.de>
+---
+ mesonbuild/modules/_qt.py | 3 +++
+ 1 file changed, 3 insertions(+)
+
+diff --git a/mesonbuild/modules/_qt.py b/mesonbuild/modules/_qt.py
+index 7d52842f9dd4..309068c517ee 100644
+--- a/mesonbuild/modules/_qt.py
++++ b/mesonbuild/modules/_qt.py
+@@ -270,6 +270,9 @@ def _detect_tools(self, state: ModuleState, method: str, required: bool = True)
+         self._tools_detected = True
+         mlog.log(f'Detecting Qt{self.qt_version} tools')
+         kwargs = {'required': required, 'modules': 'Core', 'method': method}
++        # Tools are for compile-time steps, so force native check for
++        # compatibility with cross-compile scenarios
++        kwargs["native"] = True
+         # Just pick one to make mypy happy
+         qt = T.cast('QtPkgConfigDependency', find_external_dependency(f'qt{self.qt_version}', state.environment, kwargs))
+         if qt.found():

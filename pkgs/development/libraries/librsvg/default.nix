@@ -48,7 +48,10 @@
   vips,
   xfce,
 }:
-
+let
+  emulatorAvailable = stdenv.hostPlatform.emulatorAvailable buildPackages;
+  emulator = stdenv.hostPlatform.emulator buildPackages;
+in
 stdenv.mkDerivation (finalAttrs: {
   pname = "librsvg";
   version = "2.59.2";
@@ -161,7 +164,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   env = {
     PKG_CONFIG_GDK_PIXBUF_2_0_GDK_PIXBUF_QUERY_LOADERS = buildPackages.writeShellScript "gdk-pixbuf-loader-loaders-wrapped" ''
-      ${lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (stdenv.hostPlatform.emulator buildPackages)} ${lib.getDev gdk-pixbuf}/bin/gdk-pixbuf-query-loaders
+      ${lib.optionalString emulatorAvailable emulator} ${lib.getDev gdk-pixbuf}/bin/gdk-pixbuf-query-loaders
     '';
   };
 
@@ -189,16 +192,13 @@ stdenv.mkDerivation (finalAttrs: {
   '';
 
   postInstall =
-    let
-      emulator = stdenv.hostPlatform.emulator buildPackages;
-    in
-    lib.optionalString withPixbufLoader ''
+    lib.optionalString (withPixbufLoader && (stdenv.buildPlatform.canExecute stdenv.hostPlatform || emulatorAvailable)) ''
       # Merge gdkpixbuf and librsvg loaders
       GDK_PIXBUF=$out/${gdk-pixbuf.binaryDir}
       cat ${lib.getLib gdk-pixbuf}/${gdk-pixbuf.binaryDir}/loaders.cache $GDK_PIXBUF/loaders.cache > $GDK_PIXBUF/loaders.cache.tmp
       mv $GDK_PIXBUF/loaders.cache.tmp $GDK_PIXBUF/loaders.cache
     ''
-    + lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) ''
+    + lib.optionalString emulatorAvailable ''
       installShellCompletion --cmd rsvg-convert \
         --bash <(${emulator} $out/bin/rsvg-convert --completion bash) \
         --fish <(${emulator} $out/bin/rsvg-convert --completion fish) \

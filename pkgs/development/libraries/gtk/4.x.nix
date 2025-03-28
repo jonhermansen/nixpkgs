@@ -3,6 +3,7 @@
 , buildPackages
 , replaceVars
 , fetchurl
+, fetchpatch
 , pkg-config
 , docutils
 , gettext
@@ -35,8 +36,8 @@
 , sassc
 , trackerSupport ? stdenv.hostPlatform.isLinux
 , tinysparql
-, x11Support ? stdenv.hostPlatform.isLinux
-, waylandSupport ? stdenv.hostPlatform.isLinux
+, x11Support ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
+, waylandSupport ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
 , libGL
 , vulkanSupport ? stdenv.hostPlatform.isLinux
 , shaderc
@@ -46,14 +47,17 @@
 , wayland
 , wayland-protocols
 , wayland-scanner
-, xineramaSupport ? stdenv.hostPlatform.isLinux
-, cupsSupport ? stdenv.hostPlatform.isLinux
+, xineramaSupport ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
+, cupsSupport ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
 , compileSchemas ? stdenv.hostPlatform.emulatorAvailable buildPackages
 , cups
 , libexecinfo
 , broadwaySupport ? true
 , testers
 , darwinMinVersionHook
+, withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages
 }:
 
 let
@@ -69,7 +73,7 @@ stdenv.mkDerivation (finalAttrs: {
   pname = "gtk4";
   version = "4.16.12";
 
-  outputs = [ "out" "dev" ] ++ lib.optionals x11Support [ "devdoc" ];
+  outputs = [ "out" "dev" ] ++ lib.optionals (x11Support && withIntrospection) [ "devdoc" ];
   outputBin = "dev";
 
   setupHooks = [
@@ -87,17 +91,19 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [
+    glib
     docutils # for rst2man, rst2html5
     gettext
-    gobject-introspection
     makeWrapper
     meson
     ninja
     pkg-config
     python3
     sassc
-    gi-docgen
     libxml2 # for xmllint
+  ] ++ lib.optionals withIntrospection [
+    gobject-introspection
+    gi-docgen
   ] ++ lib.optionals (compileSchemas && !stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     mesonEmulatorHook
   ] ++ lib.optionals waylandSupport [
@@ -163,9 +169,11 @@ stdenv.mkDerivation (finalAttrs: {
 
   mesonFlags = [
     # ../docs/tools/shooter.c:4:10: fatal error: 'cairo-xlib.h' file not found
-    (lib.mesonBool "documentation" x11Support)
+    # Problem encountered: API reference requires introspection.
+    (lib.mesonBool "documentation" (x11Support && withIntrospection))
     "-Dbuild-tests=false"
     (lib.mesonEnable "tracker" trackerSupport)
+    (lib.mesonEnable "introspection" withIntrospection)
     (lib.mesonBool "broadway-backend" broadwaySupport)
     (lib.mesonEnable "vulkan" vulkanSupport)
     (lib.mesonEnable "print-cups" cupsSupport)
@@ -182,9 +190,17 @@ stdenv.mkDerivation (finalAttrs: {
   # See: https://developer.gnome.org/gtk3/stable/gtk-building.html#extra-configuration-options
   env = {
     NIX_CFLAGS_COMPILE = "-DG_ENABLE_DEBUG -DG_DISABLE_CAST_CHECKS";
-  } // lib.optionalAttrs stdenv.hostPlatform.isMusl {
+  } // lib.optionalAttrs (stdenv.hostPlatform.isMusl || stdenv.hostPlatform.isFreeBSD) {
     NIX_LDFLAGS = "-lexecinfo";
   };
+
+  patches = [
+    (fetchpatch {
+      url = "https://gitlab.gnome.org/GNOME/gtk/-/commit/e78451165ac5cb4381c7cc756b138a6f55f36300.patch";
+      name = "wayland-forgotten-guards.patch";
+      hash = "sha256-B2JUisWruOc8qqJEUZAzHlI3NxpInB/1zgQT3KIz3zk=";
+    })
+  ];
 
   postPatch = ''
     # this conditional gates the installation of share/gsettings-schemas/.../glib-2.0/schemas/gschemas.compiled.

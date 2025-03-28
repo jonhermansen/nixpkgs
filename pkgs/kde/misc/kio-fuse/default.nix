@@ -4,6 +4,7 @@
   fetchurl,
   pkg-config,
   fuse3,
+  kio,
 }:
 mkKdeDerivation rec {
   pname = "kio-fuse";
@@ -14,7 +15,10 @@ mkKdeDerivation rec {
     hash = "sha256-fRBFgSJ9Whm0JLM/QWjRgVVrEBXW3yIY4BqI1kRJ6Us=";
   };
 
-  extraNativeBuildInputs = [ pkg-config ];
+  extraNativeBuildInputs = [
+    pkg-config
+    kio
+  ];
   extraBuildInputs = [ fuse3 ];
 
   meta.license = with lib.licenses; [ gpl3Plus ];

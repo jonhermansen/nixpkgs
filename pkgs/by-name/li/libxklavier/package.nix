@@ -26,6 +26,8 @@ stdenv.mkDerivation rec {
     sha256 = "1w1x5mrgly2ldiw3q2r6y620zgd89gk7n90ja46775lhaswxzv7a";
   };
 
+  env.NIX_LDFLAGS = lib.optionalString (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17") "--undefined-version";
+
   patches =
     [
       ./honor-XKB_CONFIG_ROOT.patch

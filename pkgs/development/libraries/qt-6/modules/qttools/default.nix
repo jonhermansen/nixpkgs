@@ -3,6 +3,7 @@
   stdenv,
   lib,
   qtbase,
+  qttools,
   qtdeclarative,
   cups,
   llvmPackages,
@@ -12,12 +13,15 @@
 
 qtModule {
   pname = "qttools";
+  nativeBuildInputs = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    qttools
+    qtbase
+  ];
   buildInputs = lib.optionals withClang [
     llvmPackages.libclang
     llvmPackages.llvm
   ];
   propagatedBuildInputs = [
-    qtbase
     qtdeclarative
   ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ cups ];
   patches = [

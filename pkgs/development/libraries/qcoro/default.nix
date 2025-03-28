@@ -7,6 +7,7 @@
   qtbase,
   qtwebsockets,
   wrapQtAppsHook,
+  qtdeclarative,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,6 +29,7 @@ stdenv.mkDerivation rec {
   nativeBuildInputs = [
     wrapQtAppsHook
     cmake
+    qtdeclarative
   ];
 
   buildInputs = [
@@ -41,6 +43,6 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/danvratil/qcoro";
     license = licenses.mit;
     maintainers = with maintainers; [ smitop ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

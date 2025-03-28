@@ -7,6 +7,7 @@
   docbook_xsl,
   docbook_xml_dtd_43,
   gettext,
+  libintl,
   makeWrapper,
 }:
 
@@ -30,7 +31,11 @@ stdenv.mkDerivation (finalAttrs: {
     libxslt
     docbook_xsl
     docbook_xml_dtd_43
-  ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ gettext ];
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isDarwin [ gettext ]
+  ;
+
+  buildInputs = lib.optionals stdenv.hostPlatform.isFreeBSD [ libintl ];
 
   preFixup = ''
     # fallback values need to be last

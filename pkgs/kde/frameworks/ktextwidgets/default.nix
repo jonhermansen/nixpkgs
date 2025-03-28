@@ -2,6 +2,7 @@
   mkKdeDerivation,
   qtspeech,
   qttools,
+  qtdeclarative,
 }:
 mkKdeDerivation {
   pname = "ktextwidgets";
@@ -9,5 +10,8 @@ mkKdeDerivation {
   extraBuildInputs = [
     qtspeech
     qttools
+  ];
+  extraNativeBuildInputs = [
+    qtdeclarative
   ];
 }

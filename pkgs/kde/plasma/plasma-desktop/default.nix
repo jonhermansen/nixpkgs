@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   mkKdeDerivation,
   runCommandLocal,
   makeWrapper,
@@ -8,6 +9,7 @@
   replaceVars,
   util-linux,
   pkg-config,
+  qtdeclarative,
   qtsvg,
   qtwayland,
   breeze,
@@ -19,6 +21,7 @@
   libwacom,
   libxkbfile,
   ibus,
+  kdeHostTools,
 }:
 let
   # run gsettings with desktop schemas for using in "kcm_access" kcm
@@ -47,10 +50,15 @@ mkKdeDerivation {
     # Fix build failure due to C++ template nonsense
     # Submitted upstream: https://invent.kde.org/plasma/plasma-desktop/-/merge_requests/2833
     # FIXME: remove when merged
-    ./fix-build.patch
+    #./fix-build.patch
   ];
 
-  extraNativeBuildInputs = [ pkg-config ];
+  extraNativeBuildInputs = [
+    pkg-config
+    qtdeclarative
+    qtwayland
+    kdeHostTools
+  ];
   extraBuildInputs = [
     qtsvg
     qtwayland
@@ -69,6 +77,8 @@ mkKdeDerivation {
     xorg.xf86inputevdev
     xorg.xorgserver
 
+  ]
+  ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform ibus) [
     ibus
   ];
 

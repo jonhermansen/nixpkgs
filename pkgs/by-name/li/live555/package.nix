@@ -77,7 +77,13 @@ stdenv.mkDerivation (finalAttrs: {
         ''
           substituteInPlace liveMedia/include/Locale.hh \
             --replace '<xlocale.h>' '<locale.h>'
-        '';
+        ''
+    + lib.optionalString stdenv.hostPlatform.isFreeBSD ''
+      cp ${fetchurl {
+        url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/4ac982fe4ac94aa2006c3946b2da7f8771f8b67d/net/liveMedia/files/config.fixed-freebsd";
+        hash = "";
+      }} .
+    '';
 
   configurePhase =
     let
@@ -86,6 +92,8 @@ stdenv.mkDerivation (finalAttrs: {
           "linux"
         else if stdenv.hostPlatform.isDarwin then
           "macosx-catalina"
+        else if stdenv.hostPlatform.isFreeBSD then
+          "freebsd-fixed"
         else
           throw "Unsupported platform: ${stdenv.hostPlatform.system}";
     in

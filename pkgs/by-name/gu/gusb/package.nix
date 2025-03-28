@@ -15,6 +15,7 @@
   python3,
   glib,
   libusb1,
+  freebsd,
   json-glib,
   vala,
   hwdata,
@@ -72,7 +73,7 @@ stdenv.mkDerivation rec {
   # all required in gusb.pc
   propagatedBuildInputs = [
     glib
-    libusb1
+    (if stdenv.hostPlatform.isFreeBSD then freebsd.libusb else libusb1)
     json-glib
   ];
 
@@ -80,6 +81,7 @@ stdenv.mkDerivation rec {
     (lib.mesonBool "docs" withIntrospection)
     (lib.mesonBool "introspection" withIntrospection)
     (lib.mesonBool "tests" doCheck)
+    (lib.mesonEnable "umockdev" doCheck)
     (lib.mesonBool "vapi" withIntrospection)
     (lib.mesonOption "usb_ids" "${hwdata}/share/hwdata/usb.ids")
   ];

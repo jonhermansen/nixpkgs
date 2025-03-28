@@ -10,5 +10,8 @@ mkKdeDerivation {
     qtdeclarative
     boost
   ];
+  extraNativeBuildInputs = [
+    qtdeclarative
+  ];
   meta.mainProgram = "plasma-activities-cli6";
 }

@@ -3,6 +3,7 @@
   stdenv,
   fetchurl,
   perl,
+  buildPackages,
   librsvg,
 }:
 
@@ -17,12 +18,15 @@ stdenv.mkDerivation rec {
 
   buildInputs = [
     librsvg
-    (perl.withPackages (p: [ p.XMLSimple ]))
+  ];
+
+  nativeBuildInputs = [
+    (buildPackages.perl.withPackages (p: [ p.XMLSimple ]))
   ];
 
   meta = with lib; {
     homepage = "https://tango.freedesktop.org/Standard_Icon_Naming_Specification";
-    platforms = with platforms; linux ++ darwin;
+    platforms = platforms.unix;
     license = licenses.gpl2;
   };
 }

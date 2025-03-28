@@ -46,6 +46,6 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/ksnip/kImageAnnotator";
     license = licenses.lgpl3Plus;
     maintainers = with maintainers; [ fliegendewurst ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

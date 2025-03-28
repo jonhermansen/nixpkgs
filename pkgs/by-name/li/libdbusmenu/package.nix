@@ -2,6 +2,7 @@
   stdenv,
   fetchurl,
   lib,
+  buildPackages,
   file,
   pkg-config,
   intltool,
@@ -14,6 +15,7 @@
   gtk2,
   gtk3,
   testers,
+  withIntrospection ? lib.meta.availableOn stdenv.hostPlatform gobject-introspection && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -30,9 +32,12 @@ stdenv.mkDerivation (finalAttrs: {
     };
 
   nativeBuildInputs = [
-    vala
+    glib
     pkg-config
     intltool
+  ]
+  ++ lib.optionals withIntrospection [
+    vala
     gobject-introspection
   ];
 
@@ -73,7 +78,9 @@ stdenv.mkDerivation (finalAttrs: {
     # TODO use `lib.withFeatureAs`
     (if gtkVersion == null then "--disable-gtk" else "--with-gtk=${gtkVersion}")
     "--disable-scrollkeeper"
-  ] ++ lib.optional (gtkVersion != "2") "--disable-dumper";
+  ] ++ lib.optional (gtkVersion != "2") "--disable-dumper"
+    ++ lib.optional (!withIntrospection) "--disable-vala"
+    ;
 
   doCheck = false; # generates shebangs in check phase, too lazy to fix
 
@@ -97,7 +104,7 @@ stdenv.mkDerivation (finalAttrs: {
       "dbusmenu-glib-0.4"
       "dbusmenu-jsonloader-0.4"
     ] ++ lib.optional (gtkVersion == "3") "dbusmenu-gtk${gtkVersion}-0.4";
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     maintainers = [ maintainers.msteen ];
   };
 })

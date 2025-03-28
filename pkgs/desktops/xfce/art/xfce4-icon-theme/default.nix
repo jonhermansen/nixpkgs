@@ -43,7 +43,7 @@ stdenv.mkDerivation rec {
     homepage = "https://www.xfce.org/";
     description = "Icons for Xfce";
     license = licenses.gpl2Plus;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     maintainers = teams.xfce.members;
   };
 }

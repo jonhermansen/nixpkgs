@@ -1,5 +1,6 @@
 { lib
 , mkXfceDerivation
+, buildPackages
 , polkit
 , exo
 , libxfce4util
@@ -17,9 +18,9 @@
 mkXfceDerivation {
   category = "xfce";
   pname = "xfce4-session";
-  version = "4.20.0";
+  version = "4.20.2";
 
-  sha256 = "sha256-mn3ky1NzrpQZRkhc605mj+GFhbFq26eW59YKUfnX9X8=";
+  sha256 = "sha256-wd+8W9Z0dH7bqILBUNG9YxpRf8TnRJ/7b3QviM1HVnY=";
 
   buildInputs = [
     exo
@@ -35,9 +36,22 @@ mkXfceDerivation {
     iceauth
   ];
 
+  nativeBuildInputs = [
+    glib
+  ];
+
+  # meson doesn't work yet and autoconf won't pick up the right two glibs unless we produce this monster
+  preConfigure = ''
+    mkdir -p $TMP/lib/pkgconfig
+    cp -r ${glib.dev}/lib/pkgconfig/*.pc $TMP/lib/pkgconfig
+    substituteInPlace $TMP/lib/pkgconfig/*.pc --replace-quiet ${glib.dev}/bin ${buildPackages.glib.dev}/bin
+    export PKG_CONFIG_PATH="$TMP/lib/pkgconfig:$PKG_CONFIG_PATH"
+  '';
+
   configureFlags = [
     "--with-xsession-prefix=${placeholder "out"}"
     "--with-wayland-session-prefix=${placeholder "out"}"
+    "ICEAUTH=${lib.getExe iceauth}"
   ];
 
   passthru.xinitrc = "${xfce4-session}/etc/xdg/xfce4/xinitrc";

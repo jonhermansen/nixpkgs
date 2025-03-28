@@ -3,7 +3,6 @@
   generateSplicesForMkScope,
   makeScopeWithSplicing',
   fetchurl,
-  libsForQt5,
   qt6Packages,
   cmark,
   gpgme,
@@ -65,8 +64,7 @@ let
         # Alias to match metadata
         kquickimageeditor = self.kquickimageedit;
 
-        # Alias because it's just data
-        plasma-wayland-protocols = libsForQt5.plasma-wayland-protocols;
+        plasma-wayland-protocols = self.callPackage ./misc/plasma-wayland-protocols { };
 
         selenium-webdriver-at-spi = null; # Used for integration tests that we don't run, stub
 

@@ -22,6 +22,8 @@
   moltenvk,
   AppKit,
   Cocoa,
+  epoll-shim,
+  evdev-proto,
 }:
 
 stdenv.mkDerivation rec {
@@ -60,19 +62,30 @@ stdenv.mkDerivation rec {
       libXrandr
       wayland
       wayland-protocols
+      wayland-scanner
     ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       moltenvk
       moltenvk.dev
       AppKit
       Cocoa
-    ];
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      epoll-shim
+      evdev-proto
+    ]
+    ;
 
   libraryPath = lib.strings.makeLibraryPath [ vulkan-loader ];
 
   dontPatchELF = true;
 
+  #preConfigure = lib.optionalString stdenv.hostPlatform.isFreeBSD ''
+  #  export PKG_CONFIG_PATH_FOR_BUILD+=":${lib.getDev epoll-shim}/lib/pkgconfig"
+  #'';
+
   env.PKG_CONFIG_WAYLAND_SCANNER_WAYLAND_SCANNER = lib.getExe buildPackages.wayland-scanner;
+  env.PKG_CONFIG_WAYLAND_SCANNER_PKGDATADIR = "${buildPackages.wayland-scanner}/share/wayland";
 
   cmakeFlags =
     [

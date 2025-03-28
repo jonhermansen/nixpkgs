@@ -34,6 +34,10 @@
   buildPackages,
   runtimeShell,
   nixosTests,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd
 }:
 
 let
@@ -71,6 +75,9 @@ stdenv.mkDerivation rec {
   };
 
   patches = [
+    ./cross-vapi.patch
+    ./build-without-dbus-launch.patch
+  ] ++ lib.optionals withIntrospection [
     (replaceVars ./fix-paths.patch {
       pythonInterpreter = python3Runtime.interpreter;
       pythonSitePackages = python3.sitePackages;
@@ -81,7 +88,6 @@ stdenv.mkDerivation rec {
       # removed line only
       PYTHON = null;
     })
-    ./build-without-dbus-launch.patch
   ];
 
   outputs = [
@@ -105,6 +111,11 @@ stdenv.mkDerivation rec {
 
   preAutoreconf = "touch ChangeLog";
 
+  # needed for cross
+  preConfigure = ''
+    PKG_CONFIG_PATH+=":${lib.getDev buildPackages.vala}/lib/pkgconfig"
+  '';
+
   configureFlags = [
     # The `AX_PROG_{CC,CXX}_FOR_BUILD` autoconf macros can pick up unwrapped GCC binaries,
     # so we set `{CC,CXX}_FOR_BUILD` to override that behavior.
@@ -112,12 +123,12 @@ stdenv.mkDerivation rec {
     "CC_FOR_BUILD=${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}cc"
     "CXX_FOR_BUILD=${buildPackages.stdenv.cc}/bin/${buildPackages.stdenv.cc.targetPrefix}c++"
     "GLIB_COMPILE_RESOURCES=${lib.getDev buildPackages.glib}/bin/glib-compile-resources"
-    "PKG_CONFIG_VAPIGEN_VAPIGEN=${lib.getBin buildPackages.vala}/bin/vapigen"
     "--disable-memconf"
     (lib.enableFeature (dconf != null) "dconf")
     (lib.enableFeature (libnotify != null) "libnotify")
     (lib.enableFeature withWayland "wayland")
     (lib.enableFeature enableUI "ui")
+    (lib.enableFeature withSystemd "systemd-services")
     "--disable-gtk2"
     "--enable-gtk4"
     "--enable-install-tests"
@@ -125,11 +136,21 @@ stdenv.mkDerivation rec {
     "--with-emoji-annotation-dir=${cldr-annotations}/share/unicode/cldr/common/annotations"
     "--with-python=${python3BuildEnv.interpreter}"
     "--with-ucd-dir=${unicode-character-database}/share/unicode"
-  ];
+    #"PKG_CONFIG_VAPIGEN_VAPIGEN=${lib.getBin buildPackages.vala}/bin/vapigen"
+    #"VAPIGEN=${lib.getBin buildPackages.vala}/bin/vapigen"
+    #"VAPIGEN_MAKEFILE=${lib.getBin buildPackages.vala}/share/vala/Makefile.vapigen"
+    #"VAPIGEN_VAPIDIR=${lib.getBin buildPackages.vala}/share/vala/vapi"
+  ] ++ lib.optionals withIntrospection [
+  ] ++ lib.optionals (!withIntrospection) [
+    "--enable-introspection=no"
+    "--enable-vala=no"
+  ]
+  ;
 
   makeFlags = [
     "test_execsdir=${placeholder "installedTests"}/libexec/installed-tests/ibus"
     "test_sourcesdir=${placeholder "installedTests"}/share/installed-tests/ibus"
+    "V=1"
   ];
 
   depsBuildBuild = [
@@ -143,11 +164,13 @@ stdenv.mkDerivation rec {
     makeWrapper
     pkg-config
     python3BuildEnv
-    vala
     wrapGAppsHook3
     dbus-launch
+    vala
+  ] ++ lib.optionals withIntrospection [
     gobject-introspection
-  ];
+  ]
+  ;
 
   propagatedBuildInputs = [
     glib
@@ -156,22 +179,27 @@ stdenv.mkDerivation rec {
   buildInputs =
     [
       dbus
-      systemd
       dconf
       gdk-pixbuf
-      python3.pkgs.pygobject3 # for pygobject overrides
       gtk3
       gtk4
       isocodes
       json-glib
       libnotify
       libdbusmenu-gtk3
+    ]
+    ++ lib.optionals withSystemd [
+      systemd
+    ]
+    ++ lib.optionals withIntrospection [
+      python3.pkgs.pygobject3 # for pygobject overrides
       vala # for share/vala/Makefile.vapigen (PKG_CONFIG_VAPIGEN_VAPIGEN)
     ]
     ++ lib.optionals withWayland [
       libxkbcommon
       wayland
-    ];
+    ]
+    ;
 
   enableParallelBuilding = true;
 

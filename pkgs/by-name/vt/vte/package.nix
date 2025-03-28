@@ -3,6 +3,7 @@
   lib,
   fetchurl,
   fetchpatch,
+  buildPackages,
   gettext,
   pkg-config,
   meson,
@@ -30,6 +31,10 @@
   fast-float,
   nixosTests,
   blackbox-terminal,
+
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -39,7 +44,7 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "dev"
-  ] ++ lib.optional (gtkVersion != null) "devdoc";
+  ] ++ lib.optional (gtkVersion != null && withIntrospection) "devdoc";
 
   src = fetchurl {
     url = "mirror://gnome/sources/vte/${lib.versions.majorMinor finalAttrs.version}/vte-${finalAttrs.version}.tar.xz";
@@ -75,16 +80,18 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [
+    glib
     gettext
-    gobject-introspection
     gperf
     libxml2
     meson
     ninja
     pkg-config
-    vala
     python3
+  ] ++ lib.optionals withIntrospection [
     gi-docgen
+    gobject-introspection
+    vala
   ];
 
   buildInputs =
@@ -114,7 +121,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   mesonFlags =
     [
-      "-Ddocs=true"
+      (lib.mesonBool "docs" withIntrospection)
+      (lib.mesonBool "gir" withIntrospection)
+      (lib.mesonBool "vapi" withIntrospection)
       (lib.mesonBool "gtk3" (gtkVersion == "3"))
       (lib.mesonBool "gtk4" (gtkVersion == "4"))
     ]

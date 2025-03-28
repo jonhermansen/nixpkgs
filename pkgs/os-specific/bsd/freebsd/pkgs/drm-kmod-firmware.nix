@@ -8,6 +8,7 @@
   withIntel ? true,
 }:
 mkDerivation rec {
+  path = "...";
   pname =
     "drm-kmod-firmware" + lib.optionalString withAmd "-amd" + lib.optionalString withIntel "-intel";
 

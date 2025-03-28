@@ -2,6 +2,8 @@
   stdenv,
   lib,
   fetchFromGitHub,
+  symlinkJoin,
+  pkgsBuildBuild,
   cmake,
   pkg-config,
   qttools,
@@ -14,9 +16,18 @@
   systemd,
   xkeyboardconfig,
   nixosTests,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 let
   isQt6 = lib.versions.major qtbase.version == "6";
+  joined = symlinkJoin {
+  pname = "qtbase-qttools";
+  inherit (qtbase) version;
+  paths = [
+    pkgsBuildBuild.qt6.qtbase
+    pkgsBuildBuild.qt6.qttools
+  ];
+};
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "sddm-unwrapped";
@@ -33,16 +44,21 @@ stdenv.mkDerivation (finalAttrs: {
     ./greeter-path.patch
     ./sddm-ignore-config-mtime.patch
     ./sddm-default-session.patch
+    ./freebsd-wayland.patch
   ];
 
   postPatch = ''
     substituteInPlace src/greeter/waylandkeyboardbackend.cpp \
       --replace "/usr/share/X11/xkb/rules/evdev.xml" "${xkeyboardconfig}/share/X11/xkb/rules/evdev.xml"
+    sed -E -i -e '/acqsig/a setModeRequest.frsig = 1;' src/common/VirtualTerminal.cpp
   '';
 
   nativeBuildInputs = [
     cmake
     pkg-config
+  ];
+
+  depsBuildBuild = [
     qttools
   ];
 
@@ -50,9 +66,10 @@ stdenv.mkDerivation (finalAttrs: {
     libxcb
     libXau
     pam
-    qtbase
     qtdeclarative
     qtquickcontrols2
+    qttools
+  ] ++ lib.optionals withSystemd [
     systemd
   ];
 
@@ -82,6 +99,10 @@ stdenv.mkDerivation (finalAttrs: {
     "-DSYSTEMD_SYSUSERS_DIR=${placeholder "out"}/lib/sysusers.d"
     "-DSYSTEMD_TMPFILES_DIR=${placeholder "out"}/lib/tmpfiles.d"
     "-DDBUS_CONFIG_DIR=${placeholder "out"}/share/dbus-1/system.d"
+  ]
+  ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    # can't find LinguistTools
+    "-DQT_HOST_PATH=${joined}"
   ];
 
   postInstall = ''
@@ -103,7 +124,7 @@ stdenv.mkDerivation (finalAttrs: {
       ttuegel
       k900
     ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     license = licenses.gpl2Plus;
   };
 })

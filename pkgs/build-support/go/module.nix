@@ -317,6 +317,13 @@ in
       runHook postInstall
     '';
 
+    # This condition is "platforms which have ld.so in a different derivation than libc"
+    preFixup = args.preFixup or "" + lib.optionalString (stdenv.hostPlatform.isFreeBSD || stdenv.hostPlatform.isOpenBSD) ''
+      for output in $outputs; do
+        find ''${!output} -type f -print0 | xargs -n1 -0 patchelf --add-rpath ${stdenv.cc.libc}/lib || true
+      done
+    '';
+
     strictDeps = true;
 
     disallowedReferences = lib.optional (!allowGoReference) go;

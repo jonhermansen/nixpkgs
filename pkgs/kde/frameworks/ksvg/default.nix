@@ -10,4 +10,7 @@ mkKdeDerivation {
     qtdeclarative
     qtsvg
   ];
+  extraNativeBuildInputs = [
+    qtdeclarative
+  ];
 }

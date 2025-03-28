@@ -1,6 +1,8 @@
 {
   lib,
+  stdenv,
   mkXfceDerivation,
+  buildPackages,
   gobject-introspection,
   glib,
   gtk3,
@@ -10,6 +12,9 @@
   xfconf,
   enablePolkit ? true,
   polkit,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 mkXfceDerivation {
@@ -20,7 +25,7 @@ mkXfceDerivation {
 
   sha256 = "sha256-L1txMS86lOEE9tOPTIOr1Gh4lwH7krnAeq4f3yS5kN0=";
 
-  nativeBuildInputs = [ gobject-introspection ];
+  nativeBuildInputs = lib.optionals withIntrospection [ gobject-introspection ];
 
   buildInputs =
     [

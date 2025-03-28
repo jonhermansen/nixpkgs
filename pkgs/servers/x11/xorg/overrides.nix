@@ -7,7 +7,7 @@
   mesa, udev, bootstrap_cmds, bison, flex, clangStdenv, autoreconfHook,
   mcpp, libepoxy, openssl, pkg-config, llvm, libxslt, libxcrypt, hwdata,
   ApplicationServices, Carbon, Cocoa, Xplugin,
-  xorg, windows
+  xorg, windows, evdev-proto
 }:
 
 let
@@ -498,6 +498,7 @@ self: super:
     configureFlags = [
       "--with-sdkdir=${placeholder "dev"}/include/xorg"
     ];
+    buildInputs = attrs.buildInputs ++ lib.optionals stdenv.hostPlatform.isFreeBSD [ evdev-proto ];
   });
 
   xf86inputmouse = super.xf86inputmouse.overrideAttrs (attrs: {
@@ -529,6 +530,7 @@ self: super:
     configureFlags = [
       "--with-sdkdir=${placeholder "dev"}/include/xorg"
     ];
+    buildInputs = attrs.buildInputs ++ lib.optionals stdenv.hostPlatform.isFreeBSD [ evdev-proto ];
   });
 
   xf86inputsynaptics = super.xf86inputsynaptics.overrideAttrs (attrs: {

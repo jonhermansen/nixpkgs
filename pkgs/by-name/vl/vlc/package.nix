@@ -333,7 +333,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://www.videolan.org/vlc/";
     license = lib.licenses.lgpl21Plus;
     maintainers = with lib.maintainers; [ alois31 ];
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     mainProgram = "vlc";
   };
 })

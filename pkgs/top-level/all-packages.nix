@@ -11071,7 +11071,7 @@ with pkgs;
 
   ### DEVELOPMENT / PERL MODULES
 
-  perlInterpreters = import ../development/interpreters/perl { inherit callPackage; };
+  perlInterpreters = import ../development/interpreters/perl { inherit callPackage lib; };
   inherit (perlInterpreters) perl538 perl540;
 
   perl538Packages = recurseIntoAttrs perl538.pkgs;
@@ -11990,7 +11990,7 @@ with pkgs;
   # unstable until the first 1.x release
   fwts = callPackage ../os-specific/linux/fwts { };
 
-  libuuid = if stdenv.hostPlatform.isLinux
+  libuuid = if stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
     then util-linuxMinimal
     else null;
 
@@ -12770,7 +12770,7 @@ with pkgs;
   source-han-serif-vf-ttf = sourceHanPackages.serif-vf-ttf;
 
   tango-icon-theme = callPackage ../data/icons/tango-icon-theme {
-    gtk = res.gtk2;
+    gtk = buildPackages.gtk2;
   };
 
   themes = name: callPackage (../data/misc/themes + ("/" + name + ".nix")) { };
@@ -15111,7 +15111,7 @@ with pkgs;
   lightdm_qt = lightdm.override { withQt5 = true; };
 
   lightdm-gtk-greeter = callPackage ../applications/display-managers/lightdm/gtk-greeter.nix {
-    inherit (xfce) xfce4-dev-tools;
+    inherit (buildPackages.xfce) xfce4-dev-tools;
   };
 
   ly = callPackage ../applications/display-managers/ly { };
@@ -18354,4 +18354,6 @@ with pkgs;
   rustdesk-flutter = callPackage ../by-name/ru/rustdesk-flutter/package.nix {
     flutter = flutter324;
   };
+
+  accountsservice = if stdenv.hostPlatform.isFreeBSD then accountsservice-freebsd else accountsservice-linux;
 }

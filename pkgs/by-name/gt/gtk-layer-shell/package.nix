@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitHub,
+  buildPackages,
   meson,
   ninja,
   pkg-config,
@@ -13,6 +14,7 @@
   gtk3,
   gobject-introspection,
   vala,
+  withIntrospection ? lib.meta.availableOn stdenv.hostPlatform gobject-introspection && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -43,13 +45,15 @@ stdenv.mkDerivation (finalAttrs: {
     meson
     ninja
     pkg-config
-    gobject-introspection
     gtk-doc
     docbook-xsl-nons
     docbook_xml_dtd_43
     wayland-scanner
-    vala
     wayland-scanner
+  ]
+  ++ lib.optionals withIntrospection [
+    vala
+    gobject-introspection
   ];
 
   buildInputs = [
@@ -59,7 +63,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   mesonFlags = [
     "-Ddocs=true"
-    "-Dexamples=true"
+    # configure error: Vala bindings require introspection support
+    (lib.mesonBool "examples" withIntrospection)
+    (lib.mesonBool "introspection" withIntrospection)
   ];
 
   meta = with lib; {
@@ -71,6 +77,6 @@ stdenv.mkDerivation (finalAttrs: {
       eonpatapon
       donovanglover
     ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 })

@@ -52,6 +52,11 @@ let
           test -d "${drv'}/${qtPluginPrefix}" && ln -s "${drv'}/${qtPluginPrefix}" "$out/${qtPluginPrefix}" || true
           test -d "${drv'}/${qtQmlPrefix}" && ln -s "${drv'}/${qtQmlPrefix}" "$out/${qtQmlPrefix}" || true
         '');
+
+        mkSpec = platform: if platform.isLinux && platform.cc.isGNU then "linux-g++"
+          else if platform.isLinux then "linux-clang"
+          else if platform.isFreeBSD then "freebsd-clang"
+          else throw "Don't know how to cross compile for ${platform.system}";
     in
     {
 
@@ -203,9 +208,12 @@ let
         { qtbase }:
         makeSetupHook {
           name = "qmake6-hook";
-          propagatedBuildInputs = [ qtbase.dev ];
+          depsTargetTargetPropagated = [ qtbase.dev ];
           substitutions = {
             fix_qmake_libtool = ./hooks/fix-qmake-libtool.sh;
+            spec = lib.optionalString (!stdenv.hostPlatform.canExecute stdenv.targetPlatform) (mkSpec stdenv.targetPlatform);
+            qtbase_target = qtbase.__spliced.targetTarget or qtbase;
+            qtbase_host = qtbase;
           };
         } ./hooks/qmake-hook.sh
       ) { };

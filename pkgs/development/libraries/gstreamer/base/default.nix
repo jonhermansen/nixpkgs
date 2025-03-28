@@ -14,6 +14,7 @@
 , libintl
 , libopus
 , isocodes
+, libglvnd
 , libjpeg
 , libpng
 , libvisual
@@ -22,12 +23,12 @@
 , withIntrospection ? lib.meta.availableOn stdenv.hostPlatform gobject-introspection && stdenv.hostPlatform.emulatorAvailable buildPackages
 , buildPackages
 , gobject-introspection
-, enableX11 ? stdenv.hostPlatform.isLinux
+, enableX11 ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
 , libXext
 , libXi
 , libXv
 , libdrm
-, enableWayland ? stdenv.hostPlatform.isLinux
+, enableWayland ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
 , wayland-scanner
 , wayland
 , wayland-protocols
@@ -116,6 +117,12 @@ stdenv.mkDerivation (finalAttrs: {
     gstreamer
   ] ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
     libdrm
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    # Package 'glesv2', required by 'gstreamer-gl-prototypes-1.0', not found
+    libglvnd
+  ] ++ lib.optionals (enableWayland && stdenv.hostPlatform.isFreeBSD) [
+    # Package 'wayland-egl', required by 'gstreamer-gl-wayland-1.0', not found
+    wayland
   ];
 
   mesonFlags = [

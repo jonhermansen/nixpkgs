@@ -35,8 +35,8 @@
 , sassc
 , trackerSupport ? stdenv.hostPlatform.isLinux && (stdenv.buildPlatform == stdenv.hostPlatform)
 , tinysparql
-, x11Support ? stdenv.hostPlatform.isLinux
-, waylandSupport ? stdenv.hostPlatform.isLinux
+, x11Support ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
+, waylandSupport ? stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
 , libGL
 , wayland
 , wayland-protocols
@@ -165,6 +165,7 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dtracker3=${lib.boolToString trackerSupport}"
     "-Dbroadway_backend=${lib.boolToString broadwaySupport}"
     "-Dx11_backend=${lib.boolToString x11Support}"
+    "-Dwayland_backend=${lib.boolToString waylandSupport}"
     "-Dquartz_backend=${lib.boolToString (stdenv.hostPlatform.isDarwin && !x11Support)}"
     "-Dintrospection=${lib.boolToString withIntrospection}"
   ];

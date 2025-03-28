@@ -5,6 +5,9 @@
 , exo
 , gdk-pixbuf
 , gtk3
+, glib
+, pkg-config
+, autoreconfHook
 , libexif
 , libgudev
 , libnotify
@@ -30,9 +33,15 @@ let unwrapped = mkXfceDerivation {
 
   sha256 = "sha256-tuINIJ5r1BXAUJxlmLiYe2z3AFGkXqbITJBskSx5D4s=";
 
+  depsBuildBuild = [
+    pkg-config
+  ];
+
   nativeBuildInputs = [
+    autoreconfHook
     docbook_xsl
     libxslt
+    glib
   ] ++ lib.optionals withIntrospection [
     gobject-introspection
   ];
@@ -62,6 +71,8 @@ let unwrapped = mkXfceDerivation {
   # https://github.com/xfce-mirror/thunar/commit/1ec8ff89ec5a3314fcd6a57f1475654ddecc9875
   postPatch = ''
     sed -i -e 's|thunar_dialogs_show_insecure_program (parent, _(".*"), file, exec)|1|' thunar/thunar-file.c
+
+    substituteInPlace plugins/thunar-uca/Makefile.am --replace-fail PKG_CONFIG PKG_CONFIG_FOR_BUILD
   '';
 
   preFixup = ''

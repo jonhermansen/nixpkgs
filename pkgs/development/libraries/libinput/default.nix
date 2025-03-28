@@ -127,7 +127,7 @@ stdenv.mkDerivation rec {
     "--sysconfdir=/etc"
     "--libexecdir=${placeholder "bin"}/libexec"
   ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
-    epoll-shim
+    "-Depoll-dir=${lib.getDev epoll-shim}"
   ];
 
   doCheck = testsSupport && stdenv.hostPlatform == stdenv.buildPlatform;

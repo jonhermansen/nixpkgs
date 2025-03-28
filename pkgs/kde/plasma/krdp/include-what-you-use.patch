@@ -1,0 +1,12 @@
+diff --git a/src/RdpConnection.h b/src/RdpConnection.h
+index c84c1a5..d989c18 100644
+--- a/src/RdpConnection.h
++++ b/src/RdpConnection.h
+@@ -6,6 +6,7 @@
+ 
+ #include <memory>
+ #include <thread>
++#include <stop_token>
+ 
+ #include <QObject>
+ 

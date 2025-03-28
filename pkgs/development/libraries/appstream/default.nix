@@ -2,6 +2,7 @@
 , stdenv
 , replaceVars
 , fetchFromGitHub
+, buildPackages
 , meson
 , mesonEmulatorHook
 , appstream
@@ -33,6 +34,9 @@
 , nixosTests
 , testers
 , withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd
+, withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -58,6 +62,10 @@ stdenv.mkDerivation (finalAttrs: {
     ./installed-tests-path.patch
   ];
 
+  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform && !stdenv.hostPlatform.emulatorAvailable buildPackages) ''
+    sed -E -i -e '/override_find_program/d' tools/meson.build
+  '';
+
   strictDeps = true;
 
   depsBuildBuild = [
@@ -74,14 +82,17 @@ stdenv.mkDerivation (finalAttrs: {
     xmlto
     docbook-xsl-nons
     docbook_xml_dtd_45
-    gobject-introspection
     itstool
-    vala
     gperf
-  ] ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-    mesonEmulatorHook
+    glib
+  ] ++ lib.optionals withIntrospection [
+    gobject-introspection
+    vala
+  ] ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ([
     appstream
-  ];
+  ] ++ lib.optionals withIntrospection [
+    mesonEmulatorHook
+  ]);
 
   buildInputs = [
     libstemmer
@@ -106,6 +117,7 @@ stdenv.mkDerivation (finalAttrs: {
     "-Dvapi=true"
     "-Dinstalled_test_prefix=${placeholder "installedTests"}"
     "-Dcompose=true"
+    (lib.mesonBool "gir" withIntrospection)
   ] ++ lib.optionals (!withSystemd) [
     "-Dsystemd=false"
   ];

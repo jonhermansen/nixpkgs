@@ -102,8 +102,8 @@ stdenv.mkDerivation rec {
       "--disable-ipcrm"
       "--disable-ipcs"
     ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      # Doesn't build on Darwin, also doesn't really make sense on Darwin
+    ++ lib.optionals (stdenv.hostPlatform.isDarwin || stdenv.hostPlatform.isFreeBSD) [
+      # Doesn't build on Darwin/FreeBSD, also doesn't really make sense there
       "--disable-liblastlog2"
     ];
 

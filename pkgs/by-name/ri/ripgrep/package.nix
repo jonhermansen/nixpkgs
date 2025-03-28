@@ -48,7 +48,7 @@ rustPlatform.buildRustPackage rec {
   '';
 
   doInstallCheck = true;
-  installCheckPhase =
+  installCheckPhase = lib.optionalString canRunRg (
     ''
       file="$(mktemp)"
       echo "abc\nbcd\ncde" > "$file"
@@ -57,7 +57,7 @@ rustPlatform.buildRustPackage rec {
     ''
     + lib.optionalString withPCRE2 ''
       echo '(a(aa)aa)' | ${rg} -P '\((a*|(?R))*\)'
-    '';
+    '');
 
   meta = with lib; {
     description = "Utility that combines the usability of The Silver Searcher with the raw speed of grep";

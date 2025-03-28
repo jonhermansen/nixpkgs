@@ -93,7 +93,7 @@ stdenv.mkDerivation rec {
     homepage = "https://invisible-island.net/xterm";
     license = with lib.licenses; [ mit ];
     maintainers = with lib.maintainers; [ nequissimus ];
-    platforms = with lib.platforms; linux ++ darwin;
+    platforms = lib.platforms.unix;
     changelog = "https://invisible-island.net/xterm/xterm.log.html";
   };
 }

@@ -9,6 +9,7 @@
   sass,
   qtsvg,
   gsettings-desktop-schemas,
+  kcolorscheme,
 }:
 mkKdeDerivation {
   pname = "kde-gtk-config";
@@ -31,6 +32,7 @@ mkKdeDerivation {
     pkg-config
     wrapGAppsHook3
     sass
+    kcolorscheme
   ];
   extraBuildInputs = [ qtsvg ];
   dontWrapGApps = true; # There is nothing to wrap

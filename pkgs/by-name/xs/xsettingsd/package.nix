@@ -36,7 +36,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/derat/xsettingsd";
     license = licenses.bsd3;
     maintainers = with maintainers; [ romildo ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     mainProgram = "xsettingsd";
   };
 }

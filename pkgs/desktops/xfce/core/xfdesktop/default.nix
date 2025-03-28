@@ -3,6 +3,7 @@
   mkXfceDerivation,
   exo,
   gtk3,
+  buildPackages,
   libxfce4ui,
   libxfce4util,
   libxfce4windowing,
@@ -34,6 +35,8 @@ mkXfceDerivation {
     gtk-layer-shell
     thunar
   ];
+
+  env.GLIB_COMPILE_RESOURCES = "${buildPackages.glib.dev}/bin/glib-compile-resources";
 
   meta = with lib; {
     description = "Xfce's desktop manager";

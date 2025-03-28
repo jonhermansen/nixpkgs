@@ -16,7 +16,7 @@ stdenv.mkDerivation rec {
 
   outputs = [ "out" "dev" "man" ];
 
-  nativeBuildInputs = [ buildPackages.stdenv.cc pkg-config cmake ];
+  nativeBuildInputs = [ buildPackages.stdenv.cc pkg-config cmake glib ];
 
   buildInputs = [ glib libsndfile libjack2 ]
     ++ lib.optionals stdenv.hostPlatform.isLinux [ alsa-lib libpulseaudio ]
@@ -25,6 +25,8 @@ stdenv.mkDerivation rec {
   cmakeFlags = [
     "-Denable-framework=off"
   ];
+
+  dontAddExtraLibs = true;
 
   meta = with lib; {
     description = "Real-time software synthesizer based on the SoundFont 2 specifications";

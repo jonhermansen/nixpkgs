@@ -9,6 +9,7 @@
   libxslt,
   removeReferencesTo,
   libiconv,
+  libintl,
   brotli,
   expat,
   inih,
@@ -48,6 +49,8 @@ stdenv.mkDerivation rec {
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    libintl
   ];
 
   propagatedBuildInputs = [

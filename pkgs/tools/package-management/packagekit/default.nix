@@ -2,6 +2,7 @@
   stdenv,
   fetchFromGitHub,
   lib,
+  buildPackages,
   gettext,
   glib,
   pkg-config,
@@ -26,6 +27,10 @@
   enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
   systemd,
   nixosTests,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  withGtkDoc ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform) || (stdenv.hostPlatform.emulatorAvailable buildPackages),
 }:
 
 stdenv.mkDerivation rec {
@@ -35,6 +40,7 @@ stdenv.mkDerivation rec {
   outputs = [
     "out"
     "dev"
+  ] ++ lib.optionals withGtkDoc [
     "devdoc"
   ];
 
@@ -59,23 +65,29 @@ stdenv.mkDerivation rec {
     ++ lib.optional enableSystemd systemd
     ++ lib.optional enableBashCompletion bash-completion;
   nativeBuildInputs = [
-    gobject-introspection
     glib
     vala
     gettext
     pkg-config
-    gtk-doc
     meson
     libxslt
     docbook-xsl-nons
     docbook_xml_dtd_42
     libxml2
     ninja
+  ] ++ lib.optionals withGtkDoc [
+    gtk-doc
+  ] ++ lib.optionals withIntrospection [
+    gobject-introspection
   ];
 
   mesonFlags =
     [
-      (if enableSystemd then "-Dsystemd=true" else "-Dsystem=false")
+      (lib.mesonBool "systemd" enableSystemd)
+      # Problem encountered: Offline updates requires Systemd
+      (lib.mesonBool "offline_update" enableSystemd)
+      (lib.mesonBool "gobject_introspection" withIntrospection)
+      (lib.mesonBool "gtk_doc" withGtkDoc)
       # often fails to build with nix updates
       # and remounts /nix/store as rw
       # https://github.com/NixOS/nixpkgs/issues/177946
@@ -84,7 +96,6 @@ stdenv.mkDerivation rec {
       "-Ddbus_services=${placeholder "out"}/share/dbus-1/system-services"
       "-Dsystemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
       "-Dcron=false"
-      "-Dgtk_doc=true"
       "--sysconfdir=/etc"
       "--localstatedir=/var"
     ]

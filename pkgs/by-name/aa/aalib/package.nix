@@ -1,4 +1,4 @@
-{lib, stdenv, fetchurl, ncurses, automake}:
+{lib, stdenv, fetchurl, ncurses, autoreconfHook}:
 
 stdenv.mkDerivation rec {
   pname = "aalib";
@@ -22,7 +22,6 @@ stdenv.mkDerivation rec {
 
   # The fuloong2f is not supported by aalib still
   preConfigure = ''
-    cp ${automake}/share/automake*/config.{sub,guess} .
     configureFlagsArray+=(
       "--bindir=$bin/bin"
       "--includedir=$dev/include"
@@ -31,6 +30,7 @@ stdenv.mkDerivation rec {
   '';
 
   buildInputs = [ ncurses ];
+  nativeBuildInputs = [ autoreconfHook ];
 
   configureFlags = [ "--without-x" "--with-ncurses=${ncurses.dev}" ];
 

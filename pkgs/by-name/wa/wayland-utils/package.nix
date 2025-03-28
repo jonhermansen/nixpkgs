@@ -43,7 +43,7 @@ stdenv.mkDerivation rec {
     '';
     homepage = "https://gitlab.freedesktop.org/wayland/wayland-utils";
     license = licenses.mit; # Expat version
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     maintainers = with maintainers; [ primeos ];
     mainProgram = "wayland-info";
   };

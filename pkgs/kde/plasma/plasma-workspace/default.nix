@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   mkKdeDerivation,
   replaceVars,
   dbus,
@@ -9,6 +10,7 @@
   pkg-config,
   spirv-tools,
   qtpositioning,
+  qtdeclarative,
   qtsvg,
   qtwayland,
   libcanberra,
@@ -17,6 +19,7 @@
   qttools,
   qqc2-breeze-style,
   gpsd,
+  kdeHostTools,
 }:
 mkKdeDerivation {
   pname = "plasma-workspace";
@@ -39,9 +42,15 @@ mkKdeDerivation {
     chmod -x $out/libexec/plasma-sourceenv.sh
   '';
 
+  excludeDependencies = lib.optionals stdenv.hostPlatform.isFreeBSD [
+    "networkmanager-qt"
+  ];
   extraNativeBuildInputs = [
     pkg-config
     spirv-tools
+    qtdeclarative
+    qtwayland
+    kdeHostTools
   ];
   extraBuildInputs = [
     qtpositioning

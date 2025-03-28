@@ -11,7 +11,11 @@
   protobuf,
   protobufc,
   systemd,
+  basu,
+  evdev-proto,
+  epoll-shim,
   buildPackages,
+  withSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 let
   munit = fetchFromGitHub {
@@ -38,8 +42,15 @@ stdenv.mkDerivation rec {
     libxkbcommon
     protobuf
     protobufc
+  ] ++ lib.optionals withSystemd [
     systemd
+  ] ++ lib.optionals (!withSystemd) [
+    basu
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    evdev-proto
+    epoll-shim
   ];
+
   nativeBuildInputs = [
     meson
     ninja
@@ -67,6 +78,6 @@ stdenv.mkDerivation rec {
     homepage = "https://gitlab.freedesktop.org/libinput/libei";
     license = licenses.mit;
     maintainers = [ maintainers.pedrohlc ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

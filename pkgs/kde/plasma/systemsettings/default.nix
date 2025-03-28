@@ -1,5 +1,33 @@
-{ mkKdeDerivation }:
+{
+  lib,
+  stdenv,
+  mkKdeDerivation,
+  qtdeclarative,
+  kconfig,
+  kdoctools,
+  kauth,
+  kcmutils,
+  kpackage,
+  symlinkJoin,
+}:
+let
+  hostTools = symlinkJoin {
+    pname = "kdoctools-kconfig-kauth";
+    inherit (kconfig) version;
+    paths = [
+      (kdoctools.__spliced.buildHost or kdoctools).dev
+      (kconfig.__spliced.buildHost or kconfig).dev
+      (kauth.__spliced.buildHost or kauth).dev
+      (kcmutils.__spliced.buildHost or kcmutils).dev
+      (kpackage.__spliced.buildHost or kpackage).dev
+    ];
+  };
+in
 mkKdeDerivation {
   pname = "systemsettings";
+  extraNativeBuildInputs = [ qtdeclarative ];
+  extraCmakeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    "-DKF6_HOST_TOOLING=${hostTools}/lib/cmake"
+  ];
   meta.mainProgram = "systemsettings";
 }

@@ -134,7 +134,7 @@ stdenv.mkDerivation (finalAttrs: {
       teto
     ];
     mainProgram = "luarocks";
-    platforms = platforms.linux ++ platforms.darwin;
+    platforms = platforms.linux ++ platforms.darwin ++ platforms.freebsd;
     downloadPage = "http://luarocks.org/releases/";
   };
 })

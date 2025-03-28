@@ -2,11 +2,18 @@
   mkKdeDerivation,
   qtwayland,
   qtmultimedia,
+  qtdeclarative,
   opencv,
+  kdeHostTools,
 }:
 mkKdeDerivation {
   pname = "spectacle";
 
+  extraNativeBuildInputs = [
+    kdeHostTools
+    qtdeclarative
+    qtwayland
+  ];
   extraBuildInputs = [
     qtwayland
     qtmultimedia

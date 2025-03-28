@@ -141,6 +141,7 @@ stdenv.mkDerivation (rec {
       # https://github.com/Perl/perl5/issues/22295
       # configure cannot figure out that we have crypt automatically, but we really do
       "-Dd_crypt"
+      #"-Di_crypt=define"
     ];
 
   configureScript = lib.optionalString (!crossCompiling) "${stdenv.shell} ./Configure";
@@ -208,7 +209,7 @@ stdenv.mkDerivation (rec {
       override = attr: let perl = attr.override (inputs' // { self = perl; }); in perl;
     in
     passthruFun rec {
-      inherit self perlAttr;
+      inherit self perlAttr enableThreading;
       inherit overrides;
       perlOnBuildForBuild = override pkgsBuildBuild.${perlAttr};
       perlOnBuildForHost = override pkgsBuildHost.${perlAttr};

@@ -1,5 +1,6 @@
 {
   mkDerivation,
+  stdenv,
   lib,
   extra-cmake-modules,
   kdoctools,
@@ -72,7 +73,6 @@ mkDerivation {
     libmtp
     libssh
     openexr_3
-    libtirpc
     phonon
     qtsvg
     samba
@@ -81,7 +81,9 @@ mkDerivation {
     taglib
     libX11
     libXcursor
-  ];
+  ]
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform libtirpc) libtirpc
+  ;
 
   # org.kde.kmtpd5 DBUS service launches kiod5 binary from kio derivation, not from kio-extras
   postInstall = ''

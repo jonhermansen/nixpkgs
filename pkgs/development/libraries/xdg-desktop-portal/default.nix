@@ -29,8 +29,10 @@
   wrapGAppsHook3,
   xmlto,
   bash,
-  enableGeoLocation ? true,
-  enableSystemd ? true,
+  enableGeoLocation ? lib.meta.availableOn stdenv.hostPlatform geoclue2,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
+  enableFlatpak ? lib.meta.availableOn stdenv.hostPlatform flatpak,
+  enableBubblewrap ? lib.meta.availableOn stdenv.hostPlatform bubblewrap,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -74,10 +76,11 @@ stdenv.mkDerivation (finalAttrs: {
     ./installed-tests-share.patch
   ];
 
-  nativeBuildInputs = [
+  nativeBuildInputs = lib.optionals enableFlatpak [
     docbook_xml_dtd_412
     docbook_xml_dtd_43
     docbook_xsl
+  ] ++ [
     docutils # for rst2man
     libxml2
     meson
@@ -89,9 +92,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs =
     [
-      flatpak
       fuse3
-      bubblewrap
       glib
       gsettings-desktop-schemas
       json-glib
@@ -102,19 +103,27 @@ stdenv.mkDerivation (finalAttrs: {
       gdk-pixbuf
       librsvg
 
+      bash
+    ]
+    ++ lib.optionals finalAttrs.finalPackage.doCheck [
       # For document-fuse installed test.
       (python3.withPackages (
         pp: with pp; [
           pygobject3
         ]
       ))
-      bash
     ]
     ++ lib.optionals enableGeoLocation [
       geoclue2
     ]
     ++ lib.optionals enableSystemd [
       systemdMinimal # libsystemd
+    ]
+    ++ lib.optionals enableFlatpak [
+      flatpak
+    ]
+    ++ lib.optionals enableBubblewrap [
+      bubblewrap
     ];
 
   nativeCheckInputs = [
@@ -131,24 +140,26 @@ stdenv.mkDerivation (finalAttrs: {
       "-Dinstalled-tests=true"
       "-Dinstalled_test_prefix=${placeholder "installedTests"}"
       (lib.mesonEnable "systemd" enableSystemd)
-    ]
-    ++ lib.optionals (!enableGeoLocation) [
-      "-Dgeoclue=disabled"
-    ]
-    ++ lib.optionals (!finalAttrs.finalPackage.doCheck) [
-      "-Dpytest=disabled"
+      (lib.mesonEnable "geoclue" enableGeoLocation)
+      (lib.mesonEnable "flatpak-interfaces" enableFlatpak)
+      # Flatpak development files are required to build DocBook docs
+      (lib.mesonEnable "docbook-docs" enableFlatpak)
+      (lib.mesonBool "sandboxed-image-validation" enableBubblewrap)
+      #(lib.mesonBool "sandboxed-sound-validation" enableBubblewrap)  # this is an option we will need for a future release
+      (lib.mesonEnable "pytest" finalAttrs.finalPackage.doCheck)
     ];
 
   strictDeps = true;
 
   doCheck = true;
 
-  postPatch = ''
+  postPatch = lib.optionalString enableBubblewrap ''
     # until/unless bubblewrap ships a pkg-config file, meson has no way to find it when cross-compiling.
     substituteInPlace meson.build \
       --replace-fail "find_program('bwrap'"  "find_program('${lib.getExe bubblewrap}'"
-
+    ''
     # Disable test failing with libportal 0.9.0
+    + ''
     ${
       assert (lib.versionOlder finalAttrs.version "1.20.0");
       "# TODO: Remove when updating to x-d-p 1.20.0"
@@ -201,6 +212,6 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://flatpak.github.io/xdg-desktop-portal/";
     license = licenses.lgpl2Plus;
     maintainers = with maintainers; [ jtojnar ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 })

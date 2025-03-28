@@ -7,6 +7,7 @@
   removeReferencesTo,
   autoAddDriverRunpath,
   apple-sdk_15,
+  freebsd,
   versionCheckHook,
   rocmPackages,
   cudaSupport ? config.cudaSupport,
@@ -34,6 +35,9 @@ stdenv.mkDerivation rec {
 
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     apple-sdk_15
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    freebsd.libproc
+    freebsd.librtld-db
   ];
 
   installFlags = [ "PREFIX=$(out)" ];
@@ -56,7 +60,7 @@ stdenv.mkDerivation rec {
     homepage = "https://github.com/aristocratos/btop";
     changelog = "https://github.com/aristocratos/btop/blob/v${version}/CHANGELOG.md";
     license = licenses.asl20;
-    platforms = platforms.linux ++ platforms.darwin;
+    platforms = platforms.linux ++ platforms.darwin ++ platforms.freebsd;
     maintainers = with maintainers; [
       khaneliman
       rmcgibbo

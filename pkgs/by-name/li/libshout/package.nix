@@ -49,6 +49,11 @@ stdenv.mkDerivation rec {
     speex
   ];
 
+  configureFlags = lib.optionals stdenv.hostPlatform.isFreeBSD [
+    "CFLAGS=-D__BSD_VISIBLE"
+    "LDFLAGS=-lcrypto"
+  ];
+
   meta = {
     description = "icecast 'c' language bindings";
 

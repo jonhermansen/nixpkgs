@@ -49,6 +49,11 @@ stdenv.mkDerivation rec {
 
   env = lib.optionalAttrs stdenv.cc.isGNU {
     NIX_CFLAGS_COMPILE = "-Wno-error=incompatible-pointer-types";
+  } // lib.optionalAttrs (stdenv.cc.bintools.isLLVM && lib.versionAtLeast stdenv.cc.bintools.version "17") {
+    NIX_LDFLAGS = "--undefined-version";
+  } // lib.optionalAttrs stdenv.hostPlatform.isFreeBSD {
+    # I can't figure out what defines will cause all the needed symbols to appear.
+    NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
   };
 
   hardeningDisable = [ "format" ];

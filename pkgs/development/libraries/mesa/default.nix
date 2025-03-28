@@ -6,6 +6,7 @@
 , expat
 , fetchCrate
 , fetchFromGitLab
+, fetchpatch
 , file
 , flex
 , glslang
@@ -40,6 +41,7 @@
 , zstd
 , enablePatentEncumberedCodecs ? true
 , withValgrind ? lib.meta.availableOn stdenv.hostPlatform valgrind-light
+, withSensors ? lib.meta.availableOn stdenv.hostPlatform lm_sensors
 
 , galliumDrivers ? [
     "d3d12" # WSL emulated GPU (aka Dozen)
@@ -70,9 +72,10 @@
     "amd" # AMD (aka RADV)
     "intel" # new Intel (aka ANV)
     "microsoft-experimental" # WSL virtualized GPU (aka DZN/Dozen)
-    "nouveau" # Nouveau (aka NVK)
     "swrast" # software renderer (aka Lavapipe)
-  ] ++ lib.optionals (stdenv.hostPlatform.isAarch -> lib.versionAtLeast stdenv.hostPlatform.parsed.cpu.version "6") [
+  ] ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
+    "nouveau" # Nouveau (aka NVK)
+  ] ++ lib.optionals ((stdenv.hostPlatform.isAarch -> lib.versionAtLeast stdenv.hostPlatform.parsed.cpu.version "6") && !stdenv.hostPlatform.isFreeBSD) [
     # QEMU virtualized GPU (aka VirGL)
     # Requires ATOMIC_INT_LOCK_FREE == 2.
     "virtio"
@@ -141,6 +144,11 @@ in stdenv.mkDerivation {
     # cherry-picked from https://gitlab.freedesktop.org/mesa/mesa/-/merge_requests/32719
     # safe to remove for versions > 24.3.2
     ./cross_clc.patch
+    (fetchpatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/ac1345b88e7533206465277c9d99866571b83dbe/graphics/mesa-devel/files/patch-renderdoc";
+      hash = "sha256-mDvFK3blmNKqV6UyDZ7TT5YjEJ5BCx84FtbyxIvSP5U=";
+      extraPrefix = "";
+    })
   ];
 
   postPatch = ''
@@ -196,7 +204,7 @@ in stdenv.mkDerivation {
     # Enable glvnd for dynamic libGL dispatch
     (lib.mesonEnable "glvnd" true)
 
-    (lib.mesonBool "gallium-nine" true) # Direct3D in Wine
+    (lib.mesonBool "gallium-nine" (!stdenv.hostPlatform.isFreeBSD)) # Direct3D in Wine
     (lib.mesonBool "osmesa" true) # used by wine
     (lib.mesonBool "teflon" true) # TensorFlow frontend
 
@@ -222,6 +230,7 @@ in stdenv.mkDerivation {
     (lib.mesonEnable "android-libbacktrace" false)
     (lib.mesonEnable "microsoft-clc" false) # Only relevant on Windows (OpenCL 1.2 API on top of D3D12)
     (lib.mesonEnable "valgrind" withValgrind)
+    (lib.mesonEnable "lmsensors" withSensors)
   ] ++ lib.optionals enablePatentEncumberedCodecs [
     (lib.mesonOption "video-codecs" "all")
   ] ++ lib.optionals needNativeCLC [
@@ -251,7 +260,6 @@ in stdenv.mkDerivation {
     llvmPackages.clang-unwrapped
     llvmPackages.libclc
     llvmPackages.libllvm
-    lm_sensors
     python3Packages.python # for shebang
     spirv-llvm-translator
     udev
@@ -263,6 +271,8 @@ in stdenv.mkDerivation {
     zstd
   ] ++ lib.optionals withValgrind [
     valgrind-light
+  ] ++ lib.optionals withSensors [
+    lm_sensors
   ];
 
   depsBuildBuild = [

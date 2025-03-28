@@ -1,23 +1,42 @@
 {
+  lib,
+  stdenv,
   mkKdeDerivation,
   qtbase,
   qtsvg,
   libsForQt5,
+  kconfig,
+  kcolorscheme,
+  breeze,
+  # conservative bound
+  withQt5 ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform) || !stdenv.hostPlatform.isFreeBSD,
+  kdeHostTools,
 }:
+
 mkKdeDerivation {
   pname = "breeze";
 
   outputs = [
     "out"
     "dev"
+  ] ++ lib.optionals withQt5 [
     "qt5"
   ];
 
   extraBuildInputs = [ qtsvg ];
+  extraNativeBuildInputs = [
+    kconfig
+    kcolorscheme
+    kdeHostTools
+  ] ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    #breeze
+  ];
 
   # We can't add qt5 stuff to dependencies or the hooks blow up,
   # so manually point everything to everything. Oof.
   extraCmakeFlags = [
+    (lib.cmakeBool "BUILD_QT5" withQt5)
+  ] ++ lib.optionals withQt5 [
     "-DQt5_DIR=${libsForQt5.qtbase.dev}/lib/cmake/Qt5"
     "-DQt5Core_DIR=${libsForQt5.qtbase.dev}/lib/cmake/Qt5Core"
     "-DQt5DBus_DIR=${libsForQt5.qtbase.dev}/lib/cmake/Qt5DBus"
@@ -44,7 +63,7 @@ mkKdeDerivation {
   ];
 
   # Move Qt5 plugin to Qt5 plugin path
-  postInstall = ''
+  postInstall = lib.optionalString withQt5 ''
     mkdir -p $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
     mv $out/${qtbase.qtPluginPrefix}/styles/breeze5.so $qt5/${libsForQt5.qtbase.qtPluginPrefix}/styles
   '';

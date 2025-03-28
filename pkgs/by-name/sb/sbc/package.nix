@@ -27,6 +27,6 @@ stdenv.mkDerivation rec {
     description = "SubBand Codec Library";
     homepage = "https://www.bluez.org/";
     license = licenses.gpl2;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

@@ -2,11 +2,20 @@
   mkKdeDerivation,
   qtsensors,
   dbus,
+  kdeHostTools,
+  kxmlgui,
 }:
 mkKdeDerivation {
   pname = "kscreen";
 
-  extraBuildInputs = [ qtsensors ];
+  extraNativeBuildInputs = [
+    kdeHostTools
+    kxmlgui
+  ];
+
+  extraBuildInputs = [
+    qtsensors
+  ];
 
   postFixup = ''
     substituteInPlace $out/share/kglobalaccel/org.kde.kscreen.desktop \

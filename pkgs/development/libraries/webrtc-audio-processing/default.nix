@@ -29,6 +29,8 @@ stdenv.mkDerivation rec {
       url = "https://git.alpinelinux.org/aports/plain/community/webrtc-audio-processing-1/0001-rtc_base-Include-stdint.h-to-fix-build-failures.patch?id=625e19c19972e69e034c0870a31b375833d1ab5d";
       hash = "sha256-9nI22SJoU0H3CzsPSAObtCFTadtvkzdnqIh6mxmUuds=";
     })
+    # rebase of https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing/-/commit/2a318149f8d5094c82306b8091a7a8b5194bf9c1.patch";
+    ./freebsd-configure.patch
   ];
 
   outputs = [
@@ -66,7 +68,7 @@ stdenv.mkDerivation rec {
     platforms =
       intersectLists
         # https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing/-/blob/master/meson.build
-        (platforms.darwin ++ platforms.linux ++ platforms.windows)
+        (platforms.darwin ++ platforms.linux ++ platforms.windows ++ platforms.freebsd)
         # https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing/-/blob/master/webrtc/rtc_base/system/arch.h
         (
           platforms.arm

@@ -15,7 +15,7 @@ mkDerivation ({
   extraPaths = [
     "lib/libc/locale"
     "lib/libc/stdtime"
-  ] ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [ "." ];
+  ] ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [ "." ]; # TODO ??????
 
   nativeBuildInputs = [
     bsdSetupHook

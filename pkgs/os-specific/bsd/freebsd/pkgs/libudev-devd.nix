@@ -40,5 +40,6 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = [ lib.maintainers.rhelmot ];
     platforms = lib.platforms.freebsd;
     license = lib.licenses.bsd2;
+    pkgConfigModules = [ "libudev" ];
   };
 })

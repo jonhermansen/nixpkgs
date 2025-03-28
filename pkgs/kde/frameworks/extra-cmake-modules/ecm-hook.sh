@@ -15,6 +15,8 @@ ecmPostHook() {
         appendToVar cmakeFlags "-DKDE_INSTALL_BUNDLEDIR=${!outputBin}/Applications/KDE"
     fi
 
+    appendToVar cmakeFlags "-DECM_PKGCONFIG_INSTALL_DIR=${!outputDev}/lib/pkgconfig"
+
     appendToVar cmakeFlags "-DKDE_INSTALL_EXECROOTDIR=${!outputBin}"
     appendToVar cmakeFlags "-DKDE_INSTALL_BINDIR=${!outputBin}/bin"
     appendToVar cmakeFlags "-DKDE_INSTALL_SBINDIR=${!outputBin}/sbin"

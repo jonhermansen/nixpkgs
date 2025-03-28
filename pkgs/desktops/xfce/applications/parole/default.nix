@@ -38,6 +38,10 @@ mkXfceDerivation {
     xfconf
   ];
 
+  nativeBuildInputs = [
+    dbus-glib
+  ];
+
   meta = with lib; {
     description = "Modern simple media player";
     mainProgram = "parole";

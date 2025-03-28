@@ -1,4 +1,6 @@
 {
+  lib,
+  stdenv,
   mkKdeDerivation,
   pkg-config,
   qtquick3d,
@@ -17,6 +19,10 @@
   pipewire,
   krunner,
   python3,
+  qtdeclarative,
+  kdeHostTools,
+  kwin,
+  evdev-proto,
 }:
 mkKdeDerivation {
   pname = "kwin";
@@ -28,6 +34,7 @@ mkKdeDerivation {
     # The rest are NixOS-specific hacks
     ./0003-plugins-qpa-allow-using-nixos-wrapper.patch
     ./0001-NixOS-Unwrap-executable-name-for-.desktop-search.patch
+  ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     ./0001-Lower-CAP_SYS_NICE-from-the-ambient-set.patch
   ];
 
@@ -44,6 +51,10 @@ mkKdeDerivation {
   extraNativeBuildInputs = [
     pkg-config
     python3
+    qtdeclarative
+    qtwayland
+    kdeHostTools
+    #buildPackages.stdenv.cc
   ];
   extraBuildInputs = [
     qtquick3d
@@ -65,5 +76,15 @@ mkKdeDerivation {
     xorg.libxcvt
     # we need to provide this so it knows our xwayland supports new features
     xwayland
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    evdev-proto
   ];
+
+  extraCmakeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    "-DQTWAYLANDSCANNER_KDE_EXECUTABLE=${(kwin.__spliced.buildBuild or kwin).dev}/bin/qtwaylandscanner_kde"
+  ];
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    mkdir -p $dev/bin
+    cp bin/qtwaylandscanner_kde $dev/bin
+  '';
 }
