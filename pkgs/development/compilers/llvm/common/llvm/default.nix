@@ -24,6 +24,7 @@
 , which
 , sysctl
 , buildLlvmTools
+, buildPackages
 , updateAutotoolsGnuConfigScriptsHook
 , debugVersion ? false
 , doCheck ? !stdenv.hostPlatform.isAarch32 && (if lib.versionOlder release_version "15" then stdenv.hostPlatform.isLinux else true)
@@ -114,7 +115,10 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [
+    pkgsBuildBuild.targetPackages.stdenv.cc
     cmake
+    zlib
+    libxml2
     # while this is not an autotools build, it still includes a config.guess
     # this is needed until scripts are updated to not use /usr/bin/uname on FreeBSD native
     updateAutotoolsGnuConfigScriptsHook

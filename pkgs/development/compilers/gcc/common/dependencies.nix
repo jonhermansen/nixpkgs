@@ -15,6 +15,7 @@
   libucontext ? null,
   libxcrypt ? null,
   darwin ? null,
+  freebsd,
   isl ? null,
   zlib ? null,
   gnat-bootstrap ? null,
@@ -83,7 +84,8 @@ in
     ++ optionals (langGo && stdenv.hostPlatform.isMusl) [ libucontext ]
     ++ optionals (lib.versionAtLeast version "14" && stdenv.hostPlatform.isDarwin) [
       darwin.apple_sdk.frameworks.CoreServices
-    ];
+    ]
+    ++ optionals stdenv.targetPlatform.isFreeBSD [ freebsd.libncurses-tinfo ];
 
   depsTargetTarget = optionals (
     !withoutTargetLibc && threadsCross != { } && threadsCross.package != null

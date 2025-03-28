@@ -5,6 +5,7 @@
   gcc,
   glibc,
   libiberty,
+  freebsd,
 }:
 
 let
@@ -52,13 +53,13 @@ stdenv.mkDerivation (finalAttrs: {
 
   hardeningDisable = [ "pie" ];
 
-  preConfigure =
+  preConfigure = let mkConfig = platform: platform.config + lib.optionalString platform.isFreeBSD "${builtins.toString freebsd.versionData.major}.${builtins.toString freebsd.versionData.minor}"; in
     ''
       # Drop in libiberty, as external builds are not expected
       cd "$buildRoot"
       (
-        mkdir -p build-${stdenv.buildPlatform.config}/libiberty/
-        cd build-${stdenv.buildPlatform.config}/libiberty/
+        mkdir -p build-${mkConfig stdenv.buildPlatform}/libiberty/
+        cd build-${mkConfig stdenv.buildPlatform}/libiberty/
         ln -s ${buildPackages.libiberty}/lib/libiberty.a ./
       )
       mkdir -p "$buildRoot/gcc"

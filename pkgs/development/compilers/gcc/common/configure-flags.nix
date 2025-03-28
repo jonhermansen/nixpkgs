@@ -1,5 +1,6 @@
 { lib, stdenv
 , targetPackages
+, freebsd
 
 , withoutTargetLibc, libcCross
 , threadsCross
@@ -54,7 +55,6 @@ let
   crossConfigureFlags =
     # Ensure that -print-prog-name is able to find the correct programs.
     [
-      "--with-as=${if targetPackages.stdenv.cc.bintools.isLLVM then binutils else targetPackages.stdenv.cc.bintools}/bin/${targetPlatform.config}-as"
       "--with-ld=${targetPackages.stdenv.cc.bintools}/bin/${targetPlatform.config}-ld"
     ]
     ++ (if withoutTargetLibc then [
@@ -207,6 +207,7 @@ let
 
     ++ import ../common/platform-flags.nix { inherit (stdenv)  targetPlatform; inherit lib; }
     ++ lib.optionals (targetPlatform != hostPlatform) crossConfigureFlags
+    ++ lib.optional (targetPlatform != hostPlatform || stdenv.cc.bintools.isLLVM) (let wrapper = if targetPackages.stdenv.cc.bintools.isLLVM then binutils else targetPackages.stdenv.cc.bintools; in "--with-as=${wrapper}/bin/${wrapper.targetPrefix}as")
     ++ lib.optional disableBootstrap' "--disable-bootstrap"
 
     # Platform-specific flags
@@ -241,7 +242,11 @@ let
       # Workaround build failures like:
       #   cc1: error: fp software completion requires '-mtrap-precision=i' [-Werror]
       "--disable-werror"
-    ]
+    ] ++ (let mkConfig = platform: platform.config + lib.optionalString platform.isFreeBSD "${builtins.toString freebsd.versionData.major}.${builtins.toString freebsd.versionData.minor}"; in [
+        "--build=${mkConfig stdenv.buildPlatform}"
+        "--host=${mkConfig stdenv.hostPlatform}"
+        "--target=${mkConfig stdenv.targetPlatform}"
+    ])
   ;
 
 in configureFlags

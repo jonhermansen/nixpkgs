@@ -37,6 +37,7 @@
 , apple-sdk
 , cctools
 , darwin
+, freebsd
 }:
 
 let
@@ -108,6 +109,7 @@ let
         cargo
         withoutTargetLibc
         darwin
+        freebsd
         disableBootstrap
         disableGdbPlugin
         enableLTO
@@ -284,7 +286,7 @@ pipe ((callFile ./common/builder.nix {}) ({
 
   dontDisableStatic = true;
 
-  configurePlatforms = [ "build" "host" "target" ];
+  configurePlatforms = [ ];  # set manually in configureFlags in order to make gcc happy about freebsd version numbers
 
   configureFlags = callFile ./common/configure-flags.nix { };
 
@@ -330,10 +332,12 @@ pipe ((callFile ./common/builder.nix {}) ({
 
     CPATH = optionals (targetPlatform == hostPlatform) (makeSearchPathOutput "dev" "include" ([]
       ++ optional (zlib != null) zlib
+      ++ optional targetPlatform.isFreeBSD freebsd.libncurses-tinfo
     ));
 
     LIBRARY_PATH = optionals (targetPlatform == hostPlatform) (makeLibraryPath (
       optional (zlib != null) zlib
+      ++ optional targetPlatform.isFreeBSD freebsd.libncurses-tinfo
     ));
 
     NIX_LDFLAGS = optionalString hostPlatform.isSunOS "-lm";
