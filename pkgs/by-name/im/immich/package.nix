@@ -121,7 +121,7 @@ let
     sourceRoot = "${src.name}/web";
     inherit (sources.components.web) npmDepsHash;
 
-    postPatch = ''
+    preConfigure = ''
       # some part of the build wants to use un-prefixed binaries. let them.
       mkdir -p $TMP/bin
       ln -s "$(type -p ${stdenv.cc.targetPrefix}pkg-config)" $TMP/bin/pkg-config
@@ -171,7 +171,7 @@ buildNpmPackage' {
   src = "${src}/server";
   inherit (sources.components.server) npmDepsHash;
 
-  postPatch = ''
+  preConfigure = ''
     # pg_dumpall fails without database root access
     # see https://github.com/immich-app/immich/issues/13971
     substituteInPlace src/services/backup.service.ts \
