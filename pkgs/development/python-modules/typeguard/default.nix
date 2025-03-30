@@ -45,7 +45,7 @@ buildPythonPackage rec {
     typing-extensions
   ] ++ lib.optionals (pythonOlder "3.10") [ importlib-metadata ];
 
-  env.LC_ALL = "en_US.utf-8";
+  env.LC_ALL = "C.utf8";
 
   nativeCheckInputs = [
     mypy
