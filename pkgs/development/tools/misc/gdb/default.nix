@@ -27,7 +27,7 @@
 
   pythonSupport ? stdenv.hostPlatform == stdenv.buildPlatform && !stdenv.hostPlatform.isCygwin,
   python3 ? null,
-  enableDebuginfod ? lib.meta.availableOn stdenv.hostPlatform elfutils,
+  enableDebuginfod ? lib.meta.availableOn stdenv.hostPlatform elfutils && !stdenv.hostPlatform.isFreeBSD,
   elfutils,
   guile ? null,
   hostCpuOnly ? false,
