@@ -11,7 +11,7 @@ let
   reldate = lib.toIntBase10 versionData.reldate;
   branch =
     if reldate >= 1500008 then
-      "6.1-lts"
+      "6.6-lts"
     else if reldate >= 1400097 then
       "6.1-lts"
     else if reldate >= 1302000 then

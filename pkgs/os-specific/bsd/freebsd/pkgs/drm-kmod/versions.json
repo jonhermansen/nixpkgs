@@ -16,5 +16,11 @@
     "owner": "freebsd",
     "repo": "drm-kmod",
     "rev": "6ed51c38a8ffb2499685336422c74f55676e3c3b"
+  },
+  "6.6-lts": {
+    "hash": "sha256-YopGVn7Ptrg6q/LxP6h7GgkaTRK7VTeWYtZIy3hLHHQ=",
+    "owner": "freebsd",
+    "repo": "drm-kmod",
+    "rev": "81f4ddf1c1a5041769f1376e027fa1751df6c292"
   }
 }
