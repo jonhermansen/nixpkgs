@@ -1,0 +1,56 @@
+diff --git a/pam-ck-connector/Makefile.am b/pam-ck-connector/Makefile.am
+index 7778d16..3ee5fca 100644
+--- a/pam-ck-connector/Makefile.am
++++ b/pam-ck-connector/Makefile.am
+@@ -5,6 +5,8 @@ if ENABLE_PAM_MODULE
+ AM_CFLAGS = 					\
+ 	$(LIBDBUS_CFLAGS)			\
+ 	-I$(top_builddir)/libck-connector	\
++	-I$(top_builddir)/src			\
++	$(GLIB_CFLAGS)				\
+ 	$(NULL)
+ 
+ pamlibdir = $(PAM_MODULE_DIR)
+@@ -17,7 +19,9 @@ pam_ck_connector_la_LDFLAGS = -no-undefined -module -avoid-version
+ pam_ck_connector_la_LIBADD =  			\
+ 	$(PAM_LIBS)				\
+ 	$(LIBDBUS_LIBS)				\
++	$(GLIB_LIBS)				\
+ 	$(top_builddir)/libck-connector/libck-connector.la	\
++	$(top_builddir)/src/libck.la		\
+ 	$(NULL)
+ 
+ man_MANS = pam_ck_connector.8
+diff --git a/pam-ck-connector/pam-ck-connector.c b/pam-ck-connector/pam-ck-connector.c
+index 986bc8e..9ab6ca6 100644
+--- a/pam-ck-connector/pam-ck-connector.c
++++ b/pam-ck-connector/pam-ck-connector.c
+@@ -62,6 +62,7 @@
+ #endif
+ 
+ #include "ck-connector.h"
++#include "ck-sysdeps.h"
+ 
+ static int opt_debug = FALSE;
+ static int opt_nox11 = FALSE;
+@@ -343,13 +344,13 @@ pam_sm_open_session (pam_handle_t *pamh,
+                 if (opt_debug) {
+                         ck_pam_syslog (pamh, LOG_INFO, "using '%s' as X11 display device (from CKCON_X11_DISPLAY_DEVICE)", x11_display_device);
+                 }
+-        } else if ((s = pam_getenv (pamh, "XDG_VTNR")) != NULL) {
+-                int len = strlen (s) + 10; /* room for "/dev/ttyXX\0" */
+-                xdd = malloc (len);
+-                snprintf (xdd, len, "/dev/tty%s", s);
+-                x11_display_device = xdd;
+-                if (opt_debug) {
+-                        ck_pam_syslog (pamh, LOG_INFO, "using '%s' as X11 display device (from XDG_VTNR)", x11_display_device);
++        } else if ((s = pam_getenv (pamh, "XDG_SESSION_TYPE")) != NULL && !strcmp(s, "x11") && (s = pam_getenv (pamh, "XDG_VTNR")) != NULL) {
++                xdd = ck_get_console_device_for_num(strtoul(s, NULL, 10));
++                if (xdd != NULL) {
++                        x11_display_device = xdd;
++                        if (opt_debug) {
++                                ck_pam_syslog (pamh, LOG_INFO, "using '%s' as X11 display device (from XDG_VTNR)", x11_display_device);
++                        }
+                 }
+         }
+ 

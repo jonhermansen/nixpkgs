@@ -53,6 +53,8 @@ stdenv.mkDerivation (finalAttrs: {
       revert = true;
       hash = "sha256-BbVntv2ISSRsNBjNj16dxWcaRVwHMe1hkdAzltgt45c=";
     })
+  ] ++ [
+    ./tty-dialect.patch
   ];
 
   outputs = [
