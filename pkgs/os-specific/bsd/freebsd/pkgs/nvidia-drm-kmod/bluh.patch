@@ -1,0 +1,23 @@
+--- a/src/nvidia-drm/conftest.sh.orig	2025-04-06 12:49:14.261816127 -0700
++++ b/src/nvidia-drm/conftest.sh	2025-04-06 12:53:42.606263645 -0700
+@@ -293,10 +293,11 @@
+     echo "$CONFTEST_PREAMBLE
+     $CODE" > conftest$$.c
+ 
+-    $CC $CFLAGS -c conftest$$.c > /dev/null 2>&1
++    $CC $CFLAGS -c conftest$$.c >&2
+     rm -f conftest$$.c
+ 
+     if [ -f conftest$$.o ]; then
++        echo "...file present for ${DEF}" >&2
+         rm -f conftest$$.o
+         if [ "${CAT}" = "functions" ]; then
+             #
+@@ -313,6 +314,7 @@
+         fi
+         return
+     else
++        echo "...file absent for ${DEF}" >&2
+         if [ "${CAT}" = "functions" ]; then
+             echo "#define ${DEF} ${VAL}" | append_conftest "${CAT}"
+         else

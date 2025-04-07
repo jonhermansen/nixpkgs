@@ -19,6 +19,11 @@ mkDerivation {
   makeFlags = [
     "SYSDIR=${sys.src}/sys"
     "KMODDIR=${builtins.placeholder "out"}/kernel"
+    "NO_XREF=1"
+  ];
+
+  hardeningDisable = [
+    "pic" # generates relocations the linker can't handle
   ];
 
   preConfigure = ''
