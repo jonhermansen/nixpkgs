@@ -55,6 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
     })
   ] ++ [
     ./tty-dialect.patch
+    ./install-data-dirs.patch
   ];
 
   outputs = [
@@ -83,9 +84,9 @@ stdenv.mkDerivation (finalAttrs: {
     dbus
     libX11
     polkit
+    libdrm
   ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     linux-pam
-    libdrm
     pmutils
     libselinux
     acl
@@ -106,6 +107,7 @@ stdenv.mkDerivation (finalAttrs: {
     "--enable-pam-module"
     "--with-pam-module-dir=${builtins.placeholder "out"}/lib/security"
     "ac_cv_file__sys_class_tty_tty0_active=${if stdenv.hostPlatform.isLinux then "y" else "n"}"
+    "localstatedir=/var"
   ] ++ lib.optionals stdenv.hostPlatform.isLinux [
     "--enable-udev-acl"
   ] ++ lib.optionals (stdenv.buildPlatform.canExecute stdenv.hostPlatform) [

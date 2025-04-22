@@ -14,6 +14,11 @@ mkDerivation rec {
   pname = "nvidia-drm-kmod";
   inherit (nvidia-driver) version src;
 
+  outputs = [
+    "out"
+    "debug"
+  ];
+
   patches = lib.optionals (lib.versionOlder version "565") [
     (fetchpatch {
       url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/d07cdab9108a8cf6ab66aa1ff834339f8695f457/graphics/nvidia-drm-61-kmod/files/extra-patch-nvidia-drm-conftest.h";
@@ -35,7 +40,6 @@ mkDerivation rec {
     sed -E -i -e '/DRMKMODDIR.*\/linuxkpi\/dummy\/include/d' src/nvidia-drm/Makefile
     sed -E -i -e 's/if IS_ENABLED.*/if 1/g' src/nvidia-drm/nvidia-drm-conftest.h
     substituteInPlace src/nvidia-drm/conftest.sh \
-      --replace-fail "sysctl -n kern.module_path" "echo ${sys}/kernel" \
       --replace-fail ">/dev/null" '>>$TMP/log.''$$' \
       --replace-fail "> /dev/null" '>>$TMP/log.''$$'
 
@@ -44,8 +48,8 @@ mkDerivation rec {
     export PATH=$PATH:$TMP/bin
   '';
 
-  # conftests rely on this
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration";
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration -O1";  # conftests rely on this  # XXX TODO remove -O1
+  env.CONFTEST_BSD_KMODPATHS = "${sys}/kernel ${drm-kmod}/kernel";
 
   extraNativeBuildInputs = [
     xargs-j
@@ -59,9 +63,14 @@ mkDerivation rec {
     "BSDSRCTOP=${sys.src}"
     "SYSDIR=${sys.src}/sys"
     "DRMKMODDIR=${drm-kmod.src}"
-    "KMODDIR=${builtins.placeholder "out"}/kernel"
     "NO_XREF=1"
+    "DEBUG_FLAGS=-g"
   ];
+
+  KMODDIR = "${builtins.placeholder "out"}/kernel";
+  KERN_DEBUGDIR = "${builtins.placeholder "debug"}/lib/debug";
+  KERN_DEBUGDIR_KODIR = "${KERN_DEBUGDIR}/kernel";
+  KERN_DEBUGDIR_KMODDIR = "${KERN_DEBUGDIR}/kernel";
 
   hardeningDisable = [
     "pic" # generates relocations the linker can't handle

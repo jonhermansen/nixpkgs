@@ -27,3 +27,26 @@ index 9c0261e..99c4bb9 100644
  
              if (ioctl(fd, VT_SETMODE, &setModeRequest) < 0) {
                  qDebug() << "Failed to manage VT manually:" << strerror(errno);
+diff --git a/src/helper/backend/PamBackend.cpp b/src/helper/backend/PamBackend.cpp
+index f371c33..adf85df 100644
+--- a/src/helper/backend/PamBackend.cpp
++++ b/src/helper/backend/PamBackend.cpp
+@@ -265,6 +265,10 @@ namespace SDDM {
+                 m_pam->setItem(PAM_TTY, qPrintable(display));
+ #endif
+             }
++        } else if (sessionType == QLatin1String("wayland")) {
++                // communicate with pam-ck-connector.so
++                // this is required to pass the check necessary to register this as a graphical session on FreeBSD
++                sessionEnv.insert(QStringLiteral("CKCON_X11_DISPLAY"), QLatin1String("wayland"));
+         }
+ 
+         if (!m_pam->putEnv(sessionEnv)) {
+@@ -275,6 +279,7 @@ namespace SDDM {
+             m_app->error(m_pam->errorString(), Auth::ERROR_INTERNAL);
+             return false;
+         }
++        sessionEnv.remove(QStringLiteral("CKCON_X11_DISPLAY"));
+         sessionEnv.insert(m_pam->getEnv());
+         m_app->session()->setProcessEnvironment(sessionEnv);
+         return Backend::openSession();
