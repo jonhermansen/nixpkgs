@@ -3,6 +3,7 @@
   lib,
   stdenv,
   fetchurl,
+  fetchpatch,
   gettext,
   meson,
   ninja,
@@ -159,7 +160,7 @@ stdenv.mkDerivation (finalAttrs: {
     [
       finalAttrs.setupHook
     ]
-    ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
+    ++ lib.optionals (stdenv.hostPlatform.isLinux) [
       libsysprof-capture
     ]
     ++ [
@@ -248,9 +249,9 @@ stdenv.mkDerivation (finalAttrs: {
     ++ lib.optionals (!lib.meta.availableOn stdenv.hostPlatform elfutils) [
       "-Dlibelf=disabled"
     ]
-    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    ++ lib.optionals (!stdenv.hostPlatform.isLinux) [
       "-Dxattr=false"
-      "-Dsysprof=disabled" # sysprof-capture does not build on FreeBSD
+      "-Dsysprof=disabled" # sysprof-capture only builds on linux
     ];
 
   env = {
@@ -308,7 +309,7 @@ stdenv.mkDerivation (finalAttrs: {
     done
   '';
 
-  preFixup = lib.optionalString (!stdenv.hostPlatform.isStatic) ''
+  preFixup = lib.optionalString (!stdenv.hostPlatform.isStatic && !stdenv.hostPlatform.isWindows) ''
     buildPythonPath ${python3Packages.packaging}
     patchPythonScript "$dev/share/glib-2.0/codegen/utils.py"
   '';

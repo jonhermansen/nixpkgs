@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchurl,
+  fetchpatch,
   libiconv,
   vanilla ? false,
 }:
@@ -27,7 +28,16 @@ stdenv.mkDerivation rec {
   # https://gitlab.freedesktop.org/pkg-config/pkg-config/issues/28
   patches =
     lib.optional (!vanilla) ./requires-private.patch
-    ++ lib.optional stdenv.hostPlatform.isCygwin ./2.36.3-not-win32.patch;
+    ++ lib.optional stdenv.hostPlatform.isCygwin ./2.36.3-not-win32.patch
+    ++ lib.optionals stdenv.hostPlatform.isMinGW [
+      (fetchpatch {
+        # Fix a bug with an old vendored version of glib
+        url = "https://gitlab.gnome.org/GNOME/glib/-/commit/eac975c68225e3c7d5ae21dbf382d6e5b6b02824.patch";
+        stripLen = 2;
+        extraPrefix = "glib/glib/";
+        hash = "sha256-XTrVY5NbrSVGTaeCgcaj376DyVFC6ugjRWgyAy7gMN8=";
+      })
+  ];
 
   # These three tests fail due to a (desired) behavior change from our ./requires-private.patch
   postPatch =
@@ -61,8 +71,14 @@ stdenv.mkDerivation rec {
   env.NIX_CFLAGS_COMPILE = toString (
     # Silence "incompatible integer to pointer conversion passing 'gsize'" when building with Clang.
     lib.optionals stdenv.cc.isClang [ "-Wno-int-conversion" ]
-    # Silence fprintf format errors when building for Windows.
-    ++ lib.optionals stdenv.hostPlatform.isWindows [ "-Wno-error=format" ]
+    ++ lib.optionals stdenv.hostPlatform.isWindows [
+      # Silence fprintf format errors when building for Windows.
+      "-Wno-error=format"
+      # InterlockedCompareExchangePointer is a problem
+      "-Wno-error=incompatible-pointer-types"
+      "-Wno-error=int-conversion"
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isWindows [ ]
   );
 
   enableParallelBuilding = true;

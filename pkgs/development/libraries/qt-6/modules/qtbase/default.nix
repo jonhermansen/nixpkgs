@@ -101,7 +101,10 @@ in
         openssl
         sqlite
         zlib
+      ]
+      ++ lib.optionals (stdenv.hostPlatform.isUnix) [
         libGL
+      ] ++ [
         vulkan-headers
         vulkan-loader
       # Text rendering
