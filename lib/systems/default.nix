@@ -382,7 +382,7 @@ let
               # arguments, a wrapper should be used.
               if pkgs.stdenv.hostPlatform.canExecute final then
                 lib.getExe (pkgs.writeShellScriptBin "exec" ''exec "$@"'')
-              else if final.isWindows then
+              else if final.isWindows && pkgs.stdenv.hostPlatform.isLinux && pkgs.stdenv.hostPlatform.isx86_64 then
                 "${wine}/bin/wine${optionalString (final.parsed.cpu.bits == 64) "64"}"
               else if final.isLinux && pkgs.stdenv.hostPlatform.isLinux && final.qemuArch != null then
                 "${pkgs.qemu-user}/bin/qemu-${final.qemuArch}"
