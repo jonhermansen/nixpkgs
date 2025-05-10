@@ -8,7 +8,7 @@
 
 let
   pname = "everest";
-  version = "5262"; # TODO: From a PR, so Azure pipeline artifact will expire in 10 days.
+  version = "5474";
   phome = "$out/lib/Celeste";
 in
 stdenvNoCC.mkDerivation {
@@ -16,9 +16,9 @@ stdenvNoCC.mkDerivation {
   src = fetchzip {
     #url = "https://github.com/EverestAPI/Everest/releases/download/stable-1.${version}.0/main.zip";
     #hash = "sha256-aEuWLR5WxYpID7ykFzgS3ZF8Mb2I+W0QIKxjfg5umj4=";
-    url = "https://dev.azure.com/EverestAPI/Everest/_apis/build/builds/${lib.toInt version - 700}/artifacts?artifactName=main&api-version=7.1&%24format=zip";
+    url = "https://dev.azure.com/EverestAPI/Everest/_apis/build/builds/${toString (lib.toInt version - 700)}/artifacts?artifactName=main&api-version=7.1&%24format=zip";
     extension = "zip";
-    hash = "sha256-z95+mi9UMNzZaXIGQbaCqLIsWpTnvyHZ+ZyYon9gnTw=";
+    hash = "sha256-VPc6H34DvsKlAifriGHoQO41Jj5bLYy31pmZ6B3Pb0M=";
   };
   buildInputs = [
     icu

@@ -12,7 +12,7 @@
 
 let
   pname = "everest";
-  version = "5184";
+  version = "5474";
   phome = "$out/lib/Celeste";
 in
 buildDotnetModule {
@@ -21,10 +21,11 @@ buildDotnetModule {
   src = fetchFromGitHub {
     owner = "EverestAPI";
     repo = "Everest";
-    tag = "stable-1.${version}.0";
+    #tag = "stable-1.${version}.0";
+    rev = "de6dccb83bc6b7d3b063a8f39689bef62bd41100";
     fetchSubmodules = true;
     leaveDotGit = true; # MonoMod.SourceGen.Internal needs .git
-    hash = "sha256-WwTNfctcL82b31FYFrEOfErcTYTv+DN0rGhc93mSkec=";
+    hash = "sha256-4QpiKfr0m3fwrtIgQD+QP3iECuwbJEGVbuXrlEuNfc0=";
   };
 
   nativeBuildInputs = [
@@ -37,17 +38,9 @@ buildDotnetModule {
     mono # See upstream README
   ];
 
-  patches = [
-    # Avoiding creating/deleting files directly in the installation dir at runtime
-    (fetchurl {
-      url = "https://github.com/EverestAPI/Everest/compare/050b4a1b4a7918b22d3d5140224f9c0472e1655a...0c55de517b8b08ba2afc43efebe9fa3de26c34a3.patch";
-      hash = "sha256-Th6c/dklHPK8/kxhRv1l7m1UW7uWgnMYyJoqW0Dfqwc=";
-    })
-  ];
-
   postPatch = ''
     # MonoMod.ILHelpers.Patcher complains at build phase: You must install .NET to run this application.
-    sed -i 's|<Exec Command="&quot;|<Exec Command="DOTNET_ROOT=${dotnetCorePackages.runtime_6_0}/share/dotnet \&quot;|' external/MonoMod/tools/Common.IL.targets
+    sed -i 's|<Exec Command="&quot;|<Exec Command="DOTNET_ROOT=${dotnetCorePackages.runtime_8_0}/share/dotnet \&quot;|' external/MonoMod/tools/Common.IL.targets
 
     # Moving files after publishing somehow doesn't work. Will do this manually in postInstall.
     sed -i 's|<Move.*/>||' Celeste.Mod.mm/Celeste.Mod.mm.csproj
@@ -55,8 +48,7 @@ buildDotnetModule {
     autoPatchelf lib-ext/piton/piton-linux_x64
   '';
 
-  # Upgrade to .NET 8 is still WIP upstream: EverestAPI/Everest#828
-  dotnet-sdk = dotnetCorePackages.sdk_7_0;
+  dotnet-sdk = dotnetCorePackages.sdk_9_0;
 
   preConfigure = ''
     # Microsoft.SourceLink.GitHub complains: Unable to determine repository url, the source code won't be available via source link.

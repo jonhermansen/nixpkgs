@@ -4,7 +4,7 @@
   requireFile,
   unzip,
   yq,
-  dotnet-runtime_7,
+  dotnet-runtime_8,
 
   everest ? null,
   overrideSrc ? null,
@@ -51,7 +51,7 @@ stdenvNoCC.mkDerivation {
     if overrideSrc == null then
       requireFile {
         name = "celeste-linux.zip";
-        hash = "sha256-q4gniSgg00U3j5TZpvIZnSmqAyCHd/pOVAuQ3rDYEAs=";
+        hash = "sha256-phNDBBHb7zwMRaBHT5D0hFEilkx9F31p6IllvLhHQb8=";
         url = downloadPage;
       }
     else
@@ -85,7 +85,7 @@ stdenvNoCC.mkDerivation {
       # Otherwise it will try to download it.
       # https://github.com/Popax21/Piton/blob/21c7868d06007f0c5e7d9030a0109fe892df1bf3/apphost/src/runtime.rs#L82-L89
       mkdir ${phome}/piton-runtime
-      ln -s ${dotnet-runtime_7}/share/dotnet/* -t ${phome}/piton-runtime
+      ln -s ${dotnet-runtime_8}/share/dotnet/* -t ${phome}/piton-runtime
       platform=linux-x86_64
       echo -n "$platform $(yq -r .\"$platform\".version ${phome}/piton-runtime.yaml)" > ${phome}/piton-runtime/piton-runtime-id.txt
 
