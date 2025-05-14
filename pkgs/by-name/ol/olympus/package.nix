@@ -67,7 +67,7 @@ symlinkJoin {
       --set OLYMPUS_CELESTE_WRAPPER "${wrapper-to-env celesteWrapper}" \
       --set OLYMPUS_LOENN_WRAPPER "${wrapper-to-env loennWrapper}"  \
       --set OLYMPUS_MINIINSTALLER_WRAPPER "${miniinstaller-wrapper}" \
-      --set OLYMPUS_SKIP_SCHEME_HANDLER_CHECK "${if skipHandlerCheck then "1" else "0"}"
+      --set OLYMPUS_SKIP_SCHEME_HANDLER_CHECK "${if skipHandlerCheck then "1" else "0"}" \
       --set OLYMPUS_FINDER_HINTS "${lib.concatStringsSep ":" installHints}"
   '';
 }

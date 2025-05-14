@@ -18,7 +18,7 @@
   # Optionally set paths of symlinks to the installation dir of Celeste.
   # You can use this in Olympus so that you don't have to change installation dir path
   # every time the nix store path changes.
-  # The links are updated every time the command `celeste` is run.
+  # The links are updated every time the command `Celeste` is run.
   gameDir ? [ ],
   # This will be appended to everest-launch.txt.
   launchFlags ? "",
@@ -62,7 +62,6 @@ let
     icon = "Celeste";
     categories = [ "Game" ];
   };
-
 in
 buildFHSEnv {
   inherit pname executableName;
@@ -145,6 +144,12 @@ buildFHSEnv {
     mkdir -p $(dirname $icon)
     ln -s ${celesteHome}/Celeste.png $icon
     cp -r ${desktopItem}/* $out
+
+    mkdir -p $out/lib/Celeste
+    ln -s "${celesteHome}/${if everest != null then "Celeste.dll" else "Celeste.exe"}" "$out/lib/Celeste"
+    ln -s "$out/bin/Celeste" "$out/lib/Celeste/Celeste"
+  '' + lib.optionalString (everest != null && writableDir' != null) ''
+    ln -s ${writableDir'}/Mods $out/lib/Celeste/Mods
   '';
 
   runScript = writeShellScript executableName (

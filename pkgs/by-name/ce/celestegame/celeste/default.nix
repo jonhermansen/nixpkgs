@@ -24,7 +24,6 @@
 # The ARM support doesn't seem promising because the builder needs to fetch fmod libraries somehow, which requires an account.
 # Though this whole process of registration and downloading can possibly be automated, this is probably against the TOS.
 let
-  pname = "celeste-unwrapped";
   version = "1.4.0.0";
   downloadPage = "https://maddymakesgamesinc.itch.io/celeste";
   phome = "$out/lib/Celeste";

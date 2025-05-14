@@ -49,9 +49,9 @@ buildDotnetModule {
   src = fetchFromGitHub {
     owner = "rhelmot";
     repo = "Olympus";
-    rev = "386d0b4b0b4addcbcfa3fe7099dea6343707d2ec";
+    rev = "a1226818bf78d842e2fc8223f3fe8adee1b4220d";
     fetchSubmodules = true; # Required. See upstream's README.
-    hash = "";
+    hash = "sha256-qq5DrY2rkwz66/39vyvzGdJLhXMI4ENmdzs4uj7ZUBw=";
   };
 
   nativeBuildInputs = [

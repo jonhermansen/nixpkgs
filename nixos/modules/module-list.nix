@@ -177,6 +177,7 @@
   ./programs/captive-browser.nix
   ./programs/ccache.nix
   ./programs/cdemu.nix
+  ./programs/celestegame.nix
   ./programs/cfs-zen-tweaks.nix
   ./programs/chromium.nix
   ./programs/clash-verge.nix

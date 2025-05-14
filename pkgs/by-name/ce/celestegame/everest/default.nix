@@ -12,7 +12,7 @@
 
 let
   pname = "everest";
-  version = "5476";
+  version = "5480";
   phome = "$out/lib/Celeste";
 in
 buildDotnetModule {
@@ -22,10 +22,10 @@ buildDotnetModule {
     owner = "EverestAPI";
     repo = "Everest";
     #tag = "stable-1.${version}.0";
-    rev = "d56540d7dfee208af4fa6dd74c31f5c4d945d91d";
+    rev = "f06b3da50c52053288bb71c8634a8fbdb82e4bd2";
     fetchSubmodules = true;
     leaveDotGit = true; # MonoMod.SourceGen.Internal needs .git
-    hash = "sha256-THDOZK2Yw7dtPJnCDR9w7gif/QxBf8ZYXabQ0MSFvys=";
+    hash = "sha256-p5M0kSIy7mcoIAlLM/GoGyey6VZ91URhqU6Y6VJo18k=";
   };
 
   nativeBuildInputs = [
