@@ -36,19 +36,17 @@ let
       };
 
       pretix-plugin-build = self.callPackage ./plugin-build.nix { };
-
-      sentry-sdk = super.sentry-sdk_2;
     };
   };
 
   pname = "pretix";
-  version = "2024.11.0";
+  version = "2025.4.0";
 
   src = fetchFromGitHub {
     owner = "pretix";
     repo = "pretix";
     rev = "refs/tags/v${version}";
-    hash = "sha256-vmk7oW9foXkZdt3XOLJDbPldX2TruJOgd8mmi5tGqNw=";
+    hash = "sha256-K/llv85CWp+V70BiYAR7lT+urGdLbXBhWpCptxUqDrc=";
   };
 
   npmDeps = buildNpmPackage {
@@ -56,7 +54,7 @@ let
     inherit version src;
 
     sourceRoot = "${src.name}/src/pretix/static/npm_dir";
-    npmDepsHash = "sha256-4PrOrI2cykkuzob+DMeAu/GF5OMCho40G3BjCwVW/tE=";
+    npmDepsHash = "sha256-FqwgHmIUfcipVbeXmN4uYPHdmnuaSgOQ9LHgKRf16ys=";
 
     dontBuild = true;
 
@@ -81,25 +79,33 @@ python.pkgs.buildPythonApplication rec {
   ];
 
   pythonRelaxDeps = [
+    "beautifulsoup4"
+    "celery"
+    "django-bootstrap3"
     "django-phonenumber-field"
     "dnspython"
+    "drf_ujson2"
     "importlib-metadata"
     "kombu"
     "markdown"
+    "phonenumberslite"
     "pillow"
     "protobuf"
     "pycryptodome"
     "pyjwt"
+    "pypdf"
     "python-bidi"
     "qrcode"
     "redis"
+    "reportlab"
     "requests"
     "sentry-sdk"
     "ua-parser"
+    "webauthn"
   ];
 
   pythonRemoveDeps = [
-    "vat-moss-forked" # we provide a patched vat-moss package
+    "vat_moss_forked" # we provide a patched vat-moss package
   ];
 
   postPatch = ''
@@ -265,8 +271,9 @@ python.pkgs.buildPythonApplication rec {
       python
       ;
     plugins = lib.recurseIntoAttrs (
-      python.pkgs.callPackage ./plugins {
+      lib.packagesFromDirectoryRecursive {
         inherit (python.pkgs) callPackage;
+        directory = ./plugins;
       }
     );
     tests = {

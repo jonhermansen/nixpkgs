@@ -8,14 +8,14 @@
 
 python3Packages.buildPythonApplication rec {
   pname = "voicevox-engine";
-  version = "0.20.0";
+  version = "0.23.0";
   pyproject = true;
 
   src = fetchFromGitHub {
     owner = "VOICEVOX";
     repo = "voicevox_engine";
-    rev = "refs/tags/${version}";
-    hash = "sha256-Gib5R7oleg+XXyu2V65EqrflQ1oiAR7a09a0MFhSITc=";
+    tag = version;
+    hash = "sha256-kuWpLnDKRYcfV9FxYLeR6FmQFO2K12KxJx/Y/4MwhbM=";
   };
 
   patches = [
@@ -91,12 +91,6 @@ python3Packages.buildPythonApplication rec {
     mv test_character_info resources/character_info
   '';
 
-  disabledTests = [
-    # this test checks the behaviour of openapi
-    # one of the functions returns a slightly different output due to openapi version differences
-    "test_OpenAPIの形が変わっていないことを確認"
-  ];
-
   nativeCheckInputs = with python3Packages; [
     pytestCheckHook
     syrupy
@@ -105,22 +99,26 @@ python3Packages.buildPythonApplication rec {
 
   passthru = {
     resources = fetchFromGitHub {
+      name = "voicevox-resource-${version}"; # this contains ${version} to invalidate the hash upon updating the package
       owner = "VOICEVOX";
       repo = "voicevox_resource";
-      rev = "refs/tags/${version}";
-      hash = "sha256-m888DF9qgGbK30RSwNnAoT9D0tRJk6cD5QY72FRkatM=";
+      tag = version;
+      hash = "sha256-6pxx+ebNzXd3qbrFa4gfMDM2e5XANo3ZPzSAegKoJBE=";
     };
 
     pyopenjtalk = python3Packages.callPackage ./pyopenjtalk.nix { };
   };
 
   meta = {
-    changelog = "https://github.com/VOICEVOX/voicevox_engine/releases/tag/${version}";
+    changelog = "https://github.com/VOICEVOX/voicevox_engine/releases/tag/${src.tag}";
     description = "Engine for the VOICEVOX speech synthesis software";
     homepage = "https://github.com/VOICEVOX/voicevox_engine";
     license = lib.licenses.lgpl3Only;
     mainProgram = "voicevox-engine";
-    maintainers = with lib.maintainers; [ tomasajt ];
+    maintainers = with lib.maintainers; [
+      tomasajt
+      eljamm
+    ];
     platforms = lib.platforms.linux ++ lib.platforms.darwin;
   };
 }

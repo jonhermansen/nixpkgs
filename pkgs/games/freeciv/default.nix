@@ -18,6 +18,7 @@
   SDL2_image,
   SDL2_ttf,
   SDL2_gfx,
+  libX11,
   freetype,
   fluidsynth,
   sdl2Client ? false,
@@ -34,13 +35,13 @@
 
 stdenv.mkDerivation rec {
   pname = "freeciv";
-  version = "3.1.3";
+  version = "3.1.4";
 
   src = fetchFromGitHub {
     owner = "freeciv";
     repo = "freeciv";
     rev = "R${lib.replaceStrings [ "." ] [ "_" ] version}";
-    hash = "sha256-z4BmkAjKgK0rf4fCMpAhI++HCKFrvpwKmcUvdPSF6Zw=";
+    hash = "sha256-lT3sXD5lFjG/63eBXEG+rU9idem/8kXfUXj6iB3AGOg=";
   };
 
   postPatch = ''
@@ -72,12 +73,13 @@ stdenv.mkDerivation rec {
       libiconv
       icu
     ]
-    ++ [
+    ++ lib.optionals sdl2Client [
       SDL2
       SDL2_mixer
       SDL2_image
       SDL2_ttf
       SDL2_gfx
+      libX11 # can be removed when https://github.com/freeciv/freeciv/commit/00a9d69fa38d8618893e1eaad2830abb395ef25b is tagged, likely in 3.2.0
       freetype
       fluidsynth
     ]

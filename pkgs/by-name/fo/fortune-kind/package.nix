@@ -3,7 +3,6 @@
   stdenv,
   fetchFromGitHub,
   rustPlatform,
-  darwin,
   libiconv,
   makeBinaryWrapper,
   installShellFiles,
@@ -21,7 +20,8 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-Tpg0Jq2EhkwQuz5ZOtv6Rb5YESSlmzLoJPTxYJNNgac=";
   };
 
-  cargoHash = "sha256-hxbvsAQsZWUAgj8QAlcxqBA5YagLO3/vz9lQGJMHUjw=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-Kp3pv9amEz9oFMDhz0IZDmhpsok5VgrvJZfwSPyz2X0=";
 
   nativeBuildInputs = [
     makeBinaryWrapper
@@ -29,7 +29,6 @@ rustPlatform.buildRustPackage rec {
   ];
   buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     libiconv
-    darwin.apple_sdk.frameworks.Security
   ];
 
   buildNoDefaultFeatures = true;

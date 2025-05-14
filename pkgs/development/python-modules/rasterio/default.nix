@@ -33,7 +33,7 @@
 
 buildPythonPackage rec {
   pname = "rasterio";
-  version = "1.4.2";
+  version = "1.4.3";
   format = "pyproject";
 
   disabled = pythonOlder "3.8";
@@ -41,8 +41,8 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "rasterio";
     repo = "rasterio";
-    rev = "refs/tags/${version}";
-    hash = "sha256-YGSd0IG6TWnHmDiVEE3F2KNQ4dXJhkPqAJsIrWyuHos=";
+    tag = version;
+    hash = "sha256-InejYBRa4i0E2GxEWbtBpaErtcoYrhtypAlRtMlUoDk=";
   };
 
   nativeBuildInputs = [
@@ -109,6 +109,6 @@ buildPythonPackage rec {
     homepage = "https://rasterio.readthedocs.io/";
     changelog = "https://github.com/rasterio/rasterio/blob/${version}/CHANGES.txt";
     license = licenses.bsd3;
-    maintainers = teams.geospatial.members;
+    teams = [ teams.geospatial ];
   };
 }

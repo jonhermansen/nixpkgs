@@ -2,33 +2,25 @@
   rustPlatform,
   lib,
   fetchFromGitHub,
-  stdenv,
-  darwin,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "kubetui";
-  version = "1.5.4";
+  version = "1.7.0";
 
   src = fetchFromGitHub {
     owner = "sarub0b0";
     repo = "kubetui";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-Trgc3T+01u1izePfM0wPjer3IrA6PtIGsK+syEzs0V8=";
+    tag = "v${version}";
+    hash = "sha256-p7NPHOmeDzZ8OlVnpOOoTksWbWcnKlzsXu/mYmMU4l4=";
   };
 
   checkFlags = [
     "--skip=workers::kube::store::tests::kubeconfigからstateを生成"
   ];
 
-  buildInputs = lib.optionals (stdenv.hostPlatform.isDarwin) (
-    with darwin.apple_sdk;
-    [
-      frameworks.CoreGraphics
-      frameworks.AppKit
-    ]
-  );
-  cargoHash = "sha256-f9JrowyZx4NvfGJSU/HjyTfWKhkAANNfUgcK9CRPW7I=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-fMrlZMe2uD+ImM6zPXzo/+/Eto2MeIyscYfU8msLJFw=";
 
   meta = {
     homepage = "https://github.com/sarub0b0/kubetui";

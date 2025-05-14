@@ -1,4 +1,5 @@
-{ lib,
+{
+  lib,
   buildGoModule,
   fetchFromGitHub,
   testers,
@@ -9,16 +10,16 @@
 
 buildGoModule rec {
   pname = "myks";
-  version = "4.2.5";
+  version = "4.8.1";
 
   src = fetchFromGitHub {
     owner = "mykso";
     repo = "myks";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-TKD/WqK6FXJQYUrrjTrisTOgNyBNah9nPij+voguFp4=";
+    tag = "v${version}";
+    hash = "sha256-bjry2szn4bOGsIeJl221T+6aV+MW9yXQcLBS3sJcswQ=";
   };
 
-  vendorHash = "sha256-Rlf1H/Jvt4JYCc5kttdi51qU+Yu5gZ87/L5bz8hbGsc=";
+  vendorHash = "sha256-kUOjbBosj2u25n/fGoC0DpAYkWIgoxIfkXJlNpRALfw=";
 
   subPackages = ".";
 
@@ -36,13 +37,12 @@ buildGoModule rec {
 
   passthru.tests.version = testers.testVersion { package = myks; };
 
-  postInstall =
-    lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-      installShellCompletion --cmd myks \
-        --bash <($out/bin/myks completion bash) \
-        --zsh <($out/bin/myks completion zsh) \
-        --fish <($out/bin/myks completion fish)
-    '';
+  postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    installShellCompletion --cmd myks \
+      --bash <($out/bin/myks completion bash) \
+      --zsh <($out/bin/myks completion zsh) \
+      --fish <($out/bin/myks completion fish)
+  '';
 
   meta = with lib; {
     changelog = "https://github.com/mykso/myks/blob/v${version}/CHANGELOG.md";

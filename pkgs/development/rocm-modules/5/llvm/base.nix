@@ -180,6 +180,7 @@ stdenv.mkDerivation (finalAttrs: {
   passthru = {
     isLLVM = targetDir == "llvm";
     isClang = targetDir == "clang" || builtins.elem "clang" targetProjects;
+    isROCm = true;
 
     updateScript = rocmUpdateScript {
       name = finalAttrs.pname;
@@ -194,13 +195,11 @@ stdenv.mkDerivation (finalAttrs: {
     description = "ROCm fork of the LLVM compiler infrastructure";
     homepage = "https://github.com/ROCm/llvm-project";
     license = with licenses; [ ncsa ] ++ extraLicenses;
-    maintainers =
-      with maintainers;
-      [
-        acowley
-        lovesegfault
-      ]
-      ++ teams.rocm.members;
+    maintainers = with maintainers; [
+      acowley
+      lovesegfault
+    ];
+    teams = [ teams.rocm ];
     platforms = platforms.linux;
     broken = isBroken || versionAtLeast finalAttrs.version "6.0.0";
   };

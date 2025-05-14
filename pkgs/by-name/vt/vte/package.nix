@@ -1,7 +1,7 @@
 {
   stdenv,
   lib,
-  fetchFromGitLab,
+  fetchurl,
   fetchpatch,
   gettext,
   pkg-config,
@@ -34,19 +34,16 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "vte";
-  version = "0.78.2";
+  version = "0.78.4";
 
   outputs = [
     "out"
     "dev"
   ] ++ lib.optional (gtkVersion != null) "devdoc";
 
-  src = fetchFromGitLab {
-    domain = "gitlab.gnome.org";
-    owner = "GNOME";
-    repo = "vte";
-    rev = finalAttrs.version;
-    hash = "sha256-ZUECInBRNYkXJtGveLq8SR6YdWqJA0y9UJSxmc8mVNk=";
+  src = fetchurl {
+    url = "mirror://gnome/sources/vte/${lib.versions.majorMinor finalAttrs.version}/vte-${finalAttrs.version}.tar.xz";
+    hash = "sha256-LepOQSJmWStkYKP+RIj149UHEvE5gVeQwOy0RxD34X4=";
   };
 
   patches = [
@@ -180,13 +177,11 @@ stdenv.mkDerivation (finalAttrs: {
       the system's terminfo database.
     '';
     license = licenses.lgpl3Plus;
-    maintainers =
-      with maintainers;
-      [
-        astsmtl
-        antono
-      ]
-      ++ teams.gnome.members;
+    maintainers = with maintainers; [
+      astsmtl
+      antono
+    ];
+    teams = [ teams.gnome ];
     platforms = platforms.unix;
   };
 })

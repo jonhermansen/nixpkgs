@@ -1,20 +1,22 @@
-{ lib
-, fetchFromGitHub
-, rustPlatform
+{
+  lib,
+  fetchFromGitHub,
+  rustPlatform,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "automatic-timezoned";
-  version = "2.0.42";
+  version = "2.0.73";
 
   src = fetchFromGitHub {
     owner = "maxbrunet";
-    repo = pname;
+    repo = "automatic-timezoned";
     rev = "v${version}";
-    sha256 = "sha256-HbBxzIuni106kz3YX68Mk+ecb605hugcMf/QMLzElKA=";
+    sha256 = "sha256-QVWfdeGYMW/BKzgQD191vmEaRZLWi2QOtuOdDyQgwf8=";
   };
 
-  cargoHash = "sha256-JfEyak0ORuXwR+QwVS3sjIJ+/eZIpIvU0MBREv2EPdg=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-E3qnOMiyPGMXCldmRQVEQVssx7aRHddVPQzt5B+i4Ko=";
 
   meta = with lib; {
     description = "Automatically update system timezone based on location";

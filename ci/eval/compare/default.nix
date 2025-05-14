@@ -3,9 +3,15 @@
   jq,
   runCommand,
   writeText,
+  python3,
   ...
 }:
-{ beforeResultDir, afterResultDir }:
+{
+  beforeResultDir,
+  afterResultDir,
+  touchedFilesJson,
+  byName ? false,
+}:
 let
   /*
     Derivation that computes which packages are affected (added, changed or removed) between two revisions of nixpkgs.
@@ -65,10 +71,17 @@ let
     groupByPlatform
     extractPackageNames
     getLabels
-    uniqueStrings
     ;
 
-  getAttrs = dir: builtins.fromJSON (builtins.readFile "${dir}/outpaths.json");
+  getAttrs =
+    dir:
+    let
+      raw = builtins.readFile "${dir}/outpaths.json";
+      # The file contains Nix paths; we need to ignore them for evaluation purposes,
+      # else there will be a "is not allowed to refer to a store path" error.
+      data = builtins.unsafeDiscardStringContext raw;
+    in
+    builtins.fromJSON data;
   beforeAttrs = getAttrs beforeResultDir;
   afterAttrs = getAttrs afterResultDir;
 
@@ -77,11 +90,11 @@ let
   # - values: lists of `packagePlatformPath`s
   diffAttrs = diff beforeAttrs afterAttrs;
 
+  rebuilds = diffAttrs.added ++ diffAttrs.changed;
+  rebuildsPackagePlatformAttrs = convertToPackagePlatformAttrs rebuilds;
+
   changed-paths =
     let
-      rebuilds = uniqueStrings (diffAttrs.added ++ diffAttrs.changed);
-      rebuildsPackagePlatformAttrs = convertToPackagePlatformAttrs rebuilds;
-
       rebuildsByPlatform = groupByPlatform rebuildsPackagePlatformAttrs;
       rebuildsByKernel = groupByKernel rebuildsPackagePlatformAttrs;
       rebuildCountByKernel = lib.mapAttrs (
@@ -96,19 +109,76 @@ let
           rebuildsByKernel
           rebuildCountByKernel
           ;
-        labels = getLabels rebuildCountByKernel;
+        labels =
+          (getLabels rebuildCountByKernel)
+          # Adds "10.rebuild-*-stdenv" label if the "stdenv" attribute was changed
+          ++ lib.mapAttrsToList (kernel: _: "10.rebuild-${kernel}-stdenv") (
+            lib.filterAttrs (_: kernelRebuilds: kernelRebuilds ? "stdenv") rebuildsByKernel
+          );
       }
     );
+
+  maintainers = import ./maintainers.nix {
+    changedattrs = lib.attrNames (lib.groupBy (a: a.name) rebuildsPackagePlatformAttrs);
+    changedpathsjson = touchedFilesJson;
+    inherit byName;
+  };
 in
 runCommand "compare"
   {
-    nativeBuildInputs = [ jq ];
+    nativeBuildInputs = [
+      jq
+      (python3.withPackages (
+        ps: with ps; [
+          numpy
+          pandas
+          scipy
+        ]
+      ))
+
+    ];
+    maintainers = builtins.toJSON maintainers;
+    passAsFile = [ "maintainers" ];
+    env = {
+      BEFORE_DIR = "${beforeResultDir}";
+      AFTER_DIR = "${afterResultDir}";
+    };
   }
   ''
     mkdir $out
 
     cp ${changed-paths} $out/changed-paths.json
 
-    jq -r -f ${./generate-step-summary.jq} < ${changed-paths} > $out/step-summary.md
-    # TODO: Compare eval stats
+
+    if jq -e '(.attrdiff.added | length == 0) and (.attrdiff.removed | length == 0)' "${changed-paths}" > /dev/null; then
+      # Chunks have changed between revisions
+      # We cannot generate a performance comparison
+      {
+        echo
+        echo "# Performance comparison"
+        echo
+        echo "This compares the performance of this branch against its pull request base branch (e.g., 'master')"
+        echo
+        echo "For further help please refer to: [ci/README.md](https://github.com/NixOS/nixpkgs/blob/master/ci/README.md)"
+        echo
+      } >> $out/step-summary.md
+
+      python3 ${./cmp-stats.py} >> $out/step-summary.md
+
+    else
+      # Package chunks are the same in both revisions
+      # We can use the to generate a performance comparison
+      {
+        echo
+        echo "# Performance Comparison"
+        echo
+        echo "Performance stats were skipped because the package sets differ between the two revisions."
+        echo
+        echo "For further help please refer to: [ci/README.md](https://github.com/NixOS/nixpkgs/blob/master/ci/README.md)"
+      } >> $out/step-summary.md
+    fi
+
+    jq -r -f ${./generate-step-summary.jq} < ${changed-paths} >> $out/step-summary.md
+
+    cp "$maintainersPath" "$out/maintainers.json"
   ''

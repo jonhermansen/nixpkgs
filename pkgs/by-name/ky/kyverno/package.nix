@@ -1,24 +1,32 @@
-{ lib, buildGoModule, fetchFromGitHub, installShellFiles, testers, kyverno }:
+{
+  lib,
+  buildGoModule,
+  fetchFromGitHub,
+  installShellFiles,
+  testers,
+  kyverno,
+}:
 
 buildGoModule rec {
   pname = "kyverno";
-  version = "1.13.2";
+  version = "1.14.0";
 
   src = fetchFromGitHub {
     owner = "kyverno";
     repo = "kyverno";
     rev = "v${version}";
-    hash = "sha256-dJyNurdJ5A09ouiJsyWiBaAeGM/xE/U2HdYNmPfY6VI=";
+    hash = "sha256-8y/2Vf1QPImUUsVMT5B/F8PYadtSoGYZtFtfgdUbt2M=";
   };
 
   ldflags = [
-    "-s" "-w"
+    "-s"
+    "-w"
     "-X github.com/kyverno/kyverno/pkg/version.BuildVersion=v${version}"
     "-X github.com/kyverno/kyverno/pkg/version.BuildHash=${version}"
     "-X github.com/kyverno/kyverno/pkg/version.BuildTime=1970-01-01_00:00:00"
   ];
 
-  vendorHash = "sha256-euHYTd2iyfVWsJhWZux5OCv2CPWqmsIPB1/rGD22a5Q=";
+  vendorHash = "sha256-d4Q2etUHSEbbFnuCvkkJZWxvsnomtUSbDzkMTsFy3yk=";
 
   subPackages = [ "cmd/cli/kubectl-kyverno" ];
 

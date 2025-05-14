@@ -18,12 +18,14 @@
   libusb1,
   magic-enum,
   libgbm,
+  pipewire,
   pkg-config,
   pugixml,
   qt6,
   rapidjson,
   renderdoc,
   robin-map,
+  sdl3,
   sndio,
   stb,
   vulkan-headers,
@@ -32,25 +34,20 @@
   xorg,
   xxHash,
   zlib-ng,
-  unstableGitUpdater,
+  nix-update-script,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "shadps4";
-  version = "0.4.0-unstable-2024-12-08";
+  version = "0.7.0";
 
   src = fetchFromGitHub {
     owner = "shadps4-emu";
     repo = "shadPS4";
-    rev = "4fb2247196d4626bab8f2c28710b0c34cad053fe";
-    hash = "sha256-bRURBUhIVQLrBxJFaJirw3n1n7xviRoAZGLZ+rV/UeM=";
+    tag = "v.${finalAttrs.version}";
+    hash = "sha256-g55Ob74Yhnnrsv9+fNA1+uTJ0H2nyH5UT4ITHnrGKDo=";
     fetchSubmodules = true;
   };
-
-  patches = [
-    # Fix controls without a numpad
-    ./laptop-controls.patch
-  ];
 
   buildInputs = [
     alsa-lib
@@ -69,6 +66,7 @@ stdenv.mkDerivation (finalAttrs: {
     xorg.libXext
     magic-enum
     libgbm
+    pipewire
     pugixml
     qt6.qtbase
     qt6.qtdeclarative
@@ -78,6 +76,7 @@ stdenv.mkDerivation (finalAttrs: {
     rapidjson
     renderdoc
     robin-map
+    sdl3
     sndio
     stb
     vulkan-headers
@@ -113,29 +112,24 @@ stdenv.mkDerivation (finalAttrs: {
     runHook postInstall
   '';
 
-  fixupPhase = ''
-    patchelf --add-rpath ${
-      lib.makeLibraryPath [
-        vulkan-loader
-        xorg.libXi
-      ]
-    } \
-      $out/bin/shadps4
-  '';
+  runtimeDependencies = [
+    vulkan-loader
+    xorg.libXi
+  ];
 
   passthru = {
     tests.openorbis-example = nixosTests.shadps4;
-    updateScript = unstableGitUpdater {
-      tagFormat = "v.*";
-      tagPrefix = "v.";
-    };
+    updateScript = nix-update-script { };
   };
 
   meta = {
     description = "Early in development PS4 emulator";
     homepage = "https://github.com/shadps4-emu/shadPS4";
     license = lib.licenses.gpl2Plus;
-    maintainers = with lib.maintainers; [ ryand56 ];
+    maintainers = with lib.maintainers; [
+      ryand56
+      liberodark
+    ];
     mainProgram = "shadps4";
     platforms = lib.intersectLists lib.platforms.linux lib.platforms.x86_64;
   };

@@ -1,5 +1,4 @@
 {
-  apple-sdk_11,
   boost,
   cmake,
   dbus,
@@ -21,14 +20,21 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "qbittorrent" + lib.optionalString (!guiSupport) "-nox";
-  version = "5.0.3";
+  version = "5.0.4";
 
   src = fetchFromGitHub {
     owner = "qbittorrent";
     repo = "qBittorrent";
     rev = "release-${finalAttrs.version}";
-    hash = "sha256-nz9no2+nsC+PEnqPyUJpup0OLsS6G+yvTwbwDPko7Eg=";
+    hash = "sha256-8gSSUgYx0CSSb3ackFknZ9r0cWFLxkC7a3Tj8QJaylc=";
   };
+
+  # Partial backport of https://github.com/qbittorrent/qBittorrent/commit/a6809efbbbdf18a1b66df9c89d0d0aeefd78f461
+  # to fix build with Qt 6.9.
+  # FIXME: remove in next update
+  patches = [
+    ./qt-6.9.patch
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -47,7 +53,6 @@ stdenv.mkDerivation (finalAttrs: {
       qt6.qttools
       zlib
     ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [ apple-sdk_11 ]
     ++ lib.optionals guiSupport [ dbus ]
     ++ lib.optionals (guiSupport && stdenv.hostPlatform.isLinux) [ qt6.qtwayland ]
     ++ lib.optionals trackerSearch [ python3 ];

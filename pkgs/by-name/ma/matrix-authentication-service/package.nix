@@ -10,36 +10,32 @@
   sqlite,
   zstd,
   stdenv,
-  darwin,
   open-policy-agent,
   cctools,
 }:
 
 rustPlatform.buildRustPackage rec {
   pname = "matrix-authentication-service";
-  version = "0.12.0";
+  version = "0.14.1";
 
   src = fetchFromGitHub {
     owner = "element-hq";
     repo = "matrix-authentication-service";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-QLtyYxV2yXHJtwWgGcyi7gRcKypYoy9Z8bkEuTopVXc=";
+    tag = "v${version}";
+    hash = "sha256-s6LVCISmbG3ubY/67DcUUE/pnTJSE0v9n8INmLMQNcw=";
   };
 
-  cargoLock = {
-    lockFile = ./Cargo.lock;
-    outputHashes = {
-      "sea-query-0.32.0-rc.1" = "sha256-Q/NFiIBu8L5rQj4jwcIo8ACmAhLBy4HSTcJv06UdK8E=";
-    };
-  };
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-VJiIt0/zTJgCCskevb4/p62im/lAMkyJSiFUdaIdKO8=";
 
   npmDeps = fetchNpmDeps {
     name = "${pname}-${version}-npm-deps";
     src = "${src}/${npmRoot}";
-    hash = "sha256-EfDxbdjzF0yLQlueIYKmdpU4v9dx7g8bltU63mIWfo0=";
+    hash = "sha256-5Hq7wbvm3bLUSLAkLd3SNdwYCVhniV4XMCI84mO0iTc=";
   };
 
   npmRoot = "frontend";
+  npmFlags = [ "--legacy-peer-deps" ];
 
   nativeBuildInputs = [
     pkg-config
@@ -49,16 +45,10 @@ rustPlatform.buildRustPackage rec {
     (python3.withPackages (ps: [ ps.setuptools ])) # Used by gyp
   ] ++ lib.optional stdenv.hostPlatform.isDarwin cctools; # libtool used by gyp;
 
-  buildInputs =
-    [
-      sqlite
-      zstd
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      darwin.apple_sdk_11_0.frameworks.CoreFoundation
-      darwin.apple_sdk_11_0.frameworks.Security
-      darwin.apple_sdk_11_0.frameworks.SystemConfiguration
-    ];
+  buildInputs = [
+    sqlite
+    zstd
+  ];
 
   env = {
     ZSTD_SYS_USE_PKG_CONFIG = true;
@@ -99,8 +89,5 @@ rustPlatform.buildRustPackage rec {
     license = lib.licenses.agpl3Only;
     maintainers = with lib.maintainers; [ teutat3s ];
     mainProgram = "mas-cli";
-    # Note: broken on x86_64-darwin because of aligned_alloc, can be revisited after
-    # https://github.com/NixOS/nixpkgs/pull/346043 is merged
-    badPlatforms = [ "x86_64-darwin" ];
   };
 }

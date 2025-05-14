@@ -7,17 +7,18 @@
   stdenv,
   installShellFiles,
   versionCheckHook,
+  callPackage,
 }:
 buildGoModule rec {
   pname = "alist";
-  version = "3.41.0";
-  webVersion = "3.41.0";
+  version = "3.44.0";
+  webVersion = "3.44.0";
 
   src = fetchFromGitHub {
     owner = "AlistGo";
     repo = "alist";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-DzqSkcyDRyiHM0yh7A+dZj7TnjhDVQoHHgV5piVcu1g=";
+    tag = "v${version}";
+    hash = "sha256-zaIS2DYB7x76SCHCX9aJ0/8Lejwy3/AlLbnztSNJtSc=";
     # populate values that require us to use git. By doing this in postFetch we
     # can delete .git afterwards and maintain better reproducibility of the src.
     leaveDotGit = true;
@@ -31,11 +32,11 @@ buildGoModule rec {
   };
   web = fetchzip {
     url = "https://github.com/AlistGo/alist-web/releases/download/${webVersion}/dist.tar.gz";
-    hash = "sha256-1IXvst9VfxuIjUrgmJxTYm8jJQStMK+RlQibQ3fTDGs=";
+    hash = "sha256-YPqbEPpwRVTWwH/LOq7cGsYju6YqdFCOseD52OsnkSk=";
   };
 
   proxyVendor = true;
-  vendorHash = "sha256-p6JqYmcQR6W7RE7F6NGxoiTxSOESuYjpke0rLRlxeSM=";
+  vendorHash = "sha256-eBIlBtO+AlW2TE4xgxktePb2bm1lIYiuZ4+AUd1bdW8=";
 
   buildInputs = [ fuse ];
 
@@ -67,6 +68,7 @@ buildGoModule rec {
         "TestHTTPAll"
         "TestWebsocketAll"
         "TestWebsocketCaller"
+        "TestDownloadOrder"
       ];
     in
     [ "-skip=^${builtins.concatStringsSep "$|^" skippedTests}$" ];
@@ -87,6 +89,10 @@ buildGoModule rec {
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
+
+  passthru = {
+    updateScript = lib.getExe (callPackage ./update.nix { });
+  };
 
   meta = {
     description = "File list/WebDAV program that supports multiple storages";

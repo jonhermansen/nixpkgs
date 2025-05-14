@@ -12,7 +12,7 @@ python3.pkgs.buildPythonApplication rec {
   src = fetchFromGitHub {
     owner = "RIPE-NCC";
     repo = "ripe-atlas-tools";
-    rev = "refs/tags/v${version}";
+    tag = "v${version}";
     hash = "sha256-aETSDXCVteTruRKV/8Aw3R/bprB6txOsXrFvoZOxIus=";
   };
 
@@ -59,6 +59,8 @@ python3.pkgs.buildPythonApplication rec {
   ];
 
   disabledTests = [
+    # Disable this test because on Python >= 3.12 it fails due to argparse changes https://github.com/python/cpython/pull/124578
+    "test_add_arguments"
     # Network tests: https://github.com/RIPE-NCC/ripe-atlas-tools/issues/234
     "test_arg_from_file"
     "test_arg_from_stdin"

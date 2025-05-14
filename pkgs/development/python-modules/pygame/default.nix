@@ -3,7 +3,7 @@
   stdenv,
   buildPythonPackage,
   fetchFromGitHub,
-  substituteAll,
+  replaceVars,
   fontconfig,
   python,
 
@@ -12,7 +12,7 @@
   setuptools,
 
   # nativeBuildInputs
-  SDL2,
+  SDL2_classic,
   pkg-config,
 
   # buildInputs
@@ -21,9 +21,9 @@
   libpng,
   libX11,
   portmidi,
-  SDL2_image,
-  SDL2_mixer,
-  SDL2_ttf,
+  SDL2_classic_image,
+  SDL2_classic_mixer,
+  SDL2_classic_ttf,
 }:
 
 buildPythonPackage rec {
@@ -44,8 +44,7 @@ buildPythonPackage rec {
 
   patches = [
     # Patch pygame's dependency resolution to let it find build inputs
-    (substituteAll {
-      src = ./fix-dependency-finding.patch;
+    (replaceVars ./fix-dependency-finding.patch {
       buildinputs_include = builtins.toJSON (
         builtins.concatMap (dep: [
           "${lib.getDev dep}/"
@@ -77,7 +76,7 @@ buildPythonPackage rec {
   ];
 
   nativeBuildInputs = [
-    SDL2
+    SDL2_classic
     pkg-config
   ];
 
@@ -87,10 +86,10 @@ buildPythonPackage rec {
     libpng
     libX11
     portmidi
-    SDL2
-    SDL2_image
-    SDL2_mixer
-    SDL2_ttf
+    SDL2_classic
+    (SDL2_classic_image.override { enableSTB = false; })
+    SDL2_classic_mixer
+    SDL2_classic_ttf
   ];
 
   preConfigure = ''
@@ -107,6 +106,8 @@ buildPythonPackage rec {
     # No audio or video device in test environment
     export SDL_VIDEODRIVER=dummy
     export SDL_AUDIODRIVER=disk
+    # traceback for segfaults
+    export PYTHONFAULTHANDLER=1
 
     ${python.interpreter} -m pygame.tests -v \
       --exclude opengl,timing \

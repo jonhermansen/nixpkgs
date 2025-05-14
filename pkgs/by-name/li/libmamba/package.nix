@@ -16,23 +16,23 @@
   zstd,
   nix-update-script,
   bzip2,
-  python3Packages,
+  python3,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "libmamba";
-  version = "2.0.4";
+  version = "2.1.0";
 
   src = fetchFromGitHub {
     owner = "mamba-org";
     repo = "mamba";
-    rev = "libmamba-${finalAttrs.version}";
-    hash = "sha256-UzuWQOFvp6KFDwcjjiwl0ek7pLuPvOijksUxp+hk/NU=";
+    tag = finalAttrs.version;
+    hash = "sha256-7YR3ToPz80I9d1pRNiEaoIacVyaz2mqzdm0h5WGSb2g=";
   };
 
   nativeBuildInputs = [
     cmake
-    python3Packages.python
+    python3
   ];
 
   buildInputs = [

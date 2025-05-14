@@ -3,7 +3,6 @@
   stdenv,
   rustPlatform,
   fetchFromGitHub,
-  darwin,
   protobuf,
   nix-update-script,
   testers,
@@ -16,16 +15,15 @@ rustPlatform.buildRustPackage rec {
 
   src = fetchFromGitHub {
     owner = "sozu-proxy";
-    repo = pname;
+    repo = "sozu";
     rev = version;
     hash = "sha256-Cda53lhKPxm2w8guoKuQjdjhZNWJinzR1PHc5S57y2w=";
   };
 
-  cargoHash = "sha256-DCiPy9bU56ocWwQ8sTVZ5T9eMi1ifj3enCHPuC2x6aY=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-AIj59MqK+TqyTTDjGzN1Oec3svPaXRBkHJTBtxTwZNg=";
 
   nativeBuildInputs = [ protobuf ];
-
-  buildInputs = lib.optional stdenv.hostPlatform.isDarwin darwin.apple_sdk.frameworks.Security;
 
   doCheck = false;
 

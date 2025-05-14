@@ -26,9 +26,10 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://chewing.im/";
     license = licenses.lgpl21Only;
     maintainers = with maintainers; [
-      ericsagnes
       ShamrockLee
     ];
     platforms = platforms.all;
+    # compile time tools init_database, dump_database are built for host
+    broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   };
 })

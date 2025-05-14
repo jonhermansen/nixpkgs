@@ -30,7 +30,6 @@
   libwebp,
   luajit,
   openexr,
-  OpenCL,
   suitesparse,
   withLuaJIT ? lib.meta.availableOn stdenv.hostPlatform luajit,
   gimp,
@@ -38,7 +37,7 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "gegl";
-  version = "0.4.52";
+  version = "0.4.58";
 
   outputs = [
     "out"
@@ -49,7 +48,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   src = fetchurl {
     url = "https://download.gimp.org/pub/gegl/${lib.versions.majorMinor finalAttrs.version}/gegl-${finalAttrs.version}.tar.xz";
-    hash = "sha256-yiEqD8PgRIxQWMUcpqDTD9+wKXHyHyiCDaK0kBOWAAo=";
+    hash = "sha256-1WeLvV/lNZQbgvlluX/Mk4XOk29wyYK9VlpT1VGdG/8=";
   };
 
   nativeBuildInputs = [
@@ -81,9 +80,6 @@ stdenv.mkDerivation (finalAttrs: {
       gexiv2
       openexr
       suitesparse
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      OpenCL
     ]
     ++ lib.optionals stdenv.cc.isClang [
       llvmPackages.openmp
@@ -129,7 +125,9 @@ stdenv.mkDerivation (finalAttrs: {
   doCheck = !stdenv.hostPlatform.isDarwin;
 
   passthru = {
-    inherit gimp;
+    tests = {
+      inherit gimp;
+    };
   };
 
   meta = with lib; {

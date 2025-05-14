@@ -3,6 +3,7 @@
   mkCoqDerivation,
   coq,
   mathcomp,
+  stdlib,
   version ? null,
 }:
 
@@ -26,8 +27,8 @@ mkCoqDerivation {
       [
         {
           cases = [
-            (range "8.16" "8.20")
-            (range "2.0" "2.2")
+            (range "8.16" "9.0")
+            (range "2.0" "2.3")
           ];
           out = "2.2";
         }
@@ -49,9 +50,10 @@ mkCoqDerivation {
       null;
 
   propagatedBuildInputs = [
-    mathcomp.ssreflect
-    mathcomp.algebra
+    mathcomp.boot
     mathcomp.fingroup
+    mathcomp.algebra
+    stdlib
   ];
 
   meta = with lib; {

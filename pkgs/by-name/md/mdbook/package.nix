@@ -4,29 +4,26 @@
   fetchFromGitHub,
   nix,
   rustPlatform,
-  darwin,
-  CoreServices ? darwin.apple_sdk.frameworks.CoreServices,
   installShellFiles,
 }:
 let
-  version = "0.4.43";
+  version = "0.4.49";
 in
-rustPlatform.buildRustPackage {
+rustPlatform.buildRustPackage rec {
   inherit version;
   pname = "mdbook";
 
   src = fetchFromGitHub {
     owner = "rust-lang";
     repo = "mdBook";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-aADNcuIeDef9+a3NOWQxo6IRnKJ6AbkvE4GqvFbubyI=";
+    tag = "v${version}";
+    hash = "sha256-X+ptqzAOjCX2Tt5jDfH/jdUy99WrITGfzDj+F2DoI5w=";
   };
 
-  cargoHash = "sha256-8K72sJywMKxX/31SJuCEoacWvHrpkuwGGLXJ9MsDkTE=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-ZPJkSMcxyTOivfwThPfaO6oRkfewH048rrCDCwCtE8c=";
 
   nativeBuildInputs = [ installShellFiles ];
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin [ CoreServices ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     installShellCompletion --cmd mdbook \

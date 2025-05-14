@@ -6,16 +6,16 @@
 
 buildGoModule rec {
   pname = "mongodb_exporter";
-  version = "0.43.0";
+  version = "0.44.0";
 
   src = fetchFromGitHub {
     owner = "percona";
     repo = "mongodb_exporter";
     rev = "v${version}";
-    hash = "sha256-MmevWy5RJaSC1ocuuxqFYpagyjIaHBbd5PQ8HfCF0R0=";
+    hash = "sha256-FwY4rAmv7P55EGfEHrs0y15BvU3qnq0VHf37R7W2yA4=";
   };
 
-  vendorHash = "sha256-VHQdmEOCHTwszUUOF5JTbBWacgLM6MyuxAC6FNFD5PI=";
+  vendorHash = "sha256-jF6Of16mMpsCrkvtI3xZcla4/MJGpCX5YVkGM6eFfmo=";
 
   ldflags = [
     "-s"

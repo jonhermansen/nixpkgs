@@ -8,11 +8,11 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "mill";
-  version = "0.12.4";
+  version = "0.12.10";
 
   src = fetchurl {
-    url = "https://github.com/com-lihaoyi/mill/releases/download/${finalAttrs.version}/${finalAttrs.version}-assembly";
-    hash = "sha256-WlykyNyXUitR6FHbhZXOeJKtMCrvoJK1gruh+G/hkb8=";
+    url = "https://repo1.maven.org/maven2/com/lihaoyi/mill-dist/${finalAttrs.version}/mill-dist-${finalAttrs.version}-assembly.jar";
+    hash = "sha256-TESwISFz4Xf/F4kgnaTQbi/uVrc75bearih8mydPqHM=";
   };
 
   nativeBuildInputs = [ makeWrapper ];

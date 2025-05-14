@@ -7,25 +7,24 @@
   cmake,
   ninja,
   pkg-config,
-  eigen,
+  eigen_3_4_0,
   zlib,
   libpng,
   boost,
   guile,
   python,
   qtbase,
-  darwin,
 }:
 
 stdenv.mkDerivation {
   pname = "libfive";
-  version = "0-unstable-2024-10-10";
+  version = "0-unstable-2025-05-04";
 
   src = fetchFromGitHub {
     owner = "libfive";
     repo = "libfive";
-    rev = "71899313d36ce14de6646ef760fa6bbc5c0cc067";
-    hash = "sha256-bA+4wGAygdbHcOMGFwNyzn2daQ8E7NeOTUF2Tr3RQww=";
+    rev = "e704d1096f00bdfde1d1766f40dcae79f6fe5082";
+    hash = "sha256-Yu4LGf5nx9dF+8WXyQQycqFfIq4AZdEnHaekhDSWEpw=";
   };
 
   nativeBuildInputs = [
@@ -36,14 +35,14 @@ stdenv.mkDerivation {
     python.pkgs.pythonImportsCheckHook
   ];
   buildInputs = [
-    eigen
+    eigen_3_4_0
     zlib
     libpng
     boost
     guile
     python
     qtbase
-  ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ darwin.apple_sdk_11_0.frameworks.Cocoa ];
+  ];
 
   preConfigure = ''
     substituteInPlace studio/src/guile/interpreter.cpp \
@@ -69,16 +68,9 @@ stdenv.mkDerivation {
     export XDG_CACHE_HOME=$(mktemp -d)/.cache
   '';
 
-  cmakeFlags =
-    [
-      "-DGUILE_CCACHE_DIR=${placeholder "out"}/${guile.siteCcacheDir}"
-    ]
-    ++ lib.optionals
-      (stdenv.hostPlatform.isDarwin && lib.versionOlder stdenv.hostPlatform.darwinMinVersion "11")
-      [
-        # warning: 'aligned_alloc' is only available on macOS 10.15 or newer
-        "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.15"
-      ];
+  cmakeFlags = [
+    "-DGUILE_CCACHE_DIR=${placeholder "out"}/${guile.siteCcacheDir}"
+  ];
 
   env = lib.optionalAttrs stdenv.cc.isClang {
     NIX_CFLAGS_COMPILE = "-Wno-error=enum-constexpr-conversion";

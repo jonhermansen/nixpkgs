@@ -165,7 +165,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://gitlab.gnome.org/GNOME/gjs/blob/master/doc/Home.md";
     license = licenses.lgpl2Plus;
     mainProgram = "gjs";
-    maintainers = teams.gnome.members;
-    platforms = platforms.unix;
+    teams = [ teams.gnome ];
+    inherit (gobject-introspection.meta) platforms badPlatforms;
   };
 })

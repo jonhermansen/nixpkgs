@@ -1,21 +1,22 @@
-{ lib
-, stdenv
-, fetchFromGitHub
-, SDL2
-, SDL2_image
-, unixtools
-, multimarkdown
+{
+  lib,
+  stdenv,
+  fetchFromGitHub,
+  SDL2,
+  SDL2_image,
+  unixtools,
+  multimarkdown,
 }:
 
 stdenv.mkDerivation rec {
   pname = "decker";
-  version = "1.52";
+  version = "1.54";
 
   src = fetchFromGitHub {
     owner = "JohnEarnest";
     repo = "Decker";
     rev = "v${version}";
-    hash = "sha256-D9GaOi6jqTJ0c/hn4Qfdx96vf1RqCIzzKJ/MfhgYVE4=";
+    hash = "sha256-6rKfIMEWMig1LAaLk1eSUHnc2104FuN5wTVpf1SgCtg=";
   };
 
   buildInputs = [
@@ -39,9 +40,11 @@ stdenv.mkDerivation rec {
     runHook postBuild
   '';
 
-  env.NIX_CFLAGS_COMPILE = toString (lib.optionals stdenv.cc.isClang [
-    "-Wno-error=implicit-const-int-float-conversion"
-  ]);
+  env.NIX_CFLAGS_COMPILE = toString (
+    lib.optionals stdenv.cc.isClang [
+      "-Wno-error=implicit-const-int-float-conversion"
+    ]
+  );
 
   installPhase = ''
     runHook preInstall

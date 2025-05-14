@@ -27,7 +27,6 @@
   gtk3,
   dconf,
   llvmPackages_15,
-  overrideSDK,
   overrideLibcxx,
   darwin,
 
@@ -124,6 +123,11 @@ let
       (fetchpatch {
         url = "https://github.com/qt/qtpim/commit/114615812dcf9398c957b0833e860befe15f840f.patch";
         hash = "sha256-yZ1qs8y5DSq8FDXRPyuSPRIzjEUTWAhpVide/b+xaLQ=";
+      })
+      # Provide interface for accessing all extended metadata from collections
+      (fetchpatch {
+        url = "https://github.com/qt/qtpim/commit/5bdfb9127b3f6c9863def0578c7a8734a5156ea9.patch";
+        hash = "sha256-asJNa8tcdtovVE579FjZg1CHeCmvRJ8otQeSrEdrXdQ=";
       })
       # Accessors should be const
       (fetchpatch {

@@ -1,15 +1,13 @@
 {
   lib,
-  darwin,
   fetchFromGitHub,
   testers,
   nix-update-script,
   rustPlatform,
-  stdenv,
   rainfrog,
 }:
 let
-  version = "0.2.10";
+  version = "0.3.1";
 in
 rustPlatform.buildRustPackage {
   inherit version;
@@ -18,20 +16,12 @@ rustPlatform.buildRustPackage {
   src = fetchFromGitHub {
     owner = "achristmascarl";
     repo = "rainfrog";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-hIhg6OeWCp27OPHg10ifjsSvPrBHQMnn4P3CmyYmdDk=";
+    tag = "v${version}";
+    hash = "sha256-sUZnHlTxOz0j2KsWi/qaI5MYT0mkANn6deH54TS/JYw=";
   };
 
-  cargoHash = "sha256-MYqVo+7xQzF55rEqUJNcB1SAEoxowHl+vOINCyr59nA=";
-
-  buildInputs = lib.optionals stdenv.hostPlatform.isDarwin (
-    with darwin.apple_sdk.frameworks;
-    [
-      AppKit
-      CoreGraphics
-      SystemConfiguration
-    ]
-  );
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-wgJWPlURS2DxcRMzDEAXa50nQswcjbe0zj2QgF0HZys=";
 
   passthru = {
     tests.version = testers.testVersion {

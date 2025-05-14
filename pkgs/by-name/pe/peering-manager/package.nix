@@ -14,7 +14,7 @@ python3.pkgs.buildPythonApplication rec {
   src = fetchFromGitHub {
     owner = pname;
     repo = pname;
-    rev = "refs/tags/v${version}";
+    tag = "v${version}";
     sha256 = "sha256-UV1zSX9C9y5faOBUQ7bfj2DT6ffhMW28MIT7SaYjMgw=";
   };
 
@@ -87,7 +87,7 @@ python3.pkgs.buildPythonApplication rec {
     license = licenses.asl20;
     description = "BGP sessions management tool";
     mainProgram = "peering-manager";
-    maintainers = teams.wdz.members;
+    teams = [ teams.wdz ];
     platforms = platforms.linux;
   };
 }

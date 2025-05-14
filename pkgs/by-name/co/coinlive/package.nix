@@ -1,7 +1,5 @@
 {
   lib,
-  stdenv,
-  darwin,
   fetchFromGitHub,
   openssl,
   pkg-config,
@@ -16,21 +14,18 @@ rustPlatform.buildRustPackage rec {
   src = fetchFromGitHub {
     owner = "mayeranalytics";
     repo = "coinlive";
-    rev = "refs/tags/v${version}";
+    tag = "v${version}";
     hash = "sha256-llw97jjfPsDd4nYi6lb9ug6sApPoD54WlzpJswvdbRs=";
   };
 
-  cargoHash = "sha256-T1TgwnohUDvfpn6GXNP4xJGHM3aenMK+ORxE3z3PPA4=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-OswilwabVfoKIeHxo7sxCvgGH5dRfyTmnKED+TcxSV8=";
 
   nativeBuildInputs = [ pkg-config ];
 
-  buildInputs =
-    [
-      openssl
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      darwin.apple_sdk.frameworks.Security
-    ];
+  buildInputs = [
+    openssl
+  ];
 
   nativeInstallCheckInputs = [ versionCheckHook ];
 

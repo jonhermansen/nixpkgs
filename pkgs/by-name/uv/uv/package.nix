@@ -4,6 +4,9 @@
   rustPlatform,
   fetchFromGitHub,
 
+  # buildInputs
+  rust-jemalloc-sys,
+
   # nativeBuildInputs
   cmake,
   installShellFiles,
@@ -15,19 +18,23 @@
   nix-update-script,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "uv";
-  version = "0.5.13";
+  version = "0.7.3";
 
   src = fetchFromGitHub {
     owner = "astral-sh";
     repo = "uv";
-    tag = version;
-    hash = "sha256-W24bw+fQk7DoHPGFtUiIPybxuCa03o1ngAXqVwU/Z7E=";
+    tag = finalAttrs.version;
+    hash = "sha256-8yQnBAAzt6kjg1F1AVdLX4z4at8+vCA4lcSclkzXXGw=";
   };
 
   useFetchCargoVendor = true;
-  cargoHash = "sha256-CN4ZqYeZktcQT0Pro8rfnzri6i0xranmYdroKzwkK6A=";
+  cargoHash = "sha256-kPJrVHFJcw3tHvLm0ddn4iBoBNK1MDDF0WNcqFfmA4o=";
+
+  buildInputs = [
+    rust-jemalloc-sys
+  ];
 
   nativeBuildInputs = [
     cmake
@@ -45,7 +52,7 @@ rustPlatform.buildRustPackage rec {
   # Tests require python3
   doCheck = false;
 
-  postInstall =
+  postInstall = lib.optionalString (stdenv.hostPlatform.emulatorAvailable buildPackages) (
     let
       emulator = stdenv.hostPlatform.emulator buildPackages;
     in
@@ -54,12 +61,13 @@ rustPlatform.buildRustPackage rec {
         --bash <(${emulator} $out/bin/uv generate-shell-completion bash) \
         --fish <(${emulator} $out/bin/uv generate-shell-completion fish) \
         --zsh <(${emulator} $out/bin/uv generate-shell-completion zsh)
-    '';
+    ''
+  );
 
   nativeInstallCheckInputs = [
     versionCheckHook
   ];
-  versionCheckProgramArg = [ "--version" ];
+  versionCheckProgramArg = "--version";
   doInstallCheck = true;
 
   passthru = {
@@ -70,7 +78,7 @@ rustPlatform.buildRustPackage rec {
   meta = {
     description = "Extremely fast Python package installer and resolver, written in Rust";
     homepage = "https://github.com/astral-sh/uv";
-    changelog = "https://github.com/astral-sh/uv/blob/${version}/CHANGELOG.md";
+    changelog = "https://github.com/astral-sh/uv/blob/${finalAttrs.version}/CHANGELOG.md";
     license = with lib.licenses; [
       asl20
       mit
@@ -78,4 +86,4 @@ rustPlatform.buildRustPackage rec {
     maintainers = with lib.maintainers; [ GaetanLepage ];
     mainProgram = "uv";
   };
-}
+})

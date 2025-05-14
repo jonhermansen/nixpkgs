@@ -100,7 +100,7 @@ let
 
     installPhase = ''
       cp -r . $out
-      wrapProgram $out/bin/studio.sh \
+      wrapProgram $out/bin/studio \
         --set-default JAVA_HOME "$out/jbr" \
         --set ANDROID_EMULATOR_USE_SYSTEM_LIBS 1 \
         --set QT_XKB_CONFIG_ROOT "${xkeyboard_config}/share/X11/xkb" \
@@ -204,6 +204,7 @@ let
         ]
       }"
     '';
+    meta.mainProgram = "studio";
   };
 
   desktopItem = makeDesktopItem {
@@ -279,7 +280,7 @@ let
                 unset ANDROID_HOME
               fi
             ''}
-            exec ${fhsEnv}/bin/${drvName}-fhs-env ${androidStudio}/bin/studio.sh "$@"
+            exec ${fhsEnv}/bin/${drvName}-fhs-env ${lib.getExe androidStudio} "$@"
           '';
         preferLocalBuild = true;
         allowSubstitutes = false;
@@ -322,12 +323,19 @@ let
           # source-code itself).
           platforms = [ "x86_64-linux" ];
           maintainers =
-            with lib.maintainers;
             rec {
-              stable = [
+              stable = with lib.maintainers; [
                 alapshin
-                johnrtitor
-                numinit
+              ];
+              beta = stable;
+              canary = stable;
+              dev = stable;
+            }
+            ."${channel}";
+          teams =
+            rec {
+              stable = with lib.teams; [
+                android
               ];
               beta = stable;
               canary = stable;
@@ -336,6 +344,7 @@ let
             ."${channel}";
           mainProgram = pname;
           sourceProvenance = [ lib.sourceTypes.binaryNativeCode ];
+          position = "pkgs/applications/editors/android-studio/common.nix:303";
         };
       }
       ''

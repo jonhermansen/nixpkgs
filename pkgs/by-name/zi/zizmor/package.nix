@@ -1,40 +1,37 @@
 {
   lib,
   fetchFromGitHub,
+  nix-update-script,
   rustPlatform,
-  pkg-config,
-  openssl,
-  testers,
-  zizmor,
+  versionCheckHook,
 }:
 
-rustPlatform.buildRustPackage rec {
+rustPlatform.buildRustPackage (finalAttrs: {
   pname = "zizmor";
-  version = "0.9.2";
+  version = "1.6.0";
 
   src = fetchFromGitHub {
     owner = "woodruffw";
     repo = "zizmor";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-bQpjU3ztaO8Fckk51QGOnJFANXceYwiqyopOzMt6UYM=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-Has3PrXJIKQh6FdhZ3aGvqJ5keHTRqa+nDAb4fv3xWg=";
   };
 
-  cargoHash = "sha256-IzTXLwh14v4vjNgl37sFe1hgoA+0Izc9QWelaaArgU4=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-uXUvEbQpY9E7kTOeXMFN/9b4u4tn/S3HCs0a65Hssn4=";
 
-  buildInputs = [ openssl ];
+  nativeInstallCheckInputs = [ versionCheckHook ];
 
-  nativeBuildInputs = [ pkg-config ];
+  doInstallCheck = true;
 
-  passthru.tests.version = testers.testVersion {
-    package = zizmor;
-  };
+  passthru.updateScript = nix-update-script { };
 
   meta = {
     description = "Tool for finding security issues in GitHub Actions setups";
     homepage = "https://woodruffw.github.io/zizmor/";
-    changelog = "https://github.com/woodruffw/zizmor/releases/tag/v${version}";
+    changelog = "https://github.com/woodruffw/zizmor/releases/tag/v${finalAttrs.version}";
     license = lib.licenses.mit;
     maintainers = with lib.maintainers; [ lesuisse ];
     mainProgram = "zizmor";
   };
-}
+})

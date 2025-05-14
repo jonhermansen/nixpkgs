@@ -6,8 +6,6 @@
   pkg-config,
   openssl,
   samba,
-  stdenv,
-  darwin,
 }:
 
 rustPlatform.buildRustPackage rec {
@@ -21,20 +19,17 @@ rustPlatform.buildRustPackage rec {
     hash = "sha256-ioH/dy+d20p81iLLIcer+1fVib60TJ5Ezr6UlsL+F9g=";
   };
 
-  cargoHash = "sha256-UaaB4d7sfHm+KJI05x/TYeEd8pTePJaFBMW7t7ShSqg=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-eIgi6+f7ss/5AB3llEfrS75twejFzReS4i7fdbGWrCk=";
 
   nativeBuildInputs = [
     cmake
     pkg-config
   ];
-  buildInputs =
-    [
-      openssl.dev
-      samba
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      darwin.apple_sdk.frameworks.SystemConfiguration
-    ];
+  buildInputs = [
+    openssl.dev
+    samba
+  ];
 
   # Paho C test fails due to permission issue
   doCheck = false;

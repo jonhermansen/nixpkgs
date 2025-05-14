@@ -32,6 +32,8 @@
   taglib,
   util-linux,
   wrapQtAppsHook,
+  sparsehash,
+  rapidjson,
 }:
 
 let
@@ -40,13 +42,13 @@ let
 in
 stdenv.mkDerivation rec {
   pname = "strawberry";
-  version = "1.2.3";
+  version = "1.2.10";
 
   src = fetchFromGitHub {
     owner = "jonaski";
     repo = pname;
     rev = version;
-    hash = "sha256-90gnPw21oBHrRslJmB2hUId0WI7Gf+I4bvdS+dvAHdI=";
+    hash = "sha256-ByZHyHkMlU571QSu1bbYZC7aEX4Jc8N3j05WbXRQaBY=";
   };
 
   # the big strawberry shown in the context menu is *very* much in your face, so use the grey version instead
@@ -73,6 +75,8 @@ stdenv.mkDerivation rec {
       qtbase
       sqlite
       taglib
+      sparsehash
+      rapidjson
     ]
     ++ optionals stdenv.hostPlatform.isLinux [
       libgpod

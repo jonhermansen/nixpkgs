@@ -2,48 +2,59 @@
   lib,
   stdenv,
   buildPythonPackage,
-  callPackage,
-  catalogue,
+  fetchFromGitHub,
+
+  # build-system
   cymem,
   cython_0,
-  fetchPypi,
-  hypothesis,
-  jinja2,
-  langcodes,
-  mock,
   murmurhash,
   numpy,
-  packaging,
   preshed,
+  thinc,
+
+  # dependencies
+  catalogue,
+  jinja2,
+  langcodes,
+  packaging,
   pydantic,
-  pytestCheckHook,
-  pythonOlder,
   requests,
   setuptools,
   spacy-legacy,
   spacy-loggers,
   srsly,
-  thinc,
   tqdm,
   typer,
   wasabi,
   weasel,
+
+  # optional-dependencies
+  spacy-transformers,
+  spacy-lookups-data,
+
+  # tests
+  pytestCheckHook,
+  hypothesis,
+  mock,
+
+  # passthru
   writeScript,
-  nix,
   git,
+  nix,
   nix-update,
+  callPackage,
 }:
 
 buildPythonPackage rec {
   pname = "spacy";
-  version = "3.8.2";
+  version = "3.8.5";
   pyproject = true;
 
-  disabled = pythonOlder "3.7";
-
-  src = fetchPypi {
-    inherit pname version;
-    hash = "sha256-Szfr0lraQFmw3J4Ik+cN3l34NIUymgaO8EWA5wiSpl0=";
+  src = fetchFromGitHub {
+    owner = "explosion";
+    repo = "spaCy";
+    tag = "release-v${version}";
+    hash = "sha256-rgMstGSscUBACA5+veXD9H/lHuvWKs7hJ6hz6aKOB/0=";
   };
 
   build-system = [
@@ -51,12 +62,11 @@ buildPythonPackage rec {
     cython_0
     murmurhash
     numpy
+    preshed
     thinc
   ];
 
-  pythonRelaxDeps = [
-    "thinc"
-  ];
+  pythonRelaxDeps = [ "thinc" ];
 
   dependencies = [
     catalogue
@@ -79,6 +89,11 @@ buildPythonPackage rec {
     wasabi
     weasel
   ];
+
+  optional-dependencies = {
+    transformers = [ spacy-transformers ];
+    lookups = [ spacy-lookups-data ];
+  };
 
   nativeCheckInputs = [
     pytestCheckHook
@@ -108,8 +123,8 @@ buildPythonPackage rec {
       set -eou pipefail
       PATH=${
         lib.makeBinPath [
-          nix
           git
+          nix
           nix-update
         ]
       }
@@ -122,12 +137,12 @@ buildPythonPackage rec {
     tests.annotation = callPackage ./annotation-test { };
   };
 
-  meta = with lib; {
+  meta = {
     description = "Industrial-strength Natural Language Processing (NLP)";
-    mainProgram = "spacy";
     homepage = "https://github.com/explosion/spaCy";
     changelog = "https://github.com/explosion/spaCy/releases/tag/release-v${version}";
-    license = licenses.mit;
+    license = lib.licenses.mit;
     maintainers = [ ];
+    mainProgram = "spacy";
   };
 }

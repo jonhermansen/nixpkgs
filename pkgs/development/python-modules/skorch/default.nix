@@ -7,11 +7,14 @@
   numpy,
   scikit-learn,
   scipy,
+  setuptools,
   tabulate,
   torch,
   tqdm,
   flaky,
+  llvmPackages,
   pandas,
+  pytest-cov-stub,
   pytestCheckHook,
   safetensors,
   pythonAtLeast,
@@ -19,39 +22,38 @@
 
 buildPythonPackage rec {
   pname = "skorch";
-  version = "1.0.0";
-  format = "setuptools";
+  version = "1.1.0";
+  pyproject = true;
 
   src = fetchPypi {
     inherit pname version;
-    hash = "sha256-JcplwaeYlGRAJXRNac1Ya/hgWoHE+NWjZhCU9eaSyRQ=";
+    hash = "sha256-AguMhI/MO4DNexe5azVEXOw7laTRBN0ecFW81qqh0rY=";
   };
 
-  disabled = pythonOlder "3.8";
+  # AttributeError: 'NoneType' object has no attribute 'span' with Python 3.13
+  # https://github.com/skorch-dev/skorch/issues/1080
+  disabled = pythonOlder "3.9" || pythonAtLeast "3.13";
 
-  propagatedBuildInputs = [
+  build-system = [ setuptools ];
+
+  dependencies = [
     numpy
     scikit-learn
     scipy
     tabulate
-    torch
+    torch # implicit dependency
     tqdm
   ];
 
   nativeCheckInputs = [
     flaky
     pandas
+    pytest-cov-stub
     pytestCheckHook
     safetensors
   ];
 
-  # patch out pytest-cov dep/invocation
-  postPatch = ''
-    substituteInPlace setup.cfg  \
-      --replace "--cov=skorch" ""  \
-      --replace "--cov-report=term-missing" ""  \
-      --replace "--cov-config .coveragerc" ""
-  '';
+  checkInputs = lib.optionals stdenv.cc.isClang [ llvmPackages.openmp ];
 
   disabledTests =
     [
@@ -63,11 +65,6 @@ buildPythonPackage rec {
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       # there is a problem with the compiler selection
       "test_fit_and_predict_with_compile"
-    ]
-    ++ lib.optionals (pythonAtLeast "3.11") [
-      # Python 3.11+ not yet supported for torch.compile
-      # https://github.com/pytorch/pytorch/blob/v2.0.1/torch/_dynamo/eval_frame.py#L376-L377
-      "test_fit_and_predict_with_compile"
     ];
 
   disabledTestPaths =
@@ -75,19 +72,23 @@ buildPythonPackage rec {
       # tries to import `transformers` and download HuggingFace data
       "skorch/tests/test_hf.py"
     ]
-    ++ lib.optionals (stdenv.hostPlatform.system != "x86_64-linux") [
-      # torch.distributed is disabled by default in darwin
-      # aarch64-linux also failed these tests
-      "skorch/tests/test_history.py"
-    ];
+    ++ lib.optionals
+      (stdenv.hostPlatform.system != "x86_64-linux" && stdenv.hostPlatform.system != "aarch64-darwin")
+      [
+        # these tests fail when running in parallel for multiple platforms with:
+        # "RuntimeError: The server socket has failed to listen on any local
+        # network address because they use the same hardcoded port." For now,
+        # running for one platform per OS to avoid spurious failures.
+        "skorch/tests/test_history.py"
+      ];
 
   pythonImportsCheck = [ "skorch" ];
 
-  meta = with lib; {
+  meta = {
     description = "Scikit-learn compatible neural net library using Pytorch";
     homepage = "https://skorch.readthedocs.io";
     changelog = "https://github.com/skorch-dev/skorch/blob/master/CHANGES.md";
-    license = licenses.bsd3;
-    maintainers = with maintainers; [ bcdarwin ];
+    license = lib.licenses.bsd3;
+    maintainers = with lib.maintainers; [ bcdarwin ];
   };
 }

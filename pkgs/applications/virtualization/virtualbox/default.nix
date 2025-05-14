@@ -14,6 +14,7 @@
   xorgproto,
   libXext,
   libXcursor,
+  libXfixes,
   libXmu,
   libIDL,
   SDL2,
@@ -37,7 +38,7 @@
   libvpx,
   nettools,
   dbus,
-  substituteAll,
+  replaceVars,
   gsoap,
   zlib,
   xz,
@@ -73,17 +74,20 @@ let
   buildType = "release";
   # Use maintainers/scripts/update.nix to update the version and all related hashes or
   # change the hashes in extpack.nix and guest-additions/default.nix as well manually.
-  virtualboxVersion = "7.1.4";
-  virtualboxSha256 = "872e7a42b41f8558abbf887f1bdc7aac932bb88b2764d07cbce270cab57e3b5e";
+  virtualboxVersion = "7.1.8";
+  virtualboxSubVersion = "";
+  virtualboxSha256 = "3f7132c55ac6c5f50585bfaa115d29e30b47ccf535cb0a12ff50214ddae2f63d";
 
-  kvmPatchVersion = "20241220";
-  kvmPatchHash = "sha256-SYyD79iN6Sp/Mxat+ml3fee9X1vFUFyrwHPnQNboc1c=";
+  kvmPatchVersion = "20250207";
+  kvmPatchHash = "sha256-GzRLIXhzWL1NLvaGKcWVBCdvay1IxgJUE4koLX1ze7Y=";
 
   # The KVM build is not compatible to VirtualBox's kernel modules. So don't export
   # modsrc at all.
   withModsrc = !enableKvm;
 
-  virtualboxGuestAdditionsIso = callPackage guest-additions-iso/default.nix { };
+  virtualboxGuestAdditionsIso = callPackage guest-additions-iso/default.nix {
+    inherit virtualboxVersion;
+  };
 
   inherit (lib)
     optional
@@ -103,11 +107,12 @@ let
 in
 stdenv.mkDerivation (finalAttrs: {
   pname = "virtualbox";
-  version = finalAttrs.virtualboxVersion;
+  version = "${finalAttrs.virtualboxVersion}${finalAttrs.virtualboxSubVersion}";
 
   inherit
     buildType
     virtualboxVersion
+    virtualboxSubVersion
     virtualboxSha256
     kvmPatchVersion
     kvmPatchHash
@@ -115,7 +120,7 @@ stdenv.mkDerivation (finalAttrs: {
     ;
 
   src = fetchurl {
-    url = "https://download.virtualbox.org/virtualbox/${finalAttrs.virtualboxVersion}/VirtualBox-${finalAttrs.virtualboxVersion}.tar.bz2";
+    url = "https://download.virtualbox.org/virtualbox/${finalAttrs.virtualboxVersion}/VirtualBox-${finalAttrs.virtualboxVersion}${finalAttrs.virtualboxSubVersion}.tar.bz2";
     sha256 = finalAttrs.virtualboxSha256;
   };
 
@@ -204,6 +209,9 @@ stdenv.mkDerivation (finalAttrs: {
     grep 'libdbus-1\.so\.3'     src include -rI --files-with-match | xargs sed -i -e '
       s@"libdbus-1\.so\.3"@"${dbus.lib}/lib/libdbus-1.so.3"@g'
 
+    grep 'libXfixes\.so\.3'     src include -rI --files-with-match | xargs sed -i -e '
+      s@"libXfixes\.so\.3"@"${libXfixes.out}/lib/libXfixes.so.3"@g'
+
     grep 'libasound\.so\.2'     src include -rI --files-with-match | xargs sed -i -e '
       s@"libasound\.so\.2"@"${alsa-lib.out}/lib/libasound.so.2"@g'
 
@@ -231,17 +239,18 @@ stdenv.mkDerivation (finalAttrs: {
     # these issues by patching the code to set QT_PLUGIN_PATH to the necessary paths,
     # after the code that unsets it. Note that qtsvg is included so that SVG icons from
     # the user's icon theme can be loaded.
-    ++ optional (!headless && enableHardening) (substituteAll {
-      src = ./qt-env-vars.patch;
-      qtPluginPath = "${qtbase}/bin/${qtbase.qtPluginPrefix}:${qtsvg}/bin/${qtbase.qtPluginPrefix}:${qtwayland}/bin/${qtbase.qtPluginPrefix}";
-    })
+    ++ optional (!headless && enableHardening) (
+      replaceVars ./qt-env-vars.patch {
+        qtPluginPath = "${qtbase}/bin/${qtbase.qtPluginPrefix}:${qtsvg}/bin/${qtbase.qtPluginPrefix}:${qtwayland}/bin/${qtbase.qtPluginPrefix}";
+      }
+    )
     # While the KVM patch should not break any other behavior if --with-kvm is not specified,
     # we don't take any chances and only apply it if people actually want to use KVM support.
     ++ optional enableKvm (
       let
         patchVboxVersion =
-          # There is no updated patch for 7.0.22 yet, but the older one still applies.
-          if finalAttrs.virtualboxVersion == "7.0.22" then "7.0.20" else finalAttrs.virtualboxVersion;
+          # There is no updated patch for 7.1.8 yet, but the older one still applies.
+          if finalAttrs.virtualboxVersion == "7.1.8" then "7.1.6" else finalAttrs.virtualboxVersion;
       in
       fetchpatch {
         name = "virtualbox-${finalAttrs.virtualboxVersion}-kvm-dev-${finalAttrs.kvmPatchVersion}.patch";
@@ -409,7 +418,7 @@ stdenv.mkDerivation (finalAttrs: {
       fromSource
       binaryNativeCode
     ];
-    license = lib.licenses.gpl2;
+    license = lib.licenses.gpl3Only;
     homepage = "https://www.virtualbox.org/";
     maintainers = with lib.maintainers; [
       sander

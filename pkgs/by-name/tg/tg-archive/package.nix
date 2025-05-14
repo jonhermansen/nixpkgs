@@ -6,7 +6,7 @@
 
 let
   pname = "tg-archive";
-  version = "1.1.3";
+  version = "1.3.0";
 
 in
 python3.pkgs.buildPythonApplication {
@@ -15,8 +15,8 @@ python3.pkgs.buildPythonApplication {
   src = fetchFromGitHub {
     owner = "knadh";
     repo = "tg-archive";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-mcobB/z+e4LzEbqELWlUzhbdV5RIM2iImeg9JdVQQZc=";
+    tag = "v${version}";
+    hash = "sha256-/b9LmHOyFqaKiQ5FHemLmg6DZU+3zzh1jLBEI7RTu4Q=";
   };
 
   pyproject = true;

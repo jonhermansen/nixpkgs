@@ -142,6 +142,8 @@ stdenv.mkDerivation (finalAttrs: {
     gappsWrapperArgs+=(
       # For sysprof-agent
       --prefix PATH : "${sysprof}/bin"
+      # libpanel icons
+      --prefix XDG_DATA_DIRS : "${libpanel}/share"
     )
 
     # Ensure that all plugins get their interpreter paths fixed up.
@@ -173,7 +175,7 @@ stdenv.mkDerivation (finalAttrs: {
     '';
     homepage = "https://apps.gnome.org/Builder/";
     license = licenses.gpl3Plus;
-    maintainers = teams.gnome.members;
+    teams = [ teams.gnome ];
     platforms = platforms.linux;
     mainProgram = "gnome-builder";
   };

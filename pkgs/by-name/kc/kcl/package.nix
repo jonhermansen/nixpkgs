@@ -1,6 +1,5 @@
 {
   buildGoModule,
-  darwin,
   fetchFromGitHub,
   installShellFiles,
   kclvm_cli,
@@ -12,16 +11,16 @@
 
 buildGoModule rec {
   pname = "kcl";
-  version = "0.10.10";
+  version = "0.11.1";
 
   src = fetchFromGitHub {
     owner = "kcl-lang";
     repo = "cli";
     rev = "v${version}";
-    hash = "sha256-zv1YH/0JmNcWbyx9RLhyWykPbL34jnUbdy1HSZiYz3s=";
+    hash = "sha256-Ron+8pK/1VYwL0HO97QvBpWhKeAlhM+sVi1Djc++4n4=";
   };
 
-  vendorHash = "sha256-y8KWiy6onZmYdpanXcSQDmYv51pLfo1NTdg+EaR6p0E=";
+  vendorHash = "sha256-yvhRHzVIkPE7ZDaX+98K4PW3/uh/6esxc/1KwpOvGfY=";
 
   subPackages = [ "cmd/kcl" ];
 
@@ -34,16 +33,10 @@ buildGoModule rec {
     installShellFiles
   ];
 
-  buildInputs =
-    [
-      kclvm
-      kclvm_cli
-    ]
-    ++ (lib.optionals stdenv.hostPlatform.isDarwin [
-      darwin.apple_sdk.frameworks.Security
-      darwin.apple_sdk.frameworks.CoreServices
-      darwin.apple_sdk.frameworks.SystemConfiguration
-    ]);
+  buildInputs = [
+    kclvm
+    kclvm_cli
+  ];
 
   postInstall = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     export HOME=$(mktemp -d)

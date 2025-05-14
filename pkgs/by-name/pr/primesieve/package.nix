@@ -9,13 +9,13 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "primesieve";
-  version = "12.6";
+  version = "12.8";
 
   src = fetchFromGitHub {
     owner = "kimwalisch";
     repo = "primesieve";
     rev = "v${finalAttrs.version}";
-    hash = "sha256-XbHZDB6QbzS/+8wbgXIwWWla0nt5fCGbW3MAQvxavTk=";
+    hash = "sha256-1jy4cfH/z4fwuuonoRHtrKUVNX9mD9A2sBaUTtAUA8M=";
   };
 
   outputs = [
@@ -50,7 +50,7 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://github.com/kimwalisch/primesieve/blob/${finalAttrs.src.rev}/ChangeLog";
     license = lib.licenses.bsd2;
     mainProgram = "primesieve";
-    maintainers = lib.teams.sage.members;
+    teams = [ lib.teams.sage ];
     platforms = lib.platforms.unix;
   };
 })

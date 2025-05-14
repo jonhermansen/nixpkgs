@@ -5,7 +5,7 @@
   meson,
   ninja,
   pkg-config,
-  substituteAll,
+  replaceVars,
   gettext,
   dbus,
   glib,
@@ -55,8 +55,7 @@ stdenv.mkDerivation (finalAttrs: {
   };
 
   patches = [
-    (substituteAll {
-      src = ./hardcode-ssh-path.patch;
+    (replaceVars ./hardcode-ssh-path.patch {
       ssh_program = "${lib.getBin openssh}/bin/ssh";
     })
   ];
@@ -161,6 +160,6 @@ stdenv.mkDerivation (finalAttrs: {
       "Virtual Filesystem support library" + optionalString gnomeSupport " (full GNOME support)";
     license = licenses.lgpl2Plus;
     platforms = platforms.unix;
-    maintainers = teams.gnome.members;
+    teams = [ teams.gnome ];
   };
 })

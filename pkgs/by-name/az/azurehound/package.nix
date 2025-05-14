@@ -7,13 +7,13 @@
 
 buildGoModule rec {
   pname = "azurehound";
-  version = "2.2.1";
+  version = "2.4.1";
 
   src = fetchFromGitHub {
     owner = "SpecterOps";
     repo = "AzureHound";
-    rev = "refs/tags/v${version}";
-    hash = "sha256-DqoEtL0uyLsP/2PJdOpAmXryEZQDlyGWPQHThF+3gJA=";
+    tag = "v${version}";
+    hash = "sha256-hLIXgb0LJs5INB23V3m33OViANarJodbwZewdx91css=";
   };
 
   vendorHash = "sha256-FG3207OTzkMEoSvQsTH7Ky9T3ur7glG7k0ERfd12SO0=";
@@ -28,7 +28,7 @@ buildGoModule rec {
 
   doInstallCheck = true;
 
-  versionCheckProgramArg = [ "--version" ];
+  versionCheckProgramArg = "--version";
 
   meta = {
     description = "Azure Data Exporter for BloodHound";

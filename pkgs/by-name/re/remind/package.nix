@@ -16,14 +16,14 @@
 
 tcl.mkTclDerivation rec {
   pname = "remind";
-  version = "05.01.01";
+  version = "05.03.06";
 
   src = fetchFromGitea {
     domain = "git.skoll.ca";
     owner = "Skollsoft-Public";
     repo = "Remind";
     rev = version;
-    hash = "sha256-2qsJIdBsIttgofjB9Zd566I95mxkO7BTwUNPe50+bEY=";
+    hash = "sha256-zJmDx9AJntL08uBZEquho2Iud0y7WPZDGef/pSHX2h0=";
   };
 
   propagatedBuildInputs = lib.optionals withGui [
@@ -40,6 +40,8 @@ tcl.mkTclDerivation rec {
       --replace-fail 'set Remind "remind"' "set Remind \"$out/bin/remind\"" \
       --replace-fail 'set Rem2PS "rem2ps"' "set Rem2PS \"$out/bin/rem2ps\"" \
       --replace-fail 'set Rem2PDF "rem2pdf"' "set Rem2PDF \"$out/bin/rem2pdf\""
+    substituteInPlace configure \
+      --replace-fail 'f=-ffat-lto-objects' ""
   '';
 
   env.NIX_CFLAGS_COMPILE = lib.optionalString stdenv.hostPlatform.isDarwin (toString [

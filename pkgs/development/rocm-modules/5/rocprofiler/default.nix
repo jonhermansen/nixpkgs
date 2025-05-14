@@ -4,7 +4,7 @@
   fetchFromGitHub,
   rocmUpdateScript,
   symlinkJoin,
-  substituteAll,
+  replaceVars,
   cmake,
   clang,
   clr,
@@ -62,8 +62,7 @@ stdenv.mkDerivation (finalAttrs: {
     ./0000-dont-install-tests-hsaco.patch
 
     # Fix bad paths
-    (substituteAll {
-      src = ./0001-fix-shell-scripts.patch;
+    (replaceVars ./0001-fix-shell-scripts.patch {
       rocmtoolkit_merged = rocmtoolkit-merged;
     })
   ];
@@ -131,7 +130,7 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Profiling with perf-counters and derived metrics";
     homepage = "https://github.com/ROCm/rocprofiler";
     license = with licenses; [ mit ]; # mitx11
-    maintainers = teams.rocm.members;
+    teams = [ teams.rocm ];
     platforms = platforms.linux;
     broken =
       versions.minor finalAttrs.version != versions.minor clr.version

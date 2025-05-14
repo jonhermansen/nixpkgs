@@ -23,11 +23,11 @@
 
 stdenv.mkDerivation (finalAttrs: {
   pname = "loupe";
-  version = "47.2";
+  version = "47.4";
 
   src = fetchurl {
     url = "mirror://gnome/sources/loupe/${lib.versions.major finalAttrs.version}/loupe-${finalAttrs.version}.tar.xz";
-    hash = "sha256-bgRu/k965X7idI1S0dBzVsdEnSBKPTHQtCNnqAGXShU=";
+    hash = "sha256-jckmgpqcM4gAyPQytaNHJG5ty9mtLdGiTEmOr90+ias=";
   };
 
   patches = [
@@ -82,7 +82,8 @@ stdenv.mkDerivation (finalAttrs: {
     changelog = "https://gitlab.gnome.org/GNOME/loupe/-/blob/${finalAttrs.version}/NEWS?ref_type=tags";
     description = "Simple image viewer application written with GTK4 and Rust";
     license = licenses.gpl3Plus;
-    maintainers = with maintainers; [ jk ] ++ teams.gnome.members;
+    maintainers = with maintainers; [ jk ];
+    teams = [ teams.gnome ];
     platforms = platforms.unix;
     mainProgram = "loupe";
   };

@@ -13,7 +13,7 @@ buildGoModule rec {
   src = fetchFromGitHub {
     owner = "redcode-labs";
     repo = "GodSpeed";
-    rev = "refs/tags/${version}";
+    tag = version;
     hash = "sha256-y/mCfNWe5ShdxEz8IUQ8zUzgVkUy/+5lX6rcJ3r6KoI=";
   };
 
@@ -30,7 +30,8 @@ buildGoModule rec {
     homepage = "https://github.com/redcode-labs/GodSpeed";
     changelog = "https://github.com/redcode-labs/GodSpeed/releases/tag/${version}";
     license = licenses.mit;
-    maintainers = with maintainers; [ fab ] ++ teams.redcodelabs.members;
+    maintainers = with maintainers; [ fab ];
+    teams = [ teams.redcodelabs ];
     mainProgram = "godspeed";
     broken = stdenv.hostPlatform.isDarwin;
   };

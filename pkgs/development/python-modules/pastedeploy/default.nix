@@ -17,7 +17,7 @@ buildPythonPackage rec {
   src = fetchFromGitHub {
     owner = "Pylons";
     repo = "pastedeploy";
-    rev = "refs/tags/${version}";
+    tag = version;
     hash = "sha256-8MNeOcYPEYAfghZN/K/1v/tAAdgz/fCvuVnBoru+81Q=";
   };
 
@@ -37,6 +37,6 @@ buildPythonPackage rec {
     homepage = "https://github.com/Pylons/pastedeploy";
     changelog = "https://github.com/Pylons/pastedeploy/blob/${version}/docs/news.rst";
     license = licenses.mit;
-    maintainers = teams.openstack.members;
+    teams = [ teams.openstack ];
   };
 }

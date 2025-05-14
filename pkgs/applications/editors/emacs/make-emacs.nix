@@ -32,6 +32,7 @@
   jansson,
   libXaw,
   libXcursor,
+  libXft,
   libXi,
   libXpm,
   libgccjit,
@@ -45,6 +46,7 @@
   libxml2,
   llvmPackages_14,
   m17n_lib,
+  mailcap,
   mailutils,
   makeWrapper,
   motif,
@@ -60,15 +62,21 @@
   texinfo,
   webkitgtk_4_0,
   wrapGAppsHook3,
+  writeText,
   zlib,
 
   # Boolean flags
-  withNativeCompilation ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
+
+  # FIXME: Native compilation breaks build and runtime on macOS 15.4;
+  # see <https://github.com/NixOS/nixpkgs/issues/395169>.
+  withNativeCompilation ?
+    stdenv.buildPlatform.canExecute stdenv.hostPlatform && !stdenv.hostPlatform.isDarwin,
   noGui ? false,
   srcRepo ? true,
   withAcl ? false,
   withAlsaLib ? false,
   withAthena ? false,
+  withCairo ? withX,
   withCsrc ? true,
   withDbus ? stdenv.hostPlatform.isLinux,
   withGTK3 ? withPgtk && !noGui,
@@ -110,20 +118,8 @@
       "lucid"
   ),
 
-  # macOS dependencies for NS and macPort
-  Accelerate,
-  AppKit,
-  Carbon,
-  Cocoa,
-  GSS,
-  IOKit,
-  ImageCaptureCore,
-  ImageIO,
-  OSAKit,
-  Quartz,
-  QuartzCore,
-  UniformTypeIdentifiers,
-  WebKit,
+  # test
+  callPackage,
 }:
 
 assert (withGTK3 && !withNS && variant != "macport") -> withX || withPgtk;
@@ -182,7 +178,6 @@ mkDerivation (finalAttrs: {
             ./native-comp-driver-options-30.patch
         )
         {
-
           backendPath = (
             lib.concatStringsSep " " (
               builtins.map (x: ''"-B${x}"'') (
@@ -240,6 +235,14 @@ mkDerivation (finalAttrs: {
       for makefile_in in $(find . -name Makefile.in -print); do
         substituteInPlace $makefile_in --replace-warn /bin/pwd pwd
       done
+    ''
+
+    ''
+      substituteInPlace lisp/net/mailcap.el \
+        --replace-fail '"/etc/mime.types"' \
+                       '"/etc/mime.types" "${mailcap}/etc/mime.types"' \
+        --replace-fail '("/etc/mailcap" system)' \
+                       '("/etc/mailcap" system) ("${mailcap}/etc/mailcap" system)'
     ''
 
     ""
@@ -333,7 +336,6 @@ mkDerivation (finalAttrs: {
     ]
     ++ lib.optionals withX [
       Xaw3d
-      cairo
       giflib
       libXaw
       libXpm
@@ -341,6 +343,12 @@ mkDerivation (finalAttrs: {
       libpng
       librsvg
       libtiff
+    ]
+    ++ lib.optionals withCairo [
+      cairo
+    ]
+    ++ lib.optionals (withX && !withCairo) [
+      libXft
     ]
     ++ lib.optionals withXinput2 [
       libXi
@@ -353,27 +361,6 @@ mkDerivation (finalAttrs: {
     ]
     ++ lib.optionals withNS [
       librsvg
-      AppKit
-      GSS
-      ImageIO
-    ]
-    ++ lib.optionals (variant == "macport") [
-      Accelerate
-      AppKit
-      Carbon
-      Cocoa
-      IOKit
-      OSAKit
-      Quartz
-      QuartzCore
-      WebKit
-      # TODO are these optional?
-      GSS
-      ImageCaptureCore
-      ImageIO
-    ]
-    ++ lib.optionals (variant == "macport" && stdenv.hostPlatform.isAarch64) [
-      UniformTypeIdentifiers
     ];
 
   # Emacs needs to find movemail at run time, see info (emacs) Movemail
@@ -396,8 +383,8 @@ mkDerivation (finalAttrs: {
       else if withX then
         [
           (lib.withFeatureAs true "x-toolkit" toolkit)
-          (lib.withFeature true "cairo")
-          (lib.withFeature true "xft")
+          (lib.withFeature withCairo "cairo")
+          (lib.withFeature (!withCairo) "xft")
         ]
       else if withPgtk then
         [
@@ -501,15 +488,25 @@ mkDerivation (finalAttrs: {
     patchelf --add-needed "libXcursor.so.1" "$out/bin/emacs"
   '';
 
+  setupHook = ./setup-hook.sh;
+
   passthru = {
     inherit withNativeCompilation;
     inherit withTreeSitter;
     inherit withXwidgets;
     pkgs = recurseIntoAttrs (emacsPackagesFor finalAttrs.finalPackage);
-    tests = { inherit (nixosTests) emacs-daemon; };
+    tests = {
+      inherit (nixosTests) emacs-daemon;
+      withPackages = callPackage ./build-support/wrapper-test.nix {
+        emacs = finalAttrs.finalPackage;
+      };
+    };
   };
 
-  meta = meta // {
+  meta = {
     broken = withNativeCompilation && !(stdenv.buildPlatform.canExecute stdenv.hostPlatform);
-  };
+    knownVulnerabilities = lib.optionals (lib.versionOlder version "30") [
+      "CVE-2024-53920 CVE-2025-1244, please use newer versions such as emacs30"
+    ];
+  } // meta;
 })

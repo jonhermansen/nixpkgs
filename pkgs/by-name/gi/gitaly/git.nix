@@ -10,14 +10,14 @@
 
 stdenv.mkDerivation rec {
   pname = "gitaly-git";
-  version = "2.46.2";
+  version = "2.48.1.gl1";
 
   # `src` attribute for nix-update
   src = fetchFromGitLab {
     owner = "gitlab-org";
     repo = "git";
     rev = "v${version}";
-    hash = "sha256-LQqb3lmYIqtwIHR5KHg/Cm568CxQqeGOBAQeXphqSXo=";
+    hash = "sha256-j7yKImeRerdsYtSMrAU4y5vAJ2BT5wnJxURbDIwVot4=";
   };
 
   # we actually use the gitaly build system
@@ -53,6 +53,6 @@ stdenv.mkDerivation rec {
     description = "Distributed version control system - with Gitaly patches";
     license = lib.licenses.gpl2Only;
     platforms = lib.platforms.all;
-    maintainers = lib.teams.gitlab.members;
+    teams = [ lib.teams.gitlab ];
   };
 }

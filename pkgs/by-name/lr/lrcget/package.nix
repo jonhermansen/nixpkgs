@@ -13,23 +13,23 @@
   copyDesktopItems,
   makeDesktopItem,
   alsa-lib,
-  darwin,
   nix-update-script,
 }:
 rustPlatform.buildRustPackage rec {
   pname = "lrcget";
-  version = "0.9.0";
+  version = "0.9.3";
 
   src = fetchFromGitHub {
     owner = "tranxuanthang";
     repo = "lrcget";
     rev = "${version}";
-    hash = "sha256-XaQV3YwG15VLcgFJLGsRxCz4n50vAIYxXk09c0GKn5g=";
+    hash = "sha256-3dBjQ1fO1q8JCQFvvV8LWBCD8cKFkFmm8ufC/Xihmj4=";
   };
 
   sourceRoot = "${src.name}/src-tauri";
 
-  cargoHash = "sha256-l8HMkMMXiYlmaZx+tHE0CXZa2bZakSO/uvJ1lq44Ybk=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-Nu1N96OrLG/D2/1vbU229jLVNZuKIiCSwDJA25hlqFM=";
 
   frontend = buildNpmPackage {
     inherit version src;
@@ -74,10 +74,6 @@ rustPlatform.buildRustPackage rec {
     ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
       webkitgtk_4_1
       alsa-lib
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [
-      darwin.apple_sdk.frameworks.CoreAudio
-      darwin.apple_sdk.frameworks.WebKit
     ];
 
   # Disable checkPhase, since the project doesn't contain tests

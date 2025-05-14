@@ -1,45 +1,54 @@
-{ lib, elixir, fetchFromGitHub, fetchMixDeps, mixRelease, nix-update-script }:
+{
+  lib,
+  elixir,
+  fetchFromGitHub,
+  fetchMixDeps,
+  mixRelease,
+  nix-update-script,
+
+  # for tests
+  beam27Packages,
+  beam28Packages,
+}:
 # Based on ../elixir-ls/default.nix
 
 let
   pname = "ex_doc";
-  version = "0.34.1";
+  version = "0.37.3";
   src = fetchFromGitHub {
     owner = "elixir-lang";
     repo = "${pname}";
     rev = "v${version}";
-    hash = "sha256-OXIRippEDYAKD222XzNJkkZdXbUkDUauv5amr4oAU7c=";
+    hash = "sha256-2tam+3vYLC216Q78GIUI3fGnE5FJ/lECJAUQMSxz46w=";
   };
 in
 mixRelease {
-  inherit pname version src elixir;
+  inherit
+    pname
+    version
+    src
+    elixir
+    ;
+
+  escriptBinName = "ex_doc";
 
   stripDebug = true;
 
   mixFodDeps = fetchMixDeps {
     pname = "mix-deps-${pname}";
     inherit src version elixir;
-    hash = "sha256-fYINsATbw3M3r+IVoYS14aVEsg9OBuH6mNUqzQJuDQo=";
+    hash = "sha256-s4b6wuBJPdN0FPn76zbLCHzqJNEZ6E4nOyB1whUM2VY=";
   };
 
-  configurePhase = ''
-    runHook preConfigure
-    mix deps.compile --no-deps-check
-    runHook postConfigure
-  '';
+  passthru = {
+    tests = {
+      # ex_doc is the doc generation for OTP 27+, so let's make sure they build
+      erlang_27 = beam27Packages.erlang;
+      erlang_28 = beam28Packages.erlang;
+    };
 
-  buildPhase = ''
-    runHook preBuild
-    mix do escript.build
-    runHook postBuild
-  '';
-
-  installPhase = ''
-    runHook preInstall
-    mkdir -p $out/bin
-    cp -v ex_doc $out/bin
-    runHook postInstall
-  '';
+    updateScript = nix-update-script { };
+  };
 
   meta = with lib; {
     homepage = "https://github.com/elixir-lang/ex_doc";
@@ -49,7 +58,6 @@ mixRelease {
     license = licenses.asl20;
     platforms = platforms.unix;
     mainProgram = "ex_doc";
-    maintainers = with maintainers; [chiroptical];
+    maintainers = with maintainers; [ chiroptical ];
   };
-  passthru.updateScript = nix-update-script { };
 }

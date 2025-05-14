@@ -7,21 +7,20 @@
   buildPackages,
   versionCheckHook,
   nix-update-script,
-  hugo,
 }:
 
-buildGoModule rec {
+buildGoModule (finalAttrs: {
   pname = "hugo";
-  version = "0.140.1";
+  version = "0.147.1";
 
   src = fetchFromGitHub {
     owner = "gohugoio";
     repo = "hugo";
-    tag = "v${version}";
-    hash = "sha256-9H7hXBz/rKJZr/XvqFRmOQylf6sfJtkwik3jh/k+Vec=";
+    tag = "v${finalAttrs.version}";
+    hash = "sha256-Fj/1p75uOY+Zx9F9tBOjqa8nL1mbvVZzc3N7Js0qXgQ=";
   };
 
-  vendorHash = "sha256-swcj1JxYoRqKscu/IC0uiAATp4AXN0aANWkSq/mJsyc=";
+  vendorHash = "sha256-/XXYKuZNwrBx+Dr4XacDIzTrdELtXYHRjOzjhcBjoK4=";
 
   checkFlags =
     let
@@ -70,13 +69,13 @@ buildGoModule rec {
     versionCheckHook
   ];
   doInstallCheck = true;
-  versionCheckProgram = "${placeholder "out"}/bin/${meta.mainProgram}";
-  versionCheckProgramArg = [ "version" ];
+  versionCheckProgram = "${placeholder "out"}/bin/hugo";
+  versionCheckProgramArg = "version";
 
   passthru.updateScript = nix-update-script { };
 
   meta = {
-    changelog = "https://github.com/gohugoio/hugo/releases/tag/v${version}";
+    changelog = "https://github.com/gohugoio/hugo/releases/tag/v${finalAttrs.version}";
     description = "Fast and modern static website engine";
     homepage = "https://gohugo.io";
     license = lib.licenses.asl20;
@@ -86,6 +85,7 @@ buildGoModule rec {
       Br1ght0ne
       Frostman
       kachick
+      federicoschonborn
     ];
   };
-}
+})

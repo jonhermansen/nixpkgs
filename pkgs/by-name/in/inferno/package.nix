@@ -1,18 +1,23 @@
-{ lib, rustPlatform, fetchFromGitHub }:
+{
+  lib,
+  rustPlatform,
+  fetchFromGitHub,
+}:
 
 rustPlatform.buildRustPackage rec {
   pname = "inferno";
-  version = "0.12.0";
+  version = "0.12.2";
 
   src = fetchFromGitHub {
     owner = "jonhoo";
-    repo = pname;
+    repo = "inferno";
     rev = "v${version}";
-    hash = "sha256-KB9E4kqi85reDJnjb2PKgOsBo9opTuPVUW4nDrJIMmU=";
+    hash = "sha256-NDxgWHTMyntNtUb/+7bvrR64PNRPcovQd/IIgcLo5JQ=";
     fetchSubmodules = true;
   };
 
-  cargoHash = "sha256-AA1Bm70W2gAL2IohQwY0wcLNq6AOzQ3oqVRzzyeRyxA=";
+  useFetchCargoVendor = true;
+  cargoHash = "sha256-xtWNIbWvYSSuvmq+IYADnpnBHuVeXBolRqc9JrIoiis=";
 
   # skip flaky tests
   checkFlags = [

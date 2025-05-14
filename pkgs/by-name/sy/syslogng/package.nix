@@ -19,7 +19,6 @@
   python3,
   riemann_c_client,
   protobufc,
-  pcre,
   paho-mqtt-c,
   python3Packages,
   libnet,
@@ -36,7 +35,8 @@
   gperf,
   withGrpc ? true,
   grpc,
-  protobuf,
+  # see https://github.com/syslog-ng/syslog-ng/pull/5263
+  protobuf_29,
 }:
 let
   python-deps =
@@ -99,7 +99,6 @@ stdenv.mkDerivation (finalAttrs: {
       systemd
       riemann_c_client
       protobufc
-      pcre
       libnet
       json_c
       libuuid
@@ -113,7 +112,7 @@ stdenv.mkDerivation (finalAttrs: {
       rdkafka
     ]
     ++ (lib.optionals withGrpc [
-      protobuf
+      protobuf_29
       grpc
     ]);
 

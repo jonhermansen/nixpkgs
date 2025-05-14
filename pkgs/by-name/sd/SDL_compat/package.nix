@@ -1,13 +1,15 @@
 {
   lib,
-  SDL2,
+  sdl2-compat,
   cmake,
   darwin,
   fetchFromGitHub,
   libGLU,
   libiconv,
+  libX11,
   mesa,
   pkg-config,
+  pkg-config-unwrapped,
   stdenv,
   # Boolean flags
   libGLSupported ? lib.elem stdenv.hostPlatform.system mesa.meta.platforms,
@@ -15,7 +17,6 @@
 }:
 
 let
-  inherit (darwin.apple_sdk.frameworks) Cocoa;
   inherit (darwin) autoSignDarwinBinariesHook;
 in
 stdenv.mkDerivation (finalAttrs: {
@@ -38,16 +39,31 @@ stdenv.mkDerivation (finalAttrs: {
       autoSignDarwinBinariesHook
     ];
 
-  propagatedBuildInputs =
-    [ SDL2 ]
+  # re-export PKG_CHECK_MODULES m4 macro used by sdl.m4
+  propagatedNativeBuildInputs = [ pkg-config-unwrapped ];
+
+  buildInputs =
+    [
+      libX11
+      sdl2-compat
+    ]
     ++ lib.optionals stdenv.hostPlatform.isDarwin [
       libiconv
-      Cocoa
     ]
     ++ lib.optionals openglSupport [ libGLU ];
 
   enableParallelBuilding = true;
 
+  postInstall = ''
+    # allow as a drop in replacement for SDL
+    # Can be removed after treewide switch from pkg-config to pkgconf
+    ln -s $out/lib/pkgconfig/sdl12_compat.pc $out/lib/pkgconfig/sdl.pc
+  '';
+
+  # The setup hook scans paths of buildInputs to find SDL related packages and
+  # adds their include and library paths to environment variables. The sdl-config
+  # is patched to use these variables to produce correct flags for compiler.
+  patches = [ ./find-headers.patch ];
   setupHook = ./setup-hook.sh;
 
   postFixup = ''
@@ -57,14 +73,12 @@ stdenv.mkDerivation (finalAttrs: {
           if stdenv.hostPlatform.isDarwin then
             ''
               install_name_tool ${
-                lib.strings.concatMapStrings (
-                  x: " -add_rpath ${lib.makeLibraryPath [ x ]} "
-                ) finalAttrs.propagatedBuildInputs
+                lib.strings.concatMapStrings (x: " -add_rpath ${lib.makeLibraryPath [ x ]} ") finalAttrs.buildInputs
               } "$lib"
             ''
           else
             ''
-              patchelf --set-rpath "$(patchelf --print-rpath $lib):${lib.makeLibraryPath finalAttrs.propagatedBuildInputs}" "$lib"
+              patchelf --set-rpath "$(patchelf --print-rpath $lib):${lib.makeLibraryPath finalAttrs.buildInputs}" "$lib"
             ''
         }
       fi
@@ -76,7 +90,8 @@ stdenv.mkDerivation (finalAttrs: {
     description = "Cross-platform multimedia library - build SDL 1.2 applications against 2.0";
     license = lib.licenses.zlib;
     mainProgram = "sdl-config";
-    maintainers = lib.teams.sdl.members ++ (with lib.maintainers; [ peterhoeg ]);
+    maintainers = with lib.maintainers; [ peterhoeg ];
+    teams = [ lib.teams.sdl ];
     platforms = lib.platforms.all;
   };
 })

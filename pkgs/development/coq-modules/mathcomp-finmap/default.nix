@@ -1,7 +1,7 @@
 {
   coq,
   mkCoqDerivation,
-  mathcomp,
+  mathcomp-boot,
   lib,
   version ? null,
 }:
@@ -18,11 +18,11 @@ mkCoqDerivation {
   defaultVersion =
     with lib.versions;
     lib.switch
-      [ coq.version mathcomp.version ]
+      [ coq.version mathcomp-boot.version ]
       [
         {
           cases = [
-            (range "8.16" "8.20")
+            (range "8.16" "9.0")
             (isGe "2.0")
           ];
           out = "2.1.0";
@@ -107,7 +107,7 @@ mkCoqDerivation {
     "1.0.0".sha256 = "0sah7k9qm8sw17cgd02f0x84hki8vj8kdz7h15i7rmz08rj0whpa";
   };
 
-  propagatedBuildInputs = [ mathcomp.ssreflect ];
+  propagatedBuildInputs = [ mathcomp-boot ];
 
   meta = {
     description = "Finset and finmap library";

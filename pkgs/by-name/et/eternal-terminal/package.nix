@@ -9,7 +9,6 @@
   protobuf,
   zlib,
   catch2,
-  darwin,
 }:
 
 stdenv.mkDerivation rec {
@@ -19,7 +18,7 @@ stdenv.mkDerivation rec {
   src = fetchFromGitHub {
     owner = "MisterTea";
     repo = "EternalTerminal";
-    rev = "refs/tags/et-v${version}";
+    tag = "et-v${version}";
     hash = "sha256-vukh3a6SxHaVCT4hmoVt4hEGB8Sqylu53Nz8fgBWkTM";
   };
 
