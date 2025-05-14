@@ -18,6 +18,7 @@
   loennWrapper ? null,
   miniinstallerWrapper ? null,
   skipHandlerCheck ? false, # whether to skip olympus xdg-mime check, true will override it
+  installHints ? [],  # any Celeste installs to make Olympus aware of
 }:
 let
 
@@ -67,5 +68,6 @@ symlinkJoin {
       --set OLYMPUS_LOENN_WRAPPER "${wrapper-to-env loennWrapper}"  \
       --set OLYMPUS_MINIINSTALLER_WRAPPER "${miniinstaller-wrapper}" \
       --set OLYMPUS_SKIP_SCHEME_HANDLER_CHECK "${if skipHandlerCheck then "1" else "0"}"
+      --set OLYMPUS_FINDER_HINTS "${lib.concatStringsSep ":" installHints}"
   '';
 }

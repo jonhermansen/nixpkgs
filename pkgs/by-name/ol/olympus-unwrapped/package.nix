@@ -39,12 +39,19 @@ buildDotnetModule {
   pname = "olympus-unwrapped";
   inherit version;
 
+  #src = fetchFromGitHub {
+  #  inherit rev;
+  #  owner = "EverestAPI";
+  #  repo = "Olympus";
+  #  fetchSubmodules = true; # Required. See upstream's README.
+  #  hash = "sha256-7Xdd6AdDpHQUmQ3ogEyir/OQwvOcVDMtweE3D/v4uuQ=";
+  #};
   src = fetchFromGitHub {
-    inherit rev;
-    owner = "EverestAPI";
+    owner = "rhelmot";
     repo = "Olympus";
+    rev = "386d0b4b0b4addcbcfa3fe7099dea6343707d2ec";
     fetchSubmodules = true; # Required. See upstream's README.
-    hash = "sha256-7Xdd6AdDpHQUmQ3ogEyir/OQwvOcVDMtweE3D/v4uuQ=";
+    hash = "";
   };
 
   nativeBuildInputs = [
