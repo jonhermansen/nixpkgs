@@ -3,6 +3,7 @@
   qtbase,
   qtlanguageserver,
   qtshadertools,
+  qtdeclarative,
   openssl,
   stdenv,
   lib,
@@ -21,6 +22,9 @@ qtModule {
     qtlanguageserver
     qtshadertools
     openssl
+  ];
+  propagatedNativeBuildInputs = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    qtdeclarative
   ];
   buildInputs = [
     qtbase
