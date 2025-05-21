@@ -26,6 +26,7 @@
   lcms2,
   nixosTests,
   testers,
+  evdev-proto,
 
   enableXWayland ? true,
   xwayland ? null,
@@ -77,7 +78,6 @@ let
       buildInputs =
         [
           libGL
-          libcap
           libinput
           libpng
           libxkbcommon
@@ -92,6 +92,12 @@ let
           xorg.xcbutilimage
           xorg.xcbutilrenderutil
           xorg.xcbutilwm
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isLinux [
+          libcap
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+          evdev-proto
         ]
         ++ lib.optional finalAttrs.enableXWayland xwayland
         ++ extraBuildInputs;
@@ -127,7 +133,7 @@ let
         inherit (finalAttrs.src.meta) homepage;
         changelog = "https://gitlab.freedesktop.org/wlroots/wlroots/-/tags/${version}";
         license = lib.licenses.mit;
-        platforms = lib.platforms.linux;
+        platforms = lib.platforms.linux ++ lib.platforms.freebsd;
         maintainers = with lib.maintainers; [
           primeos
           synthetica

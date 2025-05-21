@@ -3,6 +3,7 @@
   lib,
   fetchFromGitea,
   fetchpatch,
+  freebsd,
   pkg-config,
   meson,
   ninja,
@@ -60,7 +61,8 @@ stdenv.mkDerivation rec {
       tllist
     ]
     ++ lib.optionals (withShapingTypes != [ ]) [ harfbuzz ]
-    ++ lib.optionals (builtins.elem "run" withShapingTypes) [ utf8proc ];
+    ++ lib.optionals (builtins.elem "run" withShapingTypes) [ utf8proc ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [ freebsd.libstdthreads ];
   nativeCheckInputs = [ check ];
 
   mesonBuildType = "release";
@@ -97,6 +99,6 @@ stdenv.mkDerivation rec {
       mit
       zlib
     ];
-    platforms = with platforms; linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

@@ -61,6 +61,6 @@ stdenv.mkDerivation rec {
     license = licenses.mit;
     mainProgram = "swaybg";
     maintainers = with maintainers; [ primeos ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }
