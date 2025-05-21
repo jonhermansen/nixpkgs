@@ -15,6 +15,11 @@ mkDerivation rec {
     hash = "sha256-3FNJPZWg23H/YiUdIfO4KOUZ7BrJ2/xw8LD6MMSEICY=";
   };
 
+  outputs = [
+    "out"
+    "debug"
+  ];
+
   extraNativeBuildInputs = [
     xargs-j
   ];
@@ -29,11 +34,14 @@ mkDerivation rec {
     "DRMKMODDIR=${drm-kmod.src}"
     "KMODDIR=${builtins.placeholder "out"}/kernel"
     "NO_XREF=1"
+    "DEBUG_FLAGS=-g"
   ];
 
   hardeningDisable = [
     "pic" # generates relocations the linker can't handle
   ];
+
+  env.NIX_CFLAGS_COMPILE_AFTER = "-O0";   # XXX REMOVE
 
   meta.platforms = [ "x86_64-freebsd" ];
   meta.license = lib.licenses.unfree;

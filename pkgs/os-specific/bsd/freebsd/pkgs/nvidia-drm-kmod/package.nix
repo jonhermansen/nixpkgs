@@ -38,17 +38,13 @@ mkDerivation rec {
     sed -E -i -e 's:bool nv_drm_fbdev_module_param = true;:bool nv_drm_fbdev_module_param = false;:' src/nvidia-drm/nvidia-drm-os-interface.c
   '' + ''
     sed -E -i -e '/DRMKMODDIR.*\/linuxkpi\/dummy\/include/d' src/nvidia-drm/Makefile
-    sed -E -i -e 's/if IS_ENABLED.*/if 1/g' src/nvidia-drm/nvidia-drm-conftest.h
-    substituteInPlace src/nvidia-drm/conftest.sh \
-      --replace-fail ">/dev/null" '>>$TMP/log.''$$' \
-      --replace-fail "> /dev/null" '>>$TMP/log.''$$'
 
     mkdir -p $TMP/bin
     ln -s ${stdenv.cc}/bin/${stdenv.cc.targetPrefix}nm $TMP/bin/nm
     export PATH=$PATH:$TMP/bin
   '';
 
-  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration -O1";  # conftests rely on this  # XXX TODO remove -O1
+  env.NIX_CFLAGS_COMPILE = "-Wno-error=implicit-function-declaration -O0";  # conftests rely on this    XXX REMOVE -g -O0
   env.CONFTEST_BSD_KMODPATHS = "${sys}/kernel ${drm-kmod}/kernel";
 
   extraNativeBuildInputs = [
