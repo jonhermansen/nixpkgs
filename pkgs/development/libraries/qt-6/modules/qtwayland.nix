@@ -32,7 +32,7 @@ qtModule {
     qtwayland
   ];
 
-  outputs = [ "out" ];
+  outputs = [ "out" "dev" ];
 
   patches = [
     # run waylandscanner with private-code to avoid conflict with symbols from libwayland

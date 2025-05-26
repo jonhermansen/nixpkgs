@@ -112,4 +112,4 @@ ecmHostPathHook() {
         appendToVar propagatedUserEnvPkgs "$1"
     fi
 }
-addEnvHooks "$hostOffset" ecmHostPathHook
+addEnvHooks 0 ecmHostPathHook

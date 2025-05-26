@@ -3,6 +3,7 @@
   lib,
   src,
   version,
+  removeReferencesTo,
   bison,
   flex,
   gperf,
@@ -181,6 +182,7 @@ in
       ++ lib.optional (libpq != null && lib.meta.availableOn stdenv.hostPlatform libpq) libpq;
 
       nativeBuildInputs = [
+        removeReferencesTo
         bison
         flex
         gperf
@@ -197,7 +199,8 @@ in
         [ lndir ]
     # I’m not sure if this is necessary, but the macOS mkspecs stuff
     # tries to call `xcrun xcodebuild`, so better safe than sorry.
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ];
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ]
+    ++ lib.optionals isCrossBuild [ qtbase ];
 
     strictDeps = true;
 
@@ -304,6 +307,8 @@ in
     ++ lib.optionals isCrossBuild [
       "-DQT_HOST_PATH=${qtbase.__spliced.buildHost}"
       "-DQt6HostInfo_DIR=${qtbase.__spliced.buildHost}/lib/cmake/Qt6HostInfo"
+      "-DQT_NO_GENERATE_QMAKE_WRAPPER_FOR_TARGET=ON"
+      "-DQT_FORCE_BUILD_TOOLS=ON"
     ]
     ++ lib.optional (
       qttranslations != null && !isCrossBuild && false
@@ -329,7 +334,15 @@ in
 
       # FIXME: not sure why this isn't added automatically?
           patchelf --add-rpath "${libmysqlclient}/lib/mariadb" $out/${qtPluginPrefix}/sqldrivers/libqsqlmysql.so
-        '';
+        ''
+        # the first file contains references to the build-system qtbase
+        # we compensate by moving the reference to the dev output (as propagatedNativeBuildInputs)
+        # the second file contains references to a host pkg-config executable, which we can refer to through PATH
+        + lib.optionalString isCrossBuild ''
+          remove-references-to -t ${qtbase.__spliced.buildHost} $out/lib/cmake/Qt6/Qt6Dependencies.cmake
+          sed -E -i -e 's@PKG_CONFIG_EXECUTABLE = /nix/store/.*/bin/@PKG_CONFIG_EXECUTABLE = @' $out/mkspecs/qmodule.pri
+        ''
+        ;
 
         dontWrapQtApps = true;
 

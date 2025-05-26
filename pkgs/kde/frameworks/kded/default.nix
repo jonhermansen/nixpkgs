@@ -1,32 +1,23 @@
 {
-  lib,
-  stdenv,
   mkKdeDerivation,
   qtdeclarative,
-  kdoctools,
   kconfig,
-  symlinkJoin,
+  kdeHostTools,
 }:
-let
-  hostTools = symlinkJoin {
-    pname = "kdoctools-kconfig";
-    inherit (kconfig) version;
-    paths = [
-      (kdoctools.__spliced.buildHost or kdoctools).dev
-      (kconfig.__spliced.buildHost or kconfig).dev
-    ];
-  };
-in
 mkKdeDerivation {
   pname = "kded";
 
   extraNativeBuildInputs = [
     qtdeclarative
+    kdeHostTools
   ];
 
-  extraCmakeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-    "-DKF6_HOST_TOOLING=${hostTools}/lib/cmake"
+  extraBuildInputs = [
+    kconfig
   ];
+
+  # override cmake, which cannot be convinced that this should be the host and not build kconf_update
+  env.NIX_CFLAGS_COMPILE = "-DKCONF_UPDATE_EXE=\"${kconfig}/libexec/kconf_update\"";
 
   meta.mainProgram = "kded6";
 }

@@ -25,7 +25,6 @@ mkKdeDerivation {
   pname = "ktexteditor";
 
   extraBuildInputs = [
-    qtdeclarative
     qtspeech
     editorconfig-core-c
   ];

@@ -26,7 +26,6 @@ stdenv.mkDerivation {
     doxygen
     wrapQtAppsHook
     pkg-config
-    qtbase
   ];
 
   buildInputs = [ qtbase ];
@@ -34,7 +33,6 @@ stdenv.mkDerivation {
   preConfigure = ''
     substituteInPlace src/signond/signond.pro \
       --replace "/etc" "@out@/etc"
-    QMAKEMODULES="${qtbase}/mkspecs:${qtbase.dev}/mkspecs"
   '';
 
   meta = with lib; {

@@ -9,6 +9,7 @@
   lsof,
   pkg-config,
   spirv-tools,
+  qtbase,
   qtpositioning,
   qtdeclarative,
   qtsvg,
@@ -53,6 +54,7 @@ mkKdeDerivation {
     kdeHostTools
   ];
   extraBuildInputs = [
+    qtbase
     qtpositioning
     qtsvg
     qtwayland
@@ -75,6 +77,10 @@ mkKdeDerivation {
   postFixup = ''
     mkdir -p $out/nix-support
     echo "${lsof} ${xorg.xmessage} ${xorg.xrdb}" > $out/nix-support/depends
+  ''
+  # Picks up the wrong (build-system) qtpaths
+  + lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
+    substituteInPlace $out/share/kconf_update/migrate-calendar-to-plugin-id.py --replace-fail "${qtbase.__spliced.buildHost}" "${qtbase}"
   '';
 
   passthru.providedSessions = [

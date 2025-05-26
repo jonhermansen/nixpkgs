@@ -105,6 +105,7 @@ stdenv.mkDerivation rec {
       url = "https://github.com/FreeRDP/FreeRDP/commit/0c20fac8f1deeeca3df93a6619542e5d9176f0f0.patch";
       hash = "sha256-cEzNPteucoI5KoGEM3C6mg2kW9uWImPebZEV6nssexY=";
     })
+    ./freebsd-nixpkgs.patch
   ];
 
   postPatch =

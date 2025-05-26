@@ -24,7 +24,7 @@ if [[ "$hostOffset" == 0 ]]; then
         export QMAKEMODULES=
 
         declare -Ag qtPathSeen=()
-        qtHostPathHook() {
+        qmakePathHook() {
             # Skip this path if we have seen it before.
             # MUST use 'if' because 'qmakePathSeen[$]' may be unset.
             if [ -n "${qtPathSeen[$1]-}" ]; then return; fi
@@ -34,7 +34,7 @@ if [[ "$hostOffset" == 0 ]]; then
                 QMAKEPATH="${QMAKEPATH}${QMAKEPATH:+:}$1"
             fi
         }
-        envHostTargetHooks+=(qtHostPathHook)
+        envHostTargetHooks+=(qmakePathHook)
 
         declare -g qttoolsPathSeen=
         qtToolsHook() {
@@ -112,5 +112,14 @@ if [[ "$hostOffset" == 0 ]]; then
         }
 
         preConfigureHooks+=(applyQtCmakePaths)
+
+        qtHostPathHook() {
+            # Setting QT_HOST_PATH causes tools to not be built so don't set it unless strictly necessary
+            if [[ "$1" != "@out@" && -x "$1/bin/qmake" && -d "$1/lib/cmake/Qt6HostInfo" ]] && ! "@out@/bin/qmake" -version &>/dev/null; then
+                cmakeFlags+=" -DQT_HOST_PATH=$1"
+                cmakeFlags+=" -DQt6HostInfo_DIR=$1/lib/cmake/Qt6HostInfo"
+            fi
+        }
+        addEnvHooks "-1" qtHostPathHook
     fi
 fi

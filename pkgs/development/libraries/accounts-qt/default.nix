@@ -24,6 +24,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mPZgD4r7vlUP6wklvZVknGqTXZBckSOtNzK7p6e2qSA=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   propagatedBuildInputs = [
     glib
     libaccounts-glib
@@ -44,6 +49,13 @@ stdenv.mkDerivation (finalAttrs: {
   # remove forbidden references to /build
   preFixup = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" "$out"/bin/*
+  '';
+
+  # cmake files are hardcoded to refer to $out/include, but we want it to use $dev/include
+  postFixup = ''
+    grep -Irl "$out/include" "$out" "$dev" | while read -r filename; do
+      substituteInPlace "$filename" --replace-fail "$out/include" "$dev/include"
+    done
   '';
 
   passthru.updateScript = gitUpdater {

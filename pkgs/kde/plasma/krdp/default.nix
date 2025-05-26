@@ -35,7 +35,6 @@ mkKdeDerivation {
     kdeHostTools
     qttools
     qtwayland
-    freerdp
   ];
   extraBuildInputs = [
     qtkeychain

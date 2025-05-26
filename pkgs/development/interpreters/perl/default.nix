@@ -52,6 +52,8 @@ let
         interpreter = "${self}/bin/perl";
         libPrefix = "lib/perl5/site_perl";
         # TODO is this correct?
+        # at least with the way perl is currently built, it's definitely buildPlatform
+        # even though it actually contains hostPlatform binaries
         archString = self.stdenv.buildPlatform.system + lib.optionalString (enableThreading && self.stdenv.hostPlatform.isLinux) "-thread-multi";
         archPrefix = "lib/perl5/${self.version}/${archString}";
 
