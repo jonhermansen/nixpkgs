@@ -44,7 +44,7 @@ mkDerivation rec {
   ];
 
   # hardeningDisable = stackprotector doesn't seem to be enough, put it in cflags too
-  NIX_CFLAGS_COMPILE = "-fno-stack-protector -O1";  # XXX TODO remove -O1
+  NIX_CFLAGS_COMPILE = "-fno-stack-protector";
 
   env = sys.passthru.env;
   SYSDIR = "${sys.src}/sys";
