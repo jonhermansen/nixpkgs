@@ -36,7 +36,7 @@ index f371c33..adf85df 100644
  #endif
              }
 +        } else if (sessionType == QLatin1String("wayland")) {
-+                // communicate with pam-ck-connector.so
++                // communicate with pam_ck_connector.so
 +                // this is required to pass the check necessary to register this as a graphical session on FreeBSD
 +                sessionEnv.insert(QStringLiteral("CKCON_X11_DISPLAY"), QLatin1String("wayland"));
          }
