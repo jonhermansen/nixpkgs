@@ -1,5 +1,6 @@
 { mkDerivation, pkgsBuildBuild }:
 mkDerivation {
+  #pname = "ncurses-tinfo";  # uncomment this next mass rebuild
   path = "lib/ncurses/tinfo";
   extraPaths = [
     "lib/ncurses"
