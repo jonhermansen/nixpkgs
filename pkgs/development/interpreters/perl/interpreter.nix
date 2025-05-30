@@ -95,11 +95,15 @@ stdenv.mkDerivation (
     postPatch =
       (
         if crossCompiling then
-          ''
+          (''
             substituteInPlace dist/PathTools/Cwd.pm \
               --replace "/bin/pwd" '${coreutils}/bin/pwd'
             substituteInPlace cnf/configure_tool.sh --replace "cc -E -P" "cc -E"
           ''
+          # https://github.com/arsv/perl-cross/pull/159
+          + ''
+            sed -E -i -e '/d_fdclose/a checkfunc d_fdopendir "fdopendir" "0" "dirent.h"' cnf/configure_func.sh
+          '')
         else
           ''
             substituteInPlace dist/PathTools/Cwd.pm \
