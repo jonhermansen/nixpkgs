@@ -11047,7 +11047,9 @@ with pkgs;
   # unstable until the first 1.x release
   fwts = callPackage ../os-specific/linux/fwts { };
 
-  libuuid = if stdenv.hostPlatform.isLinux then util-linuxMinimal else null;
+  libuuid = if stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
+    then util-linuxMinimal
+    else null;
 
   elegant-sddm = libsForQt5.callPackage ../data/themes/elegant-sddm { };
 
