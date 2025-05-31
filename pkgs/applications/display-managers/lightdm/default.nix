@@ -20,6 +20,7 @@
   libgcrypt,
   audit,
   busybox,
+  freebsd,
   polkit,
   accountsservice,
   gtk-doc,
@@ -31,6 +32,9 @@
   yelp-tools,
   yelp-xsl,
   nixosTests,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -54,18 +58,18 @@ stdenv.mkDerivation rec {
     automake
     yelp-tools
     yelp-xsl
-    gobject-introspection
     gtk-doc
     intltool
     itstool
     libtool
     pkg-config
+  ] ++ lib.optionals withIntrospection [
+    gobject-introspection
     vala
   ];
 
   buildInputs = [
     accountsservice
-    audit
     glib
     libXdmcp
     libgcrypt
@@ -73,7 +77,9 @@ stdenv.mkDerivation rec {
     libxklavier
     pam
     polkit
-  ] ++ lib.optional withQt5 qtbase;
+  ]
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform audit) audit
+  ++ lib.optional withQt5 qtbase;
 
   patches = [
     # Adds option to disable writing dmrc files
@@ -81,12 +87,23 @@ stdenv.mkDerivation rec {
       url = "https://src.fedoraproject.org/rpms/lightdm/raw/4cf0d2bed8d1c68970b0322ccd5dbbbb7a0b12bc/f/lightdm-1.25.1-disable_dmrc.patch";
       sha256 = "06f7iabagrsiws2l75sx2jyljknr9js7ydn151p3qfi104d1541n";
     })
-
+    (fetchpatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/4ac982fe4ac94aa2006c3946b2da7f8771f8b67d/x11/lightdm/files/patch-liblightdm-gobject_language.c";
+      extraPrefix = "";
+      hash = "sha256-1OGhiGDtgH2hCWQfHDV9XskiUHELHJiVZKTZAOQuK2k=";
+    })
+  ] ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform plymouth) [
     # Hardcode plymouth to fix transitions.
     # For some reason it can't find `plymouth`
     # even when it's in PATH in environment.systemPackages.
     (replaceVars ./fix-paths.patch {
       plymouth = "${plymouth}/bin/plymouth";
+    })
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    (fetchpatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/4ac982fe4ac94aa2006c3946b2da7f8771f8b67d/x11/lightdm/files/patch-src_session-child.c";
+      extraPrefix = "";
+      hash = "sha256-PvWoBrjXN+6fYCr8a70VhKVHUk1a+CnfEzaKb+l4ClQ=";
     })
   ];
 
@@ -111,7 +128,7 @@ stdenv.mkDerivation rec {
       --replace "which" "${buildPackages.busybox}/bin/which"
 
     substituteInPlace src/shared-data-manager.c \
-      --replace /bin/rm ${busybox}/bin/rm
+      --replace /bin/rm ${if stdenv.hostPlatform.isFreeBSD then freebsd.bin else busybox}/bin/rm
   '';
 
   postInstall = ''
@@ -126,7 +143,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     homepage = "https://github.com/canonical/lightdm";
     description = "Cross-desktop display manager";
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     license = licenses.gpl3;
     teams = [ teams.pantheon ];
   };
