@@ -1,9 +1,14 @@
 {
+  lib,
+  stdenv,
   mkKdeDerivation,
   qtbase,
   qtwayland,
+  qtdeclarative,
   libsForQt5,
   xorg,
+  kdeHostTools,
+  withQt5 ? stdenv.buildPlatform.canExecute stdenv.hostPlatform || !stdenv.hostPlatform.isFreeBSD,
 }:
 mkKdeDerivation {
   pname = "plasma-integration";
@@ -14,12 +19,21 @@ mkKdeDerivation {
   outputs = [
     "out"
     "dev"
+  ] ++ lib.optionals withQt5 [
     "qt5"
+  ];
+
+  extraNativeBuildInputs = [
+    qtdeclarative
+    qtwayland
+    kdeHostTools
   ];
 
   # We can't add qt5 stuff to dependencies or the hooks blow up,
   # so manually point everything to everything. Oof.
   extraCmakeFlags = [
+    (lib.cmakeBool "BUILD_QT5" withQt5)
+  ] ++ lib.optionals withQt5 [
     "-DQt5_DIR=${libsForQt5.qtbase.dev}/lib/cmake/Qt5"
     "-DQt5Concurrent_DIR=${libsForQt5.qtbase.dev}/lib/cmake/Qt5Concurrent"
     "-DQt5Core_DIR=${libsForQt5.qtbase.dev}/lib/cmake/Qt5Core"
@@ -67,7 +81,7 @@ mkKdeDerivation {
   ];
 
   # Move Qt5 plugin to Qt5 plugin path
-  postInstall = ''
+  postInstall = lib.optionalString withQt5 ''
     mkdir -p $qt5/${libsForQt5.qtbase.qtPluginPrefix}/platformthemes
     mv $out/${qtbase.qtPluginPrefix}/platformthemes/KDEPlasmaPlatformTheme5.so $qt5/${libsForQt5.qtbase.qtPluginPrefix}/platformthemes
   '';

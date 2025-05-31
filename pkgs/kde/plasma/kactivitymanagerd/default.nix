@@ -2,6 +2,7 @@
   mkKdeDerivation,
   qt5compat,
   boost,
+  qtdeclarative,
 }:
 mkKdeDerivation {
   pname = "kactivitymanagerd";
@@ -9,5 +10,8 @@ mkKdeDerivation {
   extraBuildInputs = [
     qt5compat
     boost
+  ];
+  extraNativeBuildInputs = [
+    qtdeclarative
   ];
 }

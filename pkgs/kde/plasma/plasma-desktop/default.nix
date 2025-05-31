@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   mkKdeDerivation,
   runCommandLocal,
   makeWrapper,
@@ -8,6 +9,7 @@
   replaceVars,
   util-linux,
   pkg-config,
+  qtdeclarative,
   qtsvg,
   qtwayland,
   breeze,
@@ -18,6 +20,7 @@
   libwacom,
   libxkbfile,
   ibus,
+  kdeHostTools,
 }:
 let
   # run gsettings with desktop schemas for using in "kcm_access" kcm
@@ -44,7 +47,12 @@ mkKdeDerivation {
     })
   ];
 
-  extraNativeBuildInputs = [ pkg-config ];
+  extraNativeBuildInputs = [
+    pkg-config
+    qtdeclarative
+    qtwayland
+    kdeHostTools
+  ];
   extraBuildInputs = [
     qtsvg
     qtwayland
@@ -61,6 +69,8 @@ mkKdeDerivation {
     xorg.xf86inputevdev
     xorg.xorgserver
 
+  ]
+  ++ lib.optionals (lib.meta.availableOn stdenv.hostPlatform ibus) [
     ibus
   ];
 

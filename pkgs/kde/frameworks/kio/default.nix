@@ -1,9 +1,13 @@
 {
+  stdenv,
+  lib,
   mkKdeDerivation,
   qt5compat,
+  qtdeclarative,
   qttools,
   acl,
   attr,
+  kdeHostTools,
 }:
 mkKdeDerivation {
   pname = "kio";
@@ -15,10 +19,16 @@ mkKdeDerivation {
     ./allow-admin-from-store.patch
   ];
 
+  extraNativeBuildInputs = [
+    qtdeclarative
+    kdeHostTools
+  ];
+
   extraBuildInputs = [
     qt5compat
     qttools
-    acl
-    attr
-  ];
+  ]
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform acl) acl
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform attr) attr
+  ;
 }

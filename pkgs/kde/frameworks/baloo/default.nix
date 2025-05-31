@@ -1,7 +1,10 @@
 {
+  lib,
+  stdenv,
   mkKdeDerivation,
   qtdeclarative,
   lmdb,
+  kconfig,
 }:
 mkKdeDerivation {
   pname = "baloo";
@@ -14,5 +17,12 @@ mkKdeDerivation {
   extraBuildInputs = [
     qtdeclarative
     lmdb
+  ];
+  extraNativeBuildInputs = [
+    qtdeclarative
+    kconfig
+  ];
+  extraCmakeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    "-DKF6_HOST_TOOLING=${(kconfig.__spliced.buildHost or kconfig).dev}/lib/cmake"
   ];
 }

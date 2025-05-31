@@ -1,0 +1,29 @@
+diff --git a/src/common/VirtualTerminal.cpp b/src/common/VirtualTerminal.cpp
+index 9c0261e..99c4bb9 100644
+--- a/src/common/VirtualTerminal.cpp
++++ b/src/common/VirtualTerminal.cpp
+@@ -37,8 +37,13 @@
+ #include <qscopeguard.h>
+ #include <QFileInfo>
+ 
++#ifdef __FreeBSD__
++#define RELEASE_DISPLAY_SIGNAL (SIGUSR1)
++#define ACQUIRE_DISPLAY_SIGNAL (SIGUSR2)
++#else
+ #define RELEASE_DISPLAY_SIGNAL (SIGRTMAX)
+ #define ACQUIRE_DISPLAY_SIGNAL (SIGRTMAX - 1)
++#endif
+ 
+ namespace SDDM {
+     namespace VirtualTerminal {
+@@ -94,6 +99,10 @@ namespace SDDM {
+             setModeRequest.mode = VT_PROCESS;
+             setModeRequest.relsig = RELEASE_DISPLAY_SIGNAL;
+             setModeRequest.acqsig = ACQUIRE_DISPLAY_SIGNAL;
++#ifdef __FreeBSD__
++            // unused but must be set
++            setModeRequest.frsig = SIGINT;
++#endif
+ 
+             if (ioctl(fd, VT_SETMODE, &setModeRequest) < 0) {
+                 qDebug() << "Failed to manage VT manually:" << strerror(errno);

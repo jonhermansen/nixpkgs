@@ -1,4 +1,6 @@
 {
+  lib,
+  stdenv,
   mkKdeDerivation,
   qt5compat,
   qtsvg,
@@ -15,6 +17,7 @@
   libappimage,
   xorg,
   kio,
+  kdeHostTools,
 }:
 mkKdeDerivation {
   pname = "kio-extras";
@@ -27,6 +30,8 @@ mkKdeDerivation {
     pkg-config
     gperf
     shared-mime-info
+    kio
+    kdeHostTools
   ];
   extraBuildInputs = [
     qt5compat
@@ -37,12 +42,13 @@ mkKdeDerivation {
     libmtp
     libimobiledevice
     gperf
-    libtirpc
     openexr
     taglib
-    libappimage
     xorg.libXcursor
-  ];
+  ]
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform libappimage) libappimage
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform libtirpc) libtirpc
+  ;
 
   postInstall = ''
     substituteInPlace $out/share/dbus-1/services/org.kde.kmtpd5.service \

@@ -17,6 +17,7 @@ mkKdeDerivation rec {
 
   extraNativeBuildInputs = [ (qttools.override { withClang = true; }) ];
   extraBuildInputs = [ qtdeclarative ];
+  extraNativeBuildInputs = [ qtdeclarative ];
   extraPropagatedBuildInputs = [ qt5compat ];
 
   meta.license = with lib.licenses; [

@@ -6,6 +6,7 @@
   pkg-config,
   qttools,
   packagekit,
+  qtbase,
 }:
 
 let
@@ -22,7 +23,10 @@ stdenv.mkDerivation rec {
     sha256 = "sha256-rLNeVjzIT18qUZgj6Qcf7E59CL4gx/ArYJfs9KHrqNs=";
   };
 
-  buildInputs = [ packagekit ];
+  buildInputs = [
+    packagekit
+    qtbase
+  ];
 
   nativeBuildInputs = [
     cmake

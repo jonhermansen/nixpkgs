@@ -1,8 +1,10 @@
 {
+  stdenv,
   lib,
   mkKdeDerivation,
   fetchurl,
   doxygen,
+  kdsoap,
 }:
 mkKdeDerivation rec {
   pname = "kdsoap-ws-discovery-client";
@@ -14,6 +16,10 @@ mkKdeDerivation rec {
   };
 
   extraNativeBuildInputs = [ doxygen ];
+
+  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    cmakeFlags+=" -DKDSOAP_KDWSDL2CPP_COMPILER=$(echo ${kdsoap.__spliced.buildHost.dev}/bin/kdwsdl2cpp*)"
+  '';
 
   meta.license = [ lib.licenses.gpl3Plus ];
 }

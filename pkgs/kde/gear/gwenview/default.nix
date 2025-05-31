@@ -10,11 +10,16 @@
   kimageannotator,
   lcms2,
   libtiff,
+  kdeHostTools,
 }:
 mkKdeDerivation {
   pname = "gwenview";
 
-  extraNativeBuildInputs = [ pkg-config ];
+  extraNativeBuildInputs = [
+    kdeHostTools
+    pkg-config
+    qtwayland
+  ];
   extraBuildInputs = [
     qtsvg
     qtwayland

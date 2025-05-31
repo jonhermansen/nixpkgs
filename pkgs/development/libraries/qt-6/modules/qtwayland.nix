@@ -2,12 +2,13 @@
   pkgsBuildBuild,
   stdenv,
   lib,
+  stdenv,
   qtModule,
-  qtbase,
   qtdeclarative,
+  qtbase,
+  qtwayland,
   wayland,
   wayland-scanner,
-  pkg-config,
   libdrm,
   fetchpatch,
 }:
@@ -22,13 +23,17 @@ qtModule {
       url = "https://invent.kde.org/qt/qt/qtwayland/-/commit/e4556c59f0c8250da7c16759432b2ac0a5ac9d9f.patch";
       hash = "sha256-wRNXBwecuULn5MD87HP20uSuxHiuQslKp20DIuCGheM=";
     })
+    (fetchpatch2 {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/66259c9c641b1fc828becbe2959dbe7380e55fe1/graphics/qt6-wayland/files/patch-CMakeLists.txt";
+      extraPrefix = "";
+      hash = "sha256-CYmIf6MlvdMea2PDAqroPEGKh2rdNNRpojDVYbAm9Vs=";
+    })
   ];
 
   # wayland-scanner needs to be propagated as both build
   # (for the wayland-scanner binary) and host (for the
   # actual wayland.xml protocol definition)
   propagatedBuildInputs = [
-    qtbase
     qtdeclarative
     wayland
     wayland-scanner
@@ -38,7 +43,12 @@ qtModule {
     wayland-scanner
   ];
   buildInputs = [ libdrm ];
-  nativeBuildInputs = [ pkg-config ];
+  nativeBuildInputs = [
+    qtbase
+  ] ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    qtwayland
+  ];
+
 
   cmakeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
     "-DQt6WaylandScannerTools_DIR=${pkgsBuildBuild.qt6.qtwayland}/lib/cmake/Qt6WaylandScannerTools"

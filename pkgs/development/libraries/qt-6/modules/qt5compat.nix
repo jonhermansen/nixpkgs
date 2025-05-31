@@ -18,4 +18,7 @@ qtModule {
     icu
     openssl
   ];
+  nativeBuildInputs = [
+    qtdeclarative
+  ];
 }

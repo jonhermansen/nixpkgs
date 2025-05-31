@@ -24,21 +24,38 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-mPZgD4r7vlUP6wklvZVknGqTXZBckSOtNzK7p6e2qSA=";
   };
 
+  outputs = [
+    "out"
+    "dev"
+  ];
+
   propagatedBuildInputs = [
     glib
     libaccounts-glib
   ];
   buildInputs = [ qtbase ];
   nativeBuildInputs = [
+    qtbase
+    qmake
     doxygen
     pkg-config
-    qmake
     wrapQtAppsHook
   ];
 
+  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
+    substituteInPlace accounts-qt.pro --replace-fail " tests" ""
+  '';
+
   # remove forbidden references to /build
-  preFixup = ''
+  preFixup = lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     patchelf --shrink-rpath --allowed-rpath-prefixes "$NIX_STORE" "$out"/bin/*
+  '';
+
+  # cmake files are hardcoded to refer to $out/include, but we want it to use $dev/include
+  postFixup = ''
+    grep -Irl "$out/include" "$out" "$dev" | while read -r filename; do
+      substituteInPlace "$filename" --replace-fail "$out/include" "$dev/include"
+    done
   '';
 
   passthru.updateScript = gitUpdater {
@@ -50,6 +67,6 @@ stdenv.mkDerivation (finalAttrs: {
     mainProgram = "accountstest";
     homepage = "https://gitlab.com/accounts-sso/libaccounts-qt";
     license = licenses.lgpl21;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 })

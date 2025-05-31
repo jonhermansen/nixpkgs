@@ -1,4 +1,6 @@
 {
+  stdenv,
+  lib,
   mkKdeDerivation,
   pkg-config,
   attr,
@@ -18,12 +20,13 @@ mkKdeDerivation {
 
   extraNativeBuildInputs = [ pkg-config ];
   extraBuildInputs = [
-    attr
     ebook_tools
     exiv2
     ffmpeg
     kconfig
     kdegraphics-mobipocket
-    libappimage
-  ];
+  ]
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform libappimage) libappimage
+  ++ lib.optional (lib.meta.availableOn stdenv.hostPlatform attr) attr
+  ;
 }

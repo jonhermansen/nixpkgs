@@ -3,6 +3,7 @@
   lib,
   src,
   version,
+  removeReferencesTo,
   bison,
   flex,
   gperf,
@@ -47,6 +48,7 @@
   libpng,
   libxcb,
   libxkbcommon,
+  wayland,
   libxml2,
   libxslt,
   openssl,
@@ -69,7 +71,6 @@
   darwinVersionInputs,
   xcbuild,
   # mingw
-  pkgsBuildBuild,
   # optional dependencies
   cups,
   libmysqlclient,
@@ -79,27 +80,28 @@
   withLibinput ? false,
   libinput,
   # options
+  qtbase,
   qttranslations ? null,
 }:
 
 let
   isCrossBuild = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
 in
-stdenv.mkDerivation rec {
-  pname = "qtbase";
+  stdenv.mkDerivation rec {
+    pname = "qtbase";
 
-  inherit src version;
+    inherit src version;
 
-  propagatedBuildInputs =
-    [
-      libxml2
-      libxslt
-      openssl
-      sqlite
-      zlib
-      libGL
-      vulkan-headers
-      vulkan-loader
+    propagatedBuildInputs =
+      [
+        libxml2
+        libxslt
+        openssl
+        sqlite
+        zlib
+        libGL
+        vulkan-headers
+        vulkan-loader
       # Text rendering
       harfbuzz
       icu
@@ -112,16 +114,17 @@ stdenv.mkDerivation rec {
       md4c
       double-conversion
     ]
-    ++ lib.optionals (!stdenv.hostPlatform.isMinGW) [
+    ++ lib.optionals (!stdenv.hostPlatform.isMinGW) (let opt = pkg: lib.optional (lib.meta.availableOn stdenv.hostPlatform pkg) pkg; in [
       libproxy
       dbus
       glib
       # unixODBC drivers
       unixODBC
-      unixODBCDrivers.psql
-      unixODBCDrivers.sqlite
-      unixODBCDrivers.mariadb
     ]
+    ++ lib.optional ((lib.meta.availableOn stdenv.hostPlatform unixODBCDrivers.psql) && (stdenv.buildPlatform.canExecute stdenv.hostPlatform)) unixODBCDrivers.psql
+    ++ opt unixODBCDrivers.sqlite
+    ++ opt unixODBCDrivers.mariadb
+    )
     ++ lib.optionals systemdSupport [
       systemd
     ]
@@ -135,6 +138,7 @@ stdenv.mkDerivation rec {
       libthai
       libdrm
       libdatrie
+    ] ++ lib.optionals (stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD) [
       udev
       # Text rendering
       fontconfig
@@ -156,20 +160,22 @@ stdenv.mkDerivation rec {
       xorg.libXtst
       xorg.xcbutilcursor
       libepoxy
+      wayland
     ]
     ++ lib.optional (cups != null && lib.meta.availableOn stdenv.hostPlatform cups) cups;
 
-  buildInputs =
-    lib.optionals (lib.meta.availableOn stdenv.hostPlatform at-spi2-core) [
-      at-spi2-core
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isDarwin (darwinVersionInputs ++ [ moltenvk ])
-    ++ lib.optional withGtk3 gtk3
-    ++ lib.optional withLibinput libinput
-    ++ lib.optional (libmysqlclient != null && !stdenv.hostPlatform.isMinGW) libmysqlclient
-    ++ lib.optional (libpq != null && lib.meta.availableOn stdenv.hostPlatform libpq) libpq;
+    buildInputs =
+      lib.optionals (lib.meta.availableOn stdenv.hostPlatform at-spi2-core) [
+        at-spi2-core
+      ]
+      ++ lib.optionals stdenv.hostPlatform.isDarwin (darwinVersionInputs ++ [ moltenvk ])
+      ++ lib.optional withGtk3 gtk3
+      ++ lib.optional withLibinput libinput
+      ++ lib.optional (libmysqlclient != null && !stdenv.hostPlatform.isMinGW) libmysqlclient
+      ++ lib.optional (libpq != null && lib.meta.availableOn stdenv.hostPlatform libpq) libpq;
 
   nativeBuildInputs = [
+    removeReferencesTo
     bison
     flex
     gperf
@@ -181,17 +187,18 @@ stdenv.mkDerivation rec {
     ninja
   ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ moveBuildTree ];
 
-  propagatedNativeBuildInputs =
-    [ lndir ]
+      propagatedNativeBuildInputs =
+        [ lndir ]
     # I’m not sure if this is necessary, but the macOS mkspecs stuff
     # tries to call `xcrun xcodebuild`, so better safe than sorry.
-    ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ];
+    ++ lib.optionals stdenv.hostPlatform.isDarwin [ xcbuild ]
+    ++ lib.optionals isCrossBuild [ qtbase ];
 
-  strictDeps = true;
+    strictDeps = true;
 
-  enableParallelBuilding = true;
+    enableParallelBuilding = true;
 
-  patches = [
+    patches = [
     # look for Qt plugins in directories on PATH
     ./derive-plugin-load-path-from-PATH.patch
 
@@ -216,6 +223,10 @@ stdenv.mkDerivation rec {
     ./qmlimportscanner-import-path.patch
     # don't pass qtbase's QML directory to qmlimportscanner if it's empty
     ./skip-missing-qml-directory.patch
+    (fetchpatch {
+      url = "https://invent.kde.org/qt/qt/qtbase/-/commit/72cde6f7dd9102d0c3730a75a6c85af69b8a0e3c.patch";
+      hash = "sha256-qkeoTPTmDHBVX+RyBaiW1j8oUEsnZwm8GlzY6dOj0f4=";
+    })
   ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
@@ -258,11 +269,12 @@ stdenv.mkDerivation rec {
       "-DQT_FEATURE_system_sqlite=ON"
       "-DQT_FEATURE_openssl_linked=ON"
       "-DQT_FEATURE_vulkan=ON"
+      "-DQT_FEATURE_dbus=ON"
       # don't leak OS version into the final output
       # https://bugreports.qt.io/browse/QTBUG-136060
       "-DCMAKE_SYSTEM_VERSION="
     ]
-    ++ lib.optionals (!stdenv.hostPlatform.isDarwin) [
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
       "-DQT_FEATURE_sctp=ON"
       "-DQT_FEATURE_journald=${if systemdSupport then "ON" else "OFF"}"
     ]
@@ -270,13 +282,18 @@ stdenv.mkDerivation rec {
       "-DQT_FEATURE_rpath=OFF"
       "-DQT_NO_XCODE_MIN_VERSION_CHECK=ON"
     ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      "-DQT_FEATURE_wayland=ON"
+    ]
     ++ lib.optionals isCrossBuild [
-      "-DQT_HOST_PATH=${pkgsBuildBuild.qt6.qtbase}"
-      "-DQt6HostInfo_DIR=${pkgsBuildBuild.qt6.qtbase}/lib/cmake/Qt6HostInfo"
+      "-DQT_HOST_PATH=${qtbase.__spliced.buildHost}"
+      "-DQt6HostInfo_DIR=${qtbase.__spliced.buildHost}/lib/cmake/Qt6HostInfo"
+      "-DQT_NO_GENERATE_QMAKE_WRAPPER_FOR_TARGET=ON"
+      "-DQT_FORCE_BUILD_TOOLS=ON"
     ]
     ++ lib.optional (
-      qttranslations != null && !isCrossBuild
-    ) "-DINSTALL_TRANSLATIONSDIR=${qttranslations}/translations";
+      qttranslations != null && !isCrossBuild && false
+      ) "-DINSTALL_TRANSLATIONSDIR=${qttranslations}/translations";
 
   env.NIX_CFLAGS_COMPILE = "-DNIXPKGS_QT_PLUGIN_PREFIX=\"${qtPluginPrefix}\"";
 
@@ -296,8 +313,15 @@ stdenv.mkDerivation rec {
     ''
     + lib.optionalString stdenv.hostPlatform.isLinux ''
       # FIXME: not sure why this isn't added automatically?
-      patchelf --add-rpath "${libmysqlclient}/lib/mariadb" $out/${qtPluginPrefix}/sqldrivers/libqsqlmysql.so
-      patchelf --add-rpath "${vulkan-loader}/lib" --add-needed "libvulkan.so" $out/lib/libQt6Gui.so
+        patchelf --add-rpath "${libmysqlclient}/lib/mariadb" $out/${qtPluginPrefix}/sqldrivers/libqsqlmysql.so
+        patchelf --add-rpath "${vulkan-loader}/lib" --add-needed "libvulkan.so" $out/lib/libQt6Gui.so
+    ''
+    # the first file contains references to the build-system qtbase
+    # we compensate by moving the reference to the dev output (as propagatedNativeBuildInputs)
+    # the second file contains references to a host pkg-config executable, which we can refer to through PATH
+    + lib.optionalString isCrossBuild ''
+      remove-references-to -t ${qtbase.__spliced.buildHost} $out/lib/cmake/Qt6/Qt6Dependencies.cmake
+      sed -E -i -e 's@PKG_CONFIG_EXECUTABLE = /nix/store/.*/bin/@PKG_CONFIG_EXECUTABLE = @' $out/mkspecs/qmodule.pri
     '';
 
   dontWrapQtApps = true;

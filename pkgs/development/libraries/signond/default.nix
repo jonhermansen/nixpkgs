@@ -6,6 +6,7 @@
   qtbase,
   wrapQtAppsHook,
   doxygen,
+  pkg-config,
 }:
 
 stdenv.mkDerivation {
@@ -24,6 +25,7 @@ stdenv.mkDerivation {
     qmake
     doxygen
     wrapQtAppsHook
+    pkg-config
   ];
 
   buildInputs = [ qtbase ];
@@ -37,6 +39,6 @@ stdenv.mkDerivation {
     homepage = "https://gitlab.com/accounts-sso/signond";
     description = "Signon Daemon for Qt";
     maintainers = with maintainers; [ freezeboy ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

@@ -2,6 +2,7 @@
   mkKdeDerivation,
   qttools,
   qtsvg,
+  qtdeclarative,
 }:
 mkKdeDerivation {
   pname = "kuserfeedback";
@@ -10,6 +11,9 @@ mkKdeDerivation {
   extraCmakeFlags = [
     "-DENABLE_CONSOLE=0"
     "-DENABLE_CLI=0"
+  ];
+  extraBuildInputs = [
+    qtdeclarative
   ];
   extraNativeBuildInputs = [
     qttools

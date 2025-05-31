@@ -14,4 +14,7 @@ mkKdeDerivation {
     qrencode
     libdmtx
   ];
+  extraNativeBuildInputs = [
+    qtdeclarative
+  ];
 }

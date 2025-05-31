@@ -2,9 +2,14 @@
   mkKdeDerivation,
   replaceVars,
   ghostscript,
+  kio,
 }:
 mkKdeDerivation {
   pname = "kdegraphics-thumbnailers";
+
+  extraNativeBuildInputs = [
+    kio
+  ];
 
   patches = [
     # Hardcode patches to Ghostscript so PDF thumbnails work OOTB.

@@ -4,6 +4,7 @@
   qtlanguageserver,
   qtshadertools,
   qtsvg,
+  qtdeclarative,
   openssl,
   darwin,
   stdenv,
@@ -16,12 +17,21 @@
 qtModule {
   pname = "qtdeclarative";
 
+  depsBuildBuild = [
+    # need qsb for QtQuick
+    qtshadertools
+  ];
   propagatedBuildInputs = [
-    qtbase
     qtlanguageserver
     qtshadertools
     qtsvg
     openssl
+  ];
+  propagatedNativeBuildInputs = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    qtdeclarative
+  ];
+  buildInputs = [
+    qtbase
   ];
   strictDeps = true;
 
@@ -62,12 +72,12 @@ qtModule {
       # "NIX:" is reserved for saved qmlc files in patch 0001, "QTDHASH:" takes the place
       # of the old tag, which is otherwise the qt version, invalidating caches from other
       # qtdeclarative store paths.
-      echo "QTDHASH:''${out:${storePrefixLen}:32}" > .tag
+      echo "QTDHASH:''$(md5sum <<<''${out:${storePrefixLen}:32} | cut -d' ' -f1)" > .tag
     '';
 
   cmakeFlags =
     [
-      "-DQt6ShaderToolsTools_DIR=${pkgsBuildBuild.qt6.qtshadertools}/lib/cmake/Qt6ShaderTools"
+      "-DQt6ShaderToolsTools_DIR=${pkgsBuildBuild.qt6.qtshadertools}/lib/cmake/Qt6ShaderToolsTools"
       # for some reason doesn't get found automatically on Darwin
       "-DPython_EXECUTABLE=${lib.getExe pkgsBuildBuild.python3}"
     ]
