@@ -1,0 +1,30 @@
+diff --git a/data/Makefile.am b/data/Makefile.am
+index 35a2478..4342568 100644
+--- a/data/Makefile.am
++++ b/data/Makefile.am
+@@ -79,9 +79,6 @@ edit += \
+ endif
+ 
+ 
+-install-data-local: install-logrotate install-90-consolekit
+-	$(MKDIR_P) $(DESTDIR)$(localstatedir)/log/ConsoleKit/
+-
+ uninstall-local:: uninstall-logrotate uninstall-90-consolekit
+ 	rmdir --ignore-fail-on-non-empty $(DESTDIR)$(localstatedir)/log/ConsoleKit/
+ 
+diff --git a/src/Makefile.am b/src/Makefile.am
+index 3bad491..49e17e5 100644
+--- a/src/Makefile.am
++++ b/src/Makefile.am
+@@ -415,11 +415,3 @@ CLEANFILES = $(BUILT_SOURCES)
+ MAINTAINERCLEANFILES =			\
+ 	*~				\
+ 	Makefile.in
+-
+-install-data-local:
+-	-mkdir -p $(DESTDIR)$(sysconfdir)/ConsoleKit/run-session.d
+-	-mkdir -p $(DESTDIR)$(libdir)/ConsoleKit/run-session.d
+-	-mkdir -p $(DESTDIR)$(sysconfdir)/ConsoleKit/run-seat.d
+-	-mkdir -p $(DESTDIR)$(libdir)/ConsoleKit/run-seat.d
+-	-mkdir -p $(DESTDIR)$(RUNDIR)/ConsoleKit
+-	-mkdir -p $(DESTDIR)$(localstatedir)/log/ConsoleKit
