@@ -16880,4 +16880,6 @@ with pkgs;
   davis = callPackage ../by-name/da/davis/package.nix {
     php = php83; # https://github.com/tchapi/davis/issues/195
   };
+
+  accountsservice = if stdenv.hostPlatform.isFreeBSD then accountsservice-freebsd else accountsservice-linux;
 }
