@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitLab,
   gitUpdater,
+  buildPackages,
   meson,
   mesonEmulatorHook,
   ninja,
@@ -19,6 +20,12 @@
   docbook_xsl,
   docbook_xml_dtd_43,
   gobject-introspection,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  withGtkDoc ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -28,9 +35,10 @@ stdenv.mkDerivation rec {
   outputs = [
     "out"
     "dev"
-    "devdoc"
-    "py"
-  ];
+  ]
+  ++ lib.optional withGtkDoc "devdoc"
+  ++ lib.optional withIntrospection "py"
+  ;
 
   src = fetchFromGitLab {
     owner = "accounts-sso";
@@ -45,34 +53,46 @@ stdenv.mkDerivation rec {
       docbook_xml_dtd_43
       docbook_xsl
       glibcLocales
-      gobject-introspection
-      gtk-doc
       meson
       ninja
       pkg-config
       vala
+      glib
     ]
-    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform && stdenv.hostPlatform.emulatorAvailable buildPackages) [
       mesonEmulatorHook
-    ];
+    ]
+    ++ lib.optionals withIntrospection [
+      gobject-introspection
+    ]
+    ++ lib.optionals withGtkDoc [
+      gtk-doc
+    ]
+    ;
 
   buildInputs = [
     glib
     libxml2
     libxslt
-    python3.pkgs.pygobject3
     sqlite
-  ];
+  ]
+  ++ lib.optionals withIntrospection [
+    python3.pkgs.pygobject3
+  ]
+  ;
 
-  # TODO: send patch upstream to make running tests optional
-  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
-    substituteInPlace meson.build \
-      --replace "subdir('tests')" ""
-  '';
+  patches = [
+    ./vala-option.patch
+  ];
 
   LC_ALL = "en_US.UTF-8";
 
   mesonFlags = [
+    (lib.mesonBool "introspection" withIntrospection)
+    (lib.mesonBool "docs" withGtkDoc)
+    (lib.mesonBool "tests" false)
+  ]
+  ++ lib.optionals withIntrospection [
     "-Dinstall-py-overrides=true"
     "-Dpy-overrides-dir=${placeholder "py"}/${python3.sitePackages}/gi/overrides"
   ];
@@ -84,7 +104,7 @@ stdenv.mkDerivation rec {
   meta = with lib; {
     description = "Library for managing accounts which can be used from GLib applications";
     homepage = "https://gitlab.com/accounts-sso/libaccounts-glib";
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     license = licenses.lgpl21;
   };
 }
