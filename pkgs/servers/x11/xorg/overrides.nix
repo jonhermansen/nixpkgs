@@ -53,6 +53,7 @@
   libgbm,
   mesa-gl-headers,
   dri-pkgconfig-stub,
+  evdev-proto,
 }:
 
 let
@@ -663,6 +664,9 @@ self: super:
     configureFlags = [
       "--with-sdkdir=${placeholder "dev"}/include/xorg"
     ];
+    buildInputs = attrs.buildInputs ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      evdev-proto
+    ];
   });
 
   xf86inputmouse = super.xf86inputmouse.overrideAttrs (attrs: {
@@ -696,6 +700,9 @@ self: super:
     ];
     configureFlags = [
       "--with-sdkdir=${placeholder "dev"}/include/xorg"
+    ];
+    buildInputs = attrs.buildInputs ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      evdev-proto
     ];
   });
 
