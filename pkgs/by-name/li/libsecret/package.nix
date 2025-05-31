@@ -83,6 +83,10 @@ stdenv.mkDerivation rec {
     hash = "sha256-a0UuR1BZCitWF63EACbyjS9JA94V8SUOHRxAv9aO1V4=";
   };
 
+  patches = [
+    ./freebsd.patch
+  ];
+
   depsBuildBuild = [
     pkg-config
   ];

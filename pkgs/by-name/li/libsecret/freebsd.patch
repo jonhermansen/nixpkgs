@@ -1,0 +1,43 @@
+https://gitlab.gnome.org/GNOME/libsecret/-/issues/106
+
+diff --git a/egg/egg-unix-credentials.c b/egg/egg-unix-credentials.c
+index 6366d29..94fdc7b 100644
+--- a/egg/egg-unix-credentials.c
++++ b/egg/egg-unix-credentials.c
+@@ -48,6 +48,19 @@
+ #include <ucred.h>
+ #endif
+ 
++int
++set_local_creds (int sock, int val)
++{
++	int retval = 0;
++#if defined(LOCAL_CREDS) && !defined(HAVE_CMSGCRED)
++	if (setsockopt (sock, 0, LOCAL_CREDS, &val, sizeof (val)) < 0) {
++		fprintf (stderr, "unable to set LOCAL_CREDS socket option on fd %d\n", sock);
++		retval = -1;
++	}
++#endif
++	return retval;
++}
++
+ int
+ egg_unix_credentials_read (int sock, pid_t *pid, uid_t *uid)
+ {
+@@ -226,15 +239,7 @@ again:
+ int
+ egg_unix_credentials_setup (int sock)
+ {
+-	int retval = 0;
+-#if defined(LOCAL_CREDS) && !defined(HAVE_CMSGCRED)
+-	int val = 1;
+-	if (setsockopt (sock, 0, LOCAL_CREDS, &val, sizeof (val)) < 0) {
+-		fprintf (stderr, "unable to set LOCAL_CREDS socket option on fd %d\n", fd);
+-		retval = -1;
+-	}
+-#endif
+-	return retval;
++	return set_local_creds(sock, 1);
+ }
+ 
+ char*
