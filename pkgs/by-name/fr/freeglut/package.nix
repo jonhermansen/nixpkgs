@@ -11,6 +11,7 @@
   libGLU,
   cmake,
   testers,
+  freebsd,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -21,6 +22,11 @@ stdenv.mkDerivation (finalAttrs: {
     url = "mirror://sourceforge/freeglut/freeglut-${finalAttrs.version}.tar.gz";
     sha256 = "sha256-nD1NZRb7+gKA7ck8d2mPtzA+RDwaqvN9Jp4yiKbD6lI=";
   };
+
+  patches = [
+    # TODO DONOTMERGE why is this necessary? can it be upstreamed?
+    ./freebsd.patch
+  ];
 
   outputs = [
     "out"
@@ -35,6 +41,9 @@ stdenv.mkDerivation (finalAttrs: {
     libXrandr
     libXxf86vm
     libGLU
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    freebsd.libusbhid
   ];
 
   cmakeFlags = lib.optionals stdenv.hostPlatform.isDarwin [
