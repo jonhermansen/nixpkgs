@@ -28,8 +28,10 @@
   libgudev,
   umockdev,
   replaceVars,
-  enableGeoLocation ? true,
-  enableSystemd ? true,
+  enableGeoLocation ? lib.meta.availableOn stdenv.hostPlatform geoclue2,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
+  enableFlatpak ? lib.meta.availableOn stdenv.hostPlatform flatpak,
+  enableBubblewrap ? lib.meta.availableOn stdenv.hostPlatform bubblewrap,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -83,9 +85,7 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs =
     [
-      flatpak
       fuse3
-      bubblewrap
       glib
       gsettings-desktop-schemas
       json-glib
@@ -103,6 +103,12 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optionals enableSystemd [
       systemdMinimal # libsystemd
+    ]
+    ++ lib.optionals enableFlatpak [
+      flatpak
+    ]
+    ++ lib.optionals enableBubblewrap [
+      bubblewrap
     ];
 
   nativeCheckInputs = [
@@ -133,19 +139,20 @@ stdenv.mkDerivation (finalAttrs: {
       "-Dinstalled_test_prefix=${placeholder "installedTests"}"
       "-Ddocumentation=disabled" # pulls in a whole lot of extra stuff
       (lib.mesonEnable "systemd" enableSystemd)
-    ]
-    ++ lib.optionals (!enableGeoLocation) [
-      "-Dgeoclue=disabled"
-    ]
-    ++ lib.optionals (!finalAttrs.finalPackage.doCheck) [
-      "-Dtests=disabled"
+      (lib.mesonEnable "geoclue" enableGeoLocation)
+      (lib.mesonEnable "flatpak-interfaces" enableFlatpak)
+      # Flatpak development files are required to build DocBook docs
+      (lib.mesonEnable "docbook-docs" enableFlatpak)
+      (lib.mesonBool "sandboxed-image-validation" enableBubblewrap)
+      #(lib.mesonBool "sandboxed-sound-validation" enableBubblewrap)  # this is an option we will need for a future release
+      (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck)
     ];
 
   strictDeps = true;
 
   doCheck = true;
 
-  postPatch = ''
+  postPatch = lib.optionalString enableBubblewrap ''
     # until/unless bubblewrap ships a pkg-config file, meson has no way to find it when cross-compiling.
     substituteInPlace meson.build \
       --replace-fail "find_program('bwrap'"  "find_program('${lib.getExe bubblewrap}'"
@@ -191,6 +198,6 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://flatpak.github.io/xdg-desktop-portal";
     license = lib.licenses.lgpl2Plus;
     maintainers = with lib.maintainers; [ jtojnar ];
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
   };
 })
