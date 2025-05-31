@@ -246,7 +246,7 @@ stdenv.mkDerivation (
           perl;
       in
       passthruFun rec {
-        inherit self perlAttr;
+        inherit self perlAttr enableThreading;
         inherit overrides;
         perlOnBuildForBuild = override pkgsBuildBuild.${perlAttr};
         perlOnBuildForHost = override pkgsBuildHost.${perlAttr};

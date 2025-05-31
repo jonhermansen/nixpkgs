@@ -10054,7 +10054,7 @@ with pkgs;
 
   ### DEVELOPMENT / PERL MODULES
 
-  perlInterpreters = import ../development/interpreters/perl { inherit callPackage; };
+  perlInterpreters = import ../development/interpreters/perl { inherit callPackage lib; };
   inherit (perlInterpreters) perl538 perl540;
 
   perl538Packages = recurseIntoAttrs perl538.pkgs;
