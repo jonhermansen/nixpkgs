@@ -56,8 +56,10 @@ stdenv.mkDerivation rec {
       genericFlags = "LSOF_CC=$CC LSOF_AR=\"$AR cr\" LSOF_RANLIB=$RANLIB";
       linuxFlags = lib.optionalString stdenv.hostPlatform.isLinux "LINUX_CONF_CC=$CC_FOR_BUILD";
       freebsdFlags = lib.optionalString stdenv.hostPlatform.isFreeBSD "FREEBSD_SYS=${freebsd.sys.src}/sys";
+      vstr = let rel = stdenv.hostPlatform.uname.release; in if rel != null then rel else stdenv.cc.libc.version;
+      crossFlags = lib.optionalString (stdenv.hostPlatform != stdenv.buildPlatform) "LSOF_VSTR=${vstr}";
     in
-    "${genericFlags} ${linuxFlags} ${freebsdFlags} ./Configure -n ${dialect}";
+    "${genericFlags} ${linuxFlags} ${freebsdFlags} ${crossFlags} ./Configure -n ${dialect}";
 
   preBuild = ''
     for filepath in $(find dialects/${dialect} -type f); do
