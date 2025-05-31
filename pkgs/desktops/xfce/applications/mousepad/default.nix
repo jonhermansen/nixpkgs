@@ -1,6 +1,10 @@
 {
   stdenv,
   lib,
+  stdenv,
+  mkXfceDerivation,
+  buildPackages,
+  gobject-introspection,
   fetchFromGitLab,
   glib,
   meson,
@@ -15,6 +19,9 @@
   enablePolkit ? true,
   polkit,
   gitUpdater,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -37,6 +44,9 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
     wrapGAppsHook3
+  ]
+  ++ lib.optionals withIntrospection [
+    gobject-introspection
   ];
 
   buildInputs =

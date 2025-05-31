@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   mkXfceDerivation,
   wayland-scanner,
   exo,
@@ -20,8 +21,9 @@
   wlr-protocols,
   xfconf,
   xf86inputlibinput,
+  libxml2,
   colord,
-  withColord ? true,
+  withColord ? stdenv.buildPlatform.canExecute stdenv.hostPlatform,
 }:
 
 mkXfceDerivation {
@@ -33,6 +35,7 @@ mkXfceDerivation {
 
   nativeBuildInputs = [
     wayland-scanner
+    libxml2
   ];
 
   buildInputs =

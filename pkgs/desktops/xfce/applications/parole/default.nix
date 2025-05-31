@@ -60,6 +60,10 @@ stdenv.mkDerivation (finalAttrs: {
     xfconf
   ];
 
+  nativeBuildInputs = [
+    dbus-glib
+  ];
+
   passthru.updateScript = gitUpdater { rev-prefix = "parole-"; };
 
   meta = {

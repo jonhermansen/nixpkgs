@@ -1,5 +1,7 @@
 {
+  stdenv,
   mkXfceDerivation,
+  buildPackages,
   gobject-introspection,
   dbus-glib,
   garcon,
@@ -18,6 +20,10 @@
   xfconf,
   xfdesktop,
   lib,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 let
@@ -31,7 +37,7 @@ mkXfceDerivation {
 
   sha256 = "sha256-vkxkryi7JQg1L/JdWnO9qmW6Zx6xP5Urq4kXMe7Iiyc=";
 
-  nativeBuildInputs = [
+  nativeBuildInputs = lib.optionals withIntrospection [
     gobject-introspection
   ];
 
@@ -48,9 +54,11 @@ mkXfceDerivation {
     libxfce4util
     libxklavier
     pam
-    pythonEnv
-    systemd
     xfconf
+  ] ++ lib.optionals enableSystemd [
+    systemd
+  ] ++ lib.optionals withIntrospection [
+    pythonEnv
   ];
 
   configureFlags = [ "--without-console-kit" ];

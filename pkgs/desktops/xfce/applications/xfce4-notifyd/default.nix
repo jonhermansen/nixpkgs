@@ -1,5 +1,6 @@
 {
   lib,
+  stdenv,
   mkXfceDerivation,
   dbus,
   glib,
@@ -13,6 +14,10 @@
   sqlite,
   xfce4-panel,
   xfconf,
+  meson,
+  ninja,
+  systemd,
+  enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemd,
 }:
 
 mkXfceDerivation {
@@ -36,11 +41,20 @@ mkXfceDerivation {
     sqlite
     xfce4-panel
     xfconf
+  ]
+  ++ lib.optional enableSystemd systemd
+  ;
+
+  nativeBuildInputs = [
+    glib
+    meson
+    ninja
   ];
 
-  configureFlags = [
-    "--enable-dbus-start-daemon"
-    "--enable-sound"
+  mesonFlags = [
+    (lib.mesonBool "dbus-start-daemon" true)
+    (lib.mesonEnable "sound" true)
+    (lib.mesonEnable "systemd" enableSystemd)
   ];
 
   meta = with lib; {

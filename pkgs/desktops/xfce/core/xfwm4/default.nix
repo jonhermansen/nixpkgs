@@ -13,6 +13,9 @@
   libwnck,
   libXpresent,
   xfconf,
+  buildPackages,
+  libXinerama,
+  gdk-pixbuf,
 }:
 
 mkXfceDerivation {
@@ -24,7 +27,6 @@ mkXfceDerivation {
 
   nativeBuildInputs = [
     exo
-    librsvg
   ];
 
   buildInputs = [
@@ -38,7 +40,25 @@ mkXfceDerivation {
     libwnck
     libXpresent
     xfconf
+    libXinerama
   ];
+
+  # meson doesn't work yet and autoconf won't pick up the right two glibs unless we produce this monster
+  preConfigure = ''
+    mkdir -p $TMP/lib/pkgconfig
+    cp -r ${glib.dev}/lib/pkgconfig/*.pc $TMP/lib/pkgconfig
+    substituteInPlace $TMP/lib/pkgconfig/*.pc --replace-quiet ${glib.dev}/bin ${buildPackages.glib.dev}/bin
+    export PKG_CONFIG_PATH="$TMP/lib/pkgconfig:$PKG_CONFIG_PATH"
+  ''
+  # there is no gdk-pixbuf wrapper and one of the buildInputs propagated to us is gdk-pixbuf
+  # so the setup hooks clobber each other. However we need the other one for installation.
+  + ''
+    export GDK_PIXBUF_MODULE_FILE="${buildPackages.librsvg.out}/${gdk-pixbuf.binaryDir}/loaders.cache"
+  '';
+
+  postBuild = ''
+    export GDK_PIXBUF_MODULE_FILE="${librsvg.out}/${gdk-pixbuf.binaryDir}/loaders.cache"
+  '';
 
   meta = with lib; {
     description = "Window manager for Xfce";
