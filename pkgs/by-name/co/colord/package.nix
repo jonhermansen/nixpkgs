@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchurl,
+  buildPackages,
   nixosTests,
   bash-completion,
   glib,
@@ -32,6 +33,12 @@
   libxslt,
   enableDaemon ? true,
   udevCheckHook,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  enableArgyll ?
+    lib.meta.availableOn stdenv.hostPlatform argyllcms
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -67,7 +74,8 @@ stdenv.mkDerivation rec {
     "-Dinstalled_tests=true"
     "-Dlibcolordcompat=true"
     "-Dsane=true"
-    "-Dvapi=true"
+    (lib.mesonBool "vapi" withIntrospection)
+    (lib.mesonBool "introspection" withIntrospection)
     "-Ddaemon=${lib.boolToString enableDaemon}"
     "-Ddaemon_user=colord"
     (lib.mesonBool "systemd" enableSystemd)
@@ -79,28 +87,29 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs =
     [
+      glib
       docbook_xml_dtd_412
       docbook_xsl
       docbook_xsl_ns
       gettext
-      gobject-introspection
       gtk-doc
       libxslt
       meson
       ninja
       pkg-config
       shared-mime-info
-      vala
       wrapGAppsNoGuiHook
+    ] ++ lib.optionals withIntrospection [
+      gobject-introspection
+      vala
       udevCheckHook
     ]
-    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform && stdenv.hostPlatform.emulatorAvailable buildPackages) [
       mesonEmulatorHook
     ];
 
   buildInputs =
     [
-      argyllcms
       bash-completion
       dbus
       glib
@@ -110,6 +119,9 @@ stdenv.mkDerivation rec {
       sane-backends
       sqlite
       udev
+    ]
+    ++ lib.optionals enableArgyll [
+      argyllcms
     ]
     ++ lib.optionals enableSystemd [
       systemd
@@ -142,6 +154,6 @@ stdenv.mkDerivation rec {
     license = licenses.lgpl2Plus;
     maintainers = [ maintainers.marcweber ];
     teams = [ teams.freedesktop ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }
