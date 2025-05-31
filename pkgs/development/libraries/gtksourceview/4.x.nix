@@ -3,6 +3,7 @@
   stdenv,
   fetchurl,
   fetchpatch2,
+  buildPackages,
   meson,
   ninja,
   pkg-config,
@@ -22,6 +23,10 @@
   xvfb-run,
   shared-mime-info,
   testers,
+
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -68,6 +73,8 @@ stdenv.mkDerivation (finalAttrs: {
     pkg-config
     gettext
     perl
+    glib
+  ] ++ lib.optionals withIntrospection [
     gobject-introspection
     vala
   ];
@@ -99,6 +106,11 @@ stdenv.mkDerivation (finalAttrs: {
     substituteInPlace meson.build \
       --replace "if generate_vapi" "if false"
   '';
+
+  mesonFlags = [
+    (lib.mesonBool "gir" withIntrospection)
+    (lib.mesonBool "vapi" withIntrospection)
+  ];
 
   # Broken by PCRE 2 bump in GLib.
   # https://gitlab.gnome.org/GNOME/gtksourceview/-/issues/283
