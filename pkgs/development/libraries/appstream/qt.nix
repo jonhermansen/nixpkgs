@@ -1,10 +1,13 @@
 {
   lib,
   stdenv,
+  pkg-config,
+  gettext,
   appstream,
   qtbase,
   qttools,
   nixosTests,
+  buildPackages,
 }:
 
 # TODO: look into using the libraries from the regular appstream derivation as we keep duplicates here
@@ -23,11 +26,20 @@ stdenv.mkDerivation {
   ];
 
   buildInputs = appstream.buildInputs ++ [
+    gettext
     appstream
     qtbase
   ];
 
-  nativeBuildInputs = appstream.nativeBuildInputs ++ [ qttools ];
+  nativeBuildInputs = appstream.nativeBuildInputs ++ [
+    appstream
+    qttools
+  ];
+
+  depsBuildBuild = [
+    pkg-config
+    buildPackages.stdenv.cc
+  ];
 
   mesonFlags = appstream.mesonFlags ++ [
     (lib.mesonBool "qt" true)
@@ -35,6 +47,7 @@ stdenv.mkDerivation {
   ];
 
   patches = appstream.patches;
+  postPatch = appstream.postPatch;
 
   dontWrapQtApps = true;
 
