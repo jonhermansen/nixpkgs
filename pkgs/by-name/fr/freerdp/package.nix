@@ -51,6 +51,8 @@
   libjpeg_turbo,
   libkrb5,
   libopus,
+  epoll-shim,
+  evdev-proto,
   buildServer ? true,
   nocaps ? false,
   withUnfree ? false,
@@ -159,6 +161,10 @@ stdenv.mkDerivation (finalAttrs: {
       wayland
       wayland-scanner
     ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      epoll-shim
+      evdev-proto
+    ]
     ++ lib.optionals withUnfree [
       faac
     ];
@@ -169,6 +175,9 @@ stdenv.mkDerivation (finalAttrs: {
       "-Wno-dev"
       (lib.cmakeFeature "CMAKE_INSTALL_LIBDIR" "lib")
       (lib.cmakeFeature "DOCBOOKXSL_DIR" "${docbook-xsl-nons}/xml/xsl/docbook")
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      "-DCMAKE_INCLUDE_PATH=${lib.getDev epoll-shim}/include/libepoll-shim"
     ]
     ++ lib.mapAttrsToList lib.cmakeBool {
       BUILD_TESTING = false; # false is recommended by upstream
