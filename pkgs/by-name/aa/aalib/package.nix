@@ -3,6 +3,7 @@
   stdenv,
   fetchurl,
   ncurses,
+  autoreconfHook,
 }:
 
 stdenv.mkDerivation rec {
@@ -40,6 +41,7 @@ stdenv.mkDerivation rec {
   '';
 
   buildInputs = [ ncurses ];
+  nativeBuildInputs = [ autoreconfHook ];
 
   configureFlags = [
     "--without-x"
