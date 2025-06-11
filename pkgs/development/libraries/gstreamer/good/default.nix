@@ -303,7 +303,7 @@ stdenv.mkDerivation (finalAttrs: {
       code, LGPL or LGPL-compatible for the supporting library).
     '';
     license = licenses.lgpl2Plus;
-    platforms = platforms.linux ++ platforms.darwin;
+    platforms = platforms.unix;
     maintainers = with maintainers; [ matthewbauer ];
   };
 })
