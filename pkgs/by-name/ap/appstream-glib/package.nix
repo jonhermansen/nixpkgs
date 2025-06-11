@@ -3,6 +3,7 @@
   stdenv,
   fetchFromGitHub,
   replaceVars,
+  buildPackages,
   docbook_xml_dtd_42,
   docbook_xsl,
   fontconfig,
@@ -23,6 +24,10 @@
   ninja,
   pkg-config,
   pngquant,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  withGtkDoc ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform) || (stdenv.hostPlatform.emulatorAvailable buildPackages),
 }:
 stdenv.mkDerivation rec {
   pname = "appstream-glib";
@@ -47,13 +52,19 @@ stdenv.mkDerivation rec {
     docbook_xml_dtd_42
     docbook_xsl
     gettext
-    gobject-introspection
     gperf
     gtk-doc
     libxslt
     meson
     ninja
     pkg-config
+    glib
+  ]
+  ++ lib.optionals withIntrospection [
+    gobject-introspection
+  ]
+  ++ lib.optionals withGtkDoc [
+    gtk-doc
   ];
 
   buildInputs = [
@@ -83,6 +94,7 @@ stdenv.mkDerivation rec {
     "-Drpm=false"
     "-Dstemmer=false"
     "-Ddep11=false"
+    (lib.mesonBool "introspection" withIntrospection)
   ];
 
   doCheck = false; # fails at least 1 test
