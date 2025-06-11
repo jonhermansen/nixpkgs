@@ -33,6 +33,7 @@ stdenv.mkDerivation (finalAttrs: {
     buildPackages.stdenv.cc
     pkg-config
     cmake
+    glib
   ];
 
   buildInputs =
@@ -49,6 +50,8 @@ stdenv.mkDerivation (finalAttrs: {
   cmakeFlags = [
     "-Denable-framework=off"
   ];
+
+  dontAddExtraLibs = true;
 
   meta = {
     description = "Real-time software synthesizer based on the SoundFont 2 specifications";
