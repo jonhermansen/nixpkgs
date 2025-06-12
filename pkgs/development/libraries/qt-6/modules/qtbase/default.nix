@@ -4,6 +4,7 @@
   src,
   version,
   removeReferencesTo,
+  fetchpatch,
   bison,
   flex,
   gperf,
