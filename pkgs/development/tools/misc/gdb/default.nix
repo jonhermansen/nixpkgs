@@ -24,6 +24,8 @@
   dejagnu,
   sourceHighlight,
   libiconv,
+  clang,
+  gcc,
 
   pythonSupport ? stdenv.hostPlatform == stdenv.buildPlatform && !stdenv.hostPlatform.isCygwin,
   python3 ? null,
@@ -36,8 +38,7 @@
     # $debugdir:$datadir/auto-load are whitelisted by default by GDB
     "$debugdir"
     "$datadir/auto-load"
-    # targetPackages so we get the right libc when cross-compiling and using buildPackages.gdb
-    (lib.getLib targetPackages.stdenv.cc.cc)
+    (lib.getLib (if stdenv.hostPlatform.useLLVM then clang.cc else gcc.cc))
   ],
   writeScript,
 }:
