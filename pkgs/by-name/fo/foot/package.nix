@@ -4,6 +4,7 @@
   fetchFromGitea,
   fetchurl,
   runCommand,
+  freebsd,
   fcft,
   freetype,
   pixman,
@@ -17,6 +18,8 @@
   tllist,
   wayland-protocols,
   wayland-scanner,
+  evdev-proto,
+  epoll-shim,
   pkg-config,
   utf8proc,
   allowPgo ? !stdenv.hostPlatform.isMusl,
@@ -136,6 +139,11 @@ stdenv.mkDerivation {
     libxkbcommon
     fcft
     utf8proc
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    freebsd.libstdthreads
+    evdev-proto
+    epoll-shim
   ];
 
   # recommended build flags for performance optimized foot builds
@@ -229,7 +237,7 @@ stdenv.mkDerivation {
       sternenseemann
       abbe
     ];
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     mainProgram = "foot";
   };
 }
