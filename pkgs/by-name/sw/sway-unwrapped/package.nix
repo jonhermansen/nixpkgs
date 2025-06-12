@@ -15,6 +15,7 @@
   pcre2,
   json_c,
   libevdev,
+  evdev-proto,
   pango,
   cairo,
   libinput,
@@ -99,6 +100,9 @@ stdenv.mkDerivation (finalAttrs: {
       libdrm
       (wlroots.override { inherit (finalAttrs) enableXWayland; })
     ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      evdev-proto
+    ]
     ++ lib.optionals finalAttrs.enableXWayland [
       xorg.xcbutilwm
     ];
@@ -136,7 +140,7 @@ stdenv.mkDerivation (finalAttrs: {
     homepage = "https://swaywm.org";
     changelog = "https://github.com/swaywm/sway/releases/tag/${finalAttrs.version}";
     license = lib.licenses.mit;
-    platforms = lib.platforms.linux;
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
     maintainers = with lib.maintainers; [
       primeos
       synthetica
