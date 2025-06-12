@@ -55,6 +55,12 @@ stdenv.mkDerivation rec {
     "-Dman-pages=enabled"
   ];
 
+  # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=275328
+  # can likely be removed for freebsd 14.3
+  postPatch = ''
+    substituteInPlace $(grep -lr 200809L) --replace-fail 'define _POSIX_C_SOURCE 200809L' 'define _XOPEN_SOURCE 700'
+  '';
+
   meta = with lib; {
     description = "Screen locker for Wayland";
     longDescription = ''
@@ -65,7 +71,7 @@ stdenv.mkDerivation rec {
     inherit (src.meta) homepage;
     mainProgram = "swaylock";
     license = licenses.mit;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     maintainers = with maintainers; [ primeos ];
   };
 }
