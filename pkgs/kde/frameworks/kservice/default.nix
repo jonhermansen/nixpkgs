@@ -1,4 +1,8 @@
-{ mkKdeDerivation }:
+{
+  qtdeclarative,
+  mkKdeDerivation,
+  kdeHostTools,
+}:
 mkKdeDerivation {
   pname = "kservice";
 
@@ -8,6 +12,10 @@ mkKdeDerivation {
     ./qdiriterator-follow-symlinks.patch
     # explode less when sycoca is deleted
     ./handle-sycoca-deletion.patch
+  ];
+  extraNativeBuildInputs = [
+    qtdeclarative
+    kdeHostTools
   ];
   meta.mainProgram = "kbuildsycoca6";
 }

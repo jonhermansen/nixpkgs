@@ -79,7 +79,7 @@ let
       {
         homepage = "https://gitlab.xfce.org/${category}/${pname}";
         license = licenses.gpl2Plus; # some libraries are under LGPLv2+
-        platforms = platforms.linux;
+        platforms = platforms.linux ++ platforms.freebsd;
       }
       // meta;
   };

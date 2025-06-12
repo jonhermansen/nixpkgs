@@ -59,6 +59,6 @@ stdenv.mkDerivation rec {
     license = licenses.mit;
     mainProgram = "swayidle";
     maintainers = with maintainers; [ primeos ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

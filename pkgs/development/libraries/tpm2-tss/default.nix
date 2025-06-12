@@ -98,7 +98,10 @@ stdenv.mkDerivation rec {
     # https://github.com/tpm2-software/tpm2-tss/issues/2629
     # See also
     # https://github.com/tpm2-software/tpm2-tss/blob/6c46325b466f35d40c2ed1043bfdfcfb8a367a34/Makefile.am#L880-L898
+
     ./no-shadow.patch
+    # submitted upstream at https://github.com/tpm2-software/tpm2-tss/pull/2964
+    ./freebsd.patch
   ];
 
   postPatch =

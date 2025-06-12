@@ -1,10 +1,14 @@
 {
   qtModule,
+  qtbase,
   qttools,
 }:
 
 qtModule {
   pname = "qttranslations";
-  nativeBuildInputs = [ qttools ];
+  nativeBuildInputs = [
+    qtbase
+    qttools
+  ];
   outputs = [ "out" ];
 }

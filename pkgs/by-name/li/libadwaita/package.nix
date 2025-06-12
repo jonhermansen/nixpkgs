@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  buildPackages,
   gi-docgen,
   meson,
   ninja,
@@ -19,6 +20,11 @@
   desktop-file-utils,
   xvfb-run,
   testers,
+
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  withGtkDoc ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform) || (stdenv.hostPlatform.emulatorAvailable buildPackages),
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -45,19 +51,23 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [
-    gi-docgen
+    glib
     meson
     ninja
     pkg-config
     sassc
+    desktop-file-utils # for validate-desktop-file
+  ] ++ lib.optionals withIntrospection [
     vala
     gobject-introspection
-    desktop-file-utils # for validate-desktop-file
+    gi-docgen
   ];
 
-  mesonFlags =
-    [
-      "-Ddocumentation=true"
+  mesonFlags = [
+      (lib.mesonBool "documentation" withGtkDoc)
+      (lib.mesonEnable "introspection" withIntrospection)
+      (lib.mesonBool "vapi" withIntrospection)
+      (lib.mesonBool "tests" finalAttrs.finalPackage.doCheck)
     ]
     ++ lib.optionals (!finalAttrs.finalPackage.doCheck) [
       "-Dtests=false"

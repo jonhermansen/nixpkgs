@@ -11,6 +11,7 @@ mkKdeDerivation {
   extraNativeBuildInputs = [
     qttools
     pkg-config
+    qtwayland
   ];
   extraBuildInputs = [
     qtdeclarative

@@ -8,7 +8,9 @@
 mkKdeDerivation {
   pname = "purpose";
 
-  extraBuildInputs = [ qtdeclarative ];
+  extraNativeBuildInputs = [
+    qtdeclarative
+  ];
   extraPropagatedBuildInputs = [
     kaccounts-integration
     kdeclarative

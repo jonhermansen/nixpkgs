@@ -10054,7 +10054,7 @@ with pkgs;
 
   ### DEVELOPMENT / PERL MODULES
 
-  perlInterpreters = import ../development/interpreters/perl { inherit callPackage; };
+  perlInterpreters = import ../development/interpreters/perl { inherit callPackage lib; };
   inherit (perlInterpreters) perl538 perl540;
 
   perl538Packages = recurseIntoAttrs perl538.pkgs;
@@ -11047,7 +11047,9 @@ with pkgs;
   # unstable until the first 1.x release
   fwts = callPackage ../os-specific/linux/fwts { };
 
-  libuuid = if stdenv.hostPlatform.isLinux then util-linuxMinimal else null;
+  libuuid = if stdenv.hostPlatform.isLinux || stdenv.hostPlatform.isFreeBSD
+    then util-linuxMinimal
+    else null;
 
   elegant-sddm = libsForQt5.callPackage ../data/themes/elegant-sddm { };
 
@@ -11430,7 +11432,10 @@ with pkgs;
     withUkify = true;
   };
 
-  udev = if lib.meta.availableOn stdenv.hostPlatform systemdLibs then systemdLibs else libudev-zero;
+  udev =
+    if lib.meta.availableOn stdenv.hostPlatform systemdLibs then systemdLibs
+      else if lib.meta.availableOn stdenv.hostPlatform freebsd.libudev-devd then freebsd.libudev-devd
+    else libudev-zero;
 
   sysvtools = sysvinit.override {
     withoutInitTools = true;
@@ -11806,7 +11811,7 @@ with pkgs;
   source-han-serif-vf-ttf = sourceHanPackages.serif-vf-ttf;
 
   tango-icon-theme = callPackage ../data/icons/tango-icon-theme {
-    gtk = res.gtk2;
+    gtk = buildPackages.gtk2;
   };
 
   themes = name: callPackage (../data/misc/themes + ("/" + name + ".nix")) { };
@@ -13941,7 +13946,7 @@ with pkgs;
   lightdm_qt = lightdm.override { withQt5 = true; };
 
   lightdm-gtk-greeter = callPackage ../applications/display-managers/lightdm/gtk-greeter.nix {
-    inherit (xfce) xfce4-dev-tools;
+    inherit (buildPackages.xfce) xfce4-dev-tools;
   };
 
   curaengine_stable = callPackage ../applications/misc/curaengine/stable.nix { };
@@ -16880,4 +16885,6 @@ with pkgs;
   davis = callPackage ../by-name/da/davis/package.nix {
     php = php83; # https://github.com/tchapi/davis/issues/195
   };
+
+  accountsservice = if stdenv.hostPlatform.isFreeBSD then accountsservice-freebsd else accountsservice-linux;
 }

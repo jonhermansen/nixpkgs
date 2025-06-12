@@ -1,6 +1,7 @@
 {
   lib,
   mkXfceDerivation,
+  buildPackages,
   fetchpatch,
   polkit,
   exo,
@@ -53,9 +54,22 @@ mkXfceDerivation {
     iceauth
   ];
 
+  nativeBuildInputs = [
+    glib
+  ];
+
+  # meson doesn't work yet and autoconf won't pick up the right two glibs unless we produce this monster
+  preConfigure = ''
+    mkdir -p $TMP/lib/pkgconfig
+    cp -r ${glib.dev}/lib/pkgconfig/*.pc $TMP/lib/pkgconfig
+    substituteInPlace $TMP/lib/pkgconfig/*.pc --replace-quiet ${glib.dev}/bin ${buildPackages.glib.dev}/bin
+    export PKG_CONFIG_PATH="$TMP/lib/pkgconfig:$PKG_CONFIG_PATH"
+  '';
+
   configureFlags = [
     "--with-xsession-prefix=${placeholder "out"}"
     "--with-wayland-session-prefix=${placeholder "out"}"
+    "ICEAUTH=${lib.getExe iceauth}"
   ];
 
   passthru.xinitrc = "${xfce4-session}/etc/xdg/xfce4/xinitrc";

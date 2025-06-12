@@ -72,6 +72,9 @@ stdenv.mkDerivation (finalAttrs: {
       hash = "sha256-d3h5h7B/MP3Sun5YwYCqMHcw4PMMwg1YS/S9vsMzkQ4=";
     })
   ];
+  postPatch = lib.optionalString (!stdenv.buildPlatform.canExecute stdenv.hostPlatform && !stdenv.hostPlatform.emulatorAvailable buildPackages) ''
+    sed -E -i -e '/override_find_program/d' tools/meson.build
+  '';
 
   strictDeps = true;
 
@@ -94,7 +97,7 @@ stdenv.mkDerivation (finalAttrs: {
       itstool
       gperf
     ]
-    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    ++ lib.optionals (withIntrospection && !stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
       mesonEmulatorHook
     ]
     ++ lib.optionals (!lib.systems.equals stdenv.buildPlatform stdenv.hostPlatform) [

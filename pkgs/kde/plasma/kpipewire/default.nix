@@ -6,11 +6,12 @@
   ffmpeg,
   libgbm,
   libva,
+  qtdeclarative,
 }:
 mkKdeDerivation {
   pname = "kpipewire";
 
-  extraNativeBuildInputs = [ pkg-config ];
+  extraNativeBuildInputs = [ pkg-config qtdeclarative ];
   extraBuildInputs = [
     qtquick3d
     pipewire

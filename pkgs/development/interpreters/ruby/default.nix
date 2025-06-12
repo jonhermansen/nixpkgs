@@ -66,7 +66,7 @@ let
         atLeast32
         && (
           stdenv.hostPlatform.isx86_64 || (!stdenv.hostPlatform.isWindows && stdenv.hostPlatform.isAarch64)
-        );
+        ) && (stdenv.hostPlatform.config == stdenv.buildPlatform.config);
       rubyDrv = lib.makeOverridable (
         {
           stdenv,

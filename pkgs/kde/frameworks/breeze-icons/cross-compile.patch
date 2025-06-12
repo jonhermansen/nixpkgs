@@ -1,0 +1,81 @@
+diff --git a/icons-dark/CMakeLists.txt b/icons-dark/CMakeLists.txt
+index 567a7b1c..105848d9 100644
+--- a/icons-dark/CMakeLists.txt
++++ b/icons-dark/CMakeLists.txt
+@@ -15,7 +15,7 @@ if(WITH_ICON_GENERATION)
+     # No trainling slashes on dirs. It will break scripts.
+     add_custom_target(breeze-generate-symbolic-dark ALL
+         COMMENT "Generating symbolic dark icons"
+-        COMMAND $<TARGET_FILE:generate-symbolic-dark> ${CMAKE_SOURCE_DIR}/icons ${ICON_GEN_DIR}
++        COMMAND $<TARGET_FILE:hostgenerate-symbolic-dark> ${CMAKE_SOURCE_DIR}/icons ${ICON_GEN_DIR}
+     )
+     # Auto-generate 24px monochrome icons from 22px versions
+     add_custom_target(breeze-generate-24px-versions-dark ALL
+diff --git a/src/lib/CMakeLists.txt b/src/lib/CMakeLists.txt
+index e8c9e0ac..31572141 100644
+--- a/src/lib/CMakeLists.txt
++++ b/src/lib/CMakeLists.txt
+@@ -11,10 +11,10 @@ set(RESOURCE_FILE_BINARY ${CMAKE_CURRENT_BINARY_DIR}/breeze-icons.rcc)
+ # we only will use the normal icons, we do recoloring later
+ # we run the tool over the dark ones just to do all checks on them, too
+ add_custom_command(OUTPUT ${RESOURCE_FILE}
+-    COMMAND qrcAlias -o ${RESOURCE_FILE} ${CMAKE_SOURCE_DIR}/icons ${CMAKE_BINARY_DIR}/breeze-icons # used for the resource
+-    COMMAND qrcAlias -o ${RESOURCE_FILE}.dark.dummy ${CMAKE_SOURCE_DIR}/icons-dark ${CMAKE_BINARY_DIR}/breeze-icons-dark # used for checking only
++    COMMAND $<TARGET_FILE:hostqrcAlias> -o ${RESOURCE_FILE} ${CMAKE_SOURCE_DIR}/icons ${CMAKE_BINARY_DIR}/breeze-icons # used for the resource
++    COMMAND $<TARGET_FILE:hostqrcAlias> -o ${RESOURCE_FILE}.dark.dummy ${CMAKE_SOURCE_DIR}/icons-dark ${CMAKE_BINARY_DIR}/breeze-icons-dark # used for checking only
+     COMMAND Qt6::rcc --binary -o ${RESOURCE_FILE_BINARY} ${RESOURCE_FILE} # FIXME: remove after e.g. Kexi is ported
+-    DEPENDS qrcAlias breeze-generate-24px-versions breeze-generate-24px-versions-dark # ensure we run after the generation steps
++    DEPENDS hostqrcAlias breeze-generate-24px-versions breeze-generate-24px-versions-dark # ensure we run after the generation steps
+     USES_TERMINAL
+ )
+ 
+diff --git a/src/tools/CMakeLists.txt b/src/tools/CMakeLists.txt
+index 191dfdf3..4ae10810 100644
+--- a/src/tools/CMakeLists.txt
++++ b/src/tools/CMakeLists.txt
+@@ -1,3 +1,33 @@
++# https://stackoverflow.com/a/61385572/9719920
++set(host_tools_list generate-symbolic-dark qrcAlias)
++
++if(CMAKE_CROSSCOMPILING)
++    # Pawn off the creation of the host utilities into its own dedicated space
++    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/host_tools)
++    file(TO_NATIVE_PATH ${CMAKE_COMMAND} native_cmake_command)
++    file(TO_NATIVE_PATH ${CMAKE_CURRENT_SOURCE_DIR} native_cmake_current_source_dir)
++    execute_process(
++        COMMAND "${native_cmake_command}" "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}" "${native_cmake_current_source_dir}"
++        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/host_tools
++    )
++
++    add_custom_target(host_tools
++        COMMAND ${CMAKE_COMMAND} --build . --target host_tools --config $<CONFIG>
++        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/host_tools
++    )
++    include(${CMAKE_CURRENT_BINARY_DIR}/host_tools/host_tools.cmake)
++
++    foreach(tgt IN ITEMS ${host_tools_list})
++        add_dependencies(host${tgt} host_tools)
++    endforeach()
++
++else()
++    # Add an empty target, host tools are built inplace
++    add_custom_target(host_tools
++        DEPENDS ${host_tools_list}
++    )
++endif()
++
+ # takes light theme icons and makes modified copies of them with dark theme stylesheets
+ add_executable(generate-symbolic-dark generate-symbolic-dark.cpp)
+ target_link_libraries(generate-symbolic-dark PRIVATE Qt6::Core)
+@@ -7,3 +37,11 @@ ecm_mark_nongui_executable(generate-symbolic-dark)
+ add_executable(qrcAlias qrcAlias.cpp)
+ target_link_libraries(qrcAlias PRIVATE Qt6::Core)
+ ecm_mark_nongui_executable(qrcAlias)
++
++if(NOT CMAKE_CROSSCOMPILING)
++    foreach(tgt IN ITEMS ${host_tools_list})
++        add_executable(host${tgt} ALIAS ${tgt})
++    endforeach()
++
++    export(TARGETS ${host_tools_list} NAMESPACE host FILE host_tools.cmake)
++endif()

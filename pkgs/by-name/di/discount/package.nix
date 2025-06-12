@@ -43,5 +43,6 @@ stdenv.mkDerivation rec {
     maintainers = with maintainers; [ shell ];
     mainProgram = "markdown";
     platforms = platforms.unix;
+    broken = !stdenv.buildPlatform.canExecute stdenv.hostPlatform;
   };
 }

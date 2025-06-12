@@ -33,6 +33,10 @@ stdenv.mkDerivation rec {
       url = "https://gitlab.alpinelinux.org/alpine/aports/-/raw/0630fa25465530c0e7358f00016bdc812894f67f/community/webrtc-audio-processing-1/add-loongarch-support.patch";
       hash = "sha256-Cn3KwKSSV/QJm1JW0pkEWB6OmeA0fRlVkiMU8OzXNzY=";
     })
+    (fetchurl {
+      url = "https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing/-/commit/2083c9a5dd3482caee59544c1ffa9700c473e978.patch";
+      hash = "sha256-PDTMJIwCkgMrJu9n8HhQUDflHoS2x5VRYsrAWK7VQ2A=";
+    })
   ];
 
   outputs = [

@@ -2,6 +2,7 @@
   stdenv,
   lib,
   fetchurl,
+  buildPackages,
   docbook-xsl-nons,
   glib,
   gobject-introspection,
@@ -15,6 +16,10 @@
   icu,
   enchant2,
   gnome,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  withGtkDoc ? (stdenv.buildPlatform.canExecute stdenv.hostPlatform) || (stdenv.hostPlatform.emulatorAvailable buildPackages),
 }:
 
 stdenv.mkDerivation rec {
@@ -24,6 +29,7 @@ stdenv.mkDerivation rec {
   outputs = [
     "out"
     "dev"
+  ] ++ lib.optionals withGtkDoc [
     "devdoc"
   ];
 
@@ -38,14 +44,16 @@ stdenv.mkDerivation rec {
     [
       docbook-xsl-nons
       glib # glib-mkenums
-      gobject-introspection
-      gtk-doc
       meson
       ninja
       pkg-config
+    ] ++ lib.optionals withGtkDoc [
+      gtk-doc
+    ] ++ lib.optionals withIntrospection [
+      gobject-introspection
       vala
     ]
-    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
+    ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform && stdenv.hostPlatform.emulatorAvailable buildPackages) [
       mesonEmulatorHook
     ];
 
@@ -57,6 +65,12 @@ stdenv.mkDerivation rec {
   propagatedBuildInputs = [
     # required for pkg-config
     enchant2
+  ];
+
+  mesonFlags = [
+    (lib.mesonBool "gobject_introspection" withIntrospection)
+    (lib.mesonBool "vapi" withIntrospection)
+    (lib.mesonBool "gtk_doc" withGtkDoc)
   ];
 
   passthru = {

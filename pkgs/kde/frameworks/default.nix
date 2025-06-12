@@ -1,5 +1,34 @@
-{ callPackage }:
 {
+  callPackage,
+}:
+{
+  kdeHostTools = callPackage ({
+    symlinkJoin,
+    kconfig,
+    kdoctools,
+    kauth,
+    kcmutils,
+    kpackage,
+  }: symlinkJoin {
+    pname = "kdeHostTools";
+    inherit (kconfig) version;
+    paths = [
+      kdoctools.dev
+      kconfig.dev
+      kauth.dev
+      kcmutils.dev
+      kpackage.dev
+    ];
+    postBuild = ''
+      mkdir -p $out/nix-support
+      cat >$out/nix-support/setup-hook <<EOF
+      if [[ "\$hostOffset" == "-1" ]]; then
+        export cmakeFlags+=" -DKF6_HOST_TOOLING=$out/lib/cmake"
+      fi
+      EOF
+    '';
+  }) { };
+
   attica = callPackage ./attica { };
   baloo = callPackage ./baloo { };
   bluez-qt = callPackage ./bluez-qt { };

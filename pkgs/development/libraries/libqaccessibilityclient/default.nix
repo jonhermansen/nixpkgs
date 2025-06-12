@@ -38,6 +38,6 @@ stdenv.mkDerivation rec {
       lgpl3Only # or
       lgpl21Only
     ];
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
   };
 }

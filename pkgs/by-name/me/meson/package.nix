@@ -65,6 +65,9 @@ python3.pkgs.buildPythonApplication rec {
 
     # This edge case is explicitly part of meson but is wrong for nix
     ./007-freebsd-pkgconfig-path.patch
+
+    # In-submission pull request fixes cross building qt applications
+    ./008-qt-cross.patch
   ];
 
   postPatch =

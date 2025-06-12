@@ -29,6 +29,7 @@ self:
 assert lib.versionAtLeast perl.version "5.30.3";
 let
   inherit (lib) maintainers teams;
+  buildPerlPackages = buildPackages."perl${lib.versions.major perl.version}${lib.versions.minor perl.version}Packages";
 
 in
 with self;
@@ -5517,6 +5518,7 @@ with self;
       hash = "sha256-qt7tXkyL1rvfaMDdAGbLUT4Wq55bQ4LcSgqv1ViQaXs=";
     };
     buildInputs = [ BCOW ];
+    makeMakerFlags = [ "LDDLFLAGS=-shared -O2 -fstack-protector-strong" ];
     meta = {
       description = "Recursively copy Perl datatypes";
       license = with lib.licenses; [
@@ -16107,6 +16109,7 @@ with self;
       url = "mirror://cpan/authors/id/O/OA/OALDERS/HTML-Parser-3.81.tar.gz";
       hash = "sha256-wJEKXI+S+IF+3QbM/SJLocLr6MEPVR8DJYeh/IPWL/I=";
     };
+    makeMakerFlags = [ "LDDLFLAGS=-shared -O2 -fstack-protector-strong" ];
     propagatedBuildInputs = [
       HTMLTagset
       HTTPMessage
@@ -25242,6 +25245,8 @@ with self;
     postPatch = ''
       substituteInPlace Makefile.PL --replace pkg-config $PKG_CONFIG
     '';
+
+    makeMakerFlags = [ "LDDLFLAGS=-shared -O2 -fstack-protector-strong" ];
 
     meta = {
       description = "Extension for the DBus bindings";
@@ -38468,6 +38473,9 @@ with self;
     postPatch =
       lib.optionalString (stdenv.buildPlatform != stdenv.hostPlatform) ''
         substituteInPlace Expat/Makefile.PL --replace 'use English;' '#'
+        mkdir -p $TMP/bin
+        ln -s $(type -p $CC) $TMP/bin/cc
+        export PATH=$PATH:$TMP/bin
       ''
       + lib.optionalString stdenv.hostPlatform.isCygwin ''
         sed -i -e "s@my \$compiler = File::Spec->catfile(\$path, \$cc\[0\]) \. \$Config{_exe};@my \$compiler = File::Spec->catfile(\$path, \$cc\[0\]) \. (\$^O eq 'cygwin' ? \"\" : \$Config{_exe});@" inc/Devel/CheckLib.pm
@@ -38475,6 +38483,7 @@ with self;
     makeMakerFlags = [
       "EXPATLIBPATH=${pkgs.expat.out}/lib"
       "EXPATINCPATH=${pkgs.expat.dev}/include"
+      "LDDLFLAGS=-shared -O2 -fstack-protector-strong"
     ];
     propagatedBuildInputs = [ LWP ];
     meta = {
@@ -38617,6 +38626,9 @@ with self;
       XMLNamespaceSupport
       XMLSAXBase
     ];
+    preInstall = ''
+      export PERL5LIB=$out/${perl.libPrefix}/${perl.version}:${buildPerlPackages.IO}/${perl.libPrefix}/${perl.version}:$PERL5LIB
+    '';
     postInstall = ''
       perl -MXML::SAX -e "XML::SAX->add_parser(q(XML::SAX::PurePerl))->save_parsers()"
     '';

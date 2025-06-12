@@ -3,6 +3,7 @@
   lib,
   fetchurl,
   fetchpatch2,
+  buildPackages,
   meson,
   ninja,
   pkg-config,
@@ -18,6 +19,11 @@
   libxml2,
   libuuid,
   gnome,
+  mesonEmulatorHook,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
+  withGtkDoc ? stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation rec {
@@ -27,7 +33,7 @@ stdenv.mkDerivation rec {
   outputs = [
     "out"
     "dev"
-  ] ++ lib.optionals (stdenv.buildPlatform == stdenv.hostPlatform) [ "devdoc" ];
+  ] ++ lib.optionals withGtkDoc [ "devdoc" ];
 
   src = fetchurl {
     url = "mirror://gnome/sources/gupnp/${lib.versions.majorMinor version}/${pname}-${version}.tar.xz";
@@ -63,12 +69,17 @@ stdenv.mkDerivation rec {
     meson
     ninja
     pkg-config
-    gobject-introspection
-    vala
+    glib
+  ] ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform && stdenv.hostPlatform.emulatorAvailable buildPackages) [
+    mesonEmulatorHook
+  ] ++ lib.optionals withGtkDoc [
     gtk-doc
     docbook_xsl
     docbook_xml_dtd_412
     docbook_xml_dtd_45
+  ] ++ lib.optionals withIntrospection [
+    vala
+    gobject-introspection
   ];
 
   buildInputs = [
@@ -83,7 +94,8 @@ stdenv.mkDerivation rec {
   ];
 
   mesonFlags = [
-    "-Dgtk_doc=${lib.boolToString (stdenv.buildPlatform == stdenv.hostPlatform)}"
+    (lib.mesonBool "gtk_doc" withGtkDoc)
+    (lib.mesonBool "introspection" withIntrospection)
   ];
 
   # Bail out! ERROR:../tests/test-bugs.c:168:test_on_timeout: code should not be reached

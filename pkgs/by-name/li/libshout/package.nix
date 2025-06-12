@@ -49,6 +49,12 @@ stdenv.mkDerivation rec {
     speex
   ];
 
+  # https://github.com/freebsd/freebsd-ports/blob/f3789deb5cff4cba4f72ce09b5c1c5edd96e80f0/audio/libshout/Makefile
+  configureFlags = lib.optionals stdenv.hostPlatform.isFreeBSD [
+    "CFLAGS=-D__BSD_VISIBLE"
+    "LDFLAGS=-lcrypto"
+  ];
+
   meta = {
     description = "icecast 'c' language bindings";
 

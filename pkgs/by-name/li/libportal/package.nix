@@ -2,6 +2,7 @@
   stdenv,
   lib,
   fetchFromGitHub,
+  buildPackages,
   meson,
   ninja,
   pkg-config,
@@ -14,6 +15,10 @@
   libsForQt5,
   qt6Packages,
   variant ? null,
+
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 assert
@@ -26,7 +31,7 @@ stdenv.mkDerivation rec {
   outputs = [
     "out"
     "dev"
-  ] ++ lib.optional (variant != "qt5") "devdoc";
+  ] ++ lib.optional (variant != "qt5" && withIntrospection) "devdoc";
 
   src = fetchFromGitHub {
     owner = "flatpak";
@@ -41,12 +46,13 @@ stdenv.mkDerivation rec {
 
   nativeBuildInputs =
     [
+      glib
       meson
       ninja
       pkg-config
       gi-docgen
     ]
-    ++ lib.optionals (variant != "qt5") [
+    ++ lib.optionals (variant != "qt5" && withIntrospection) [
       gobject-introspection
       vala
     ];
@@ -74,9 +80,9 @@ stdenv.mkDerivation rec {
     (lib.mesonEnable "backend-gtk4" (variant == "gtk4"))
     (lib.mesonEnable "backend-qt5" (variant == "qt5"))
     (lib.mesonEnable "backend-qt6" (variant == "qt6"))
-    (lib.mesonBool "vapi" (variant != "qt5"))
-    (lib.mesonBool "introspection" (variant != "qt5"))
-    (lib.mesonBool "docs" (variant != "qt5")) # requires introspection=true
+    (lib.mesonBool "vapi" (variant != "qt5" && withIntrospection))
+    (lib.mesonBool "introspection" (variant != "qt5" && withIntrospection))
+    (lib.mesonBool "docs" (variant != "qt5" && withIntrospection)) # requires introspection=true
   ];
 
   postFixup = ''

@@ -59,6 +59,13 @@ buildPythonPackage rec {
         # the wrapped file were then called via "exec". The virtualenvwrapper shell scripts
         # aren't normal executables. Instead, the user has to evaluate them.
 
+        # Also, make sure we're not just straight up injecting disallowed references.
+        sedFlags=()
+        for disallowed in $disallowedReferences; do
+          sedFlags+=("-e" "s@:$disallowed[^:]*:@:@g" "-e" "s@^$disallowed[^:]*:@@g" "-e" "s@:$disallowed[^:]*\\\$@@g" "-e" "s@^$disallowed[^:]*\\\$@@g")
+        done
+        PYTHONPATH="$(sed -E "''${sedFlags[@]}" <<<"$PYTHONPATH")"
+
         for file in "virtualenvwrapper.sh" "virtualenvwrapper_lazy.sh"; do
           local wrapper="$out/bin/$file"
           local wrapped="$out/bin/.$file-wrapped"

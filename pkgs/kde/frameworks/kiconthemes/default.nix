@@ -12,5 +12,8 @@ mkKdeDerivation {
     qtsvg
     qttools
   ];
+  extraNativeBuildInputs = [
+    qtdeclarative
+  ];
   meta.mainProgram = "kiconfinder6";
 }

@@ -14,6 +14,8 @@
   ],
   src ? null,
 
+  makeMakerFlags ? null,
+
   # enabling or disabling does nothing for perl packages so set it explicitly
   # to false to not change hashes when enableParallelBuildingByDefault is enabled
   enableParallelBuilding ? false,
@@ -35,6 +37,8 @@
 
   env ? { },
 
+  disallowedReferences ? null,
+
   ...
 }@attrs:
 
@@ -43,10 +47,28 @@ lib.throwIf (attrs ? name)
 
   (
     let
+      buildPerl = perl.__spliced.buildHost or perl;
+      # haha what
+      combinedFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ "PERL_ARCHLIB=${perl}/${perl.archPrefix}" ]
+        ++ lib.optionals (makeMakerFlags != null) makeMakerFlags;
+      finalFlags = if makeMakerFlags == null && stdenv.buildPlatform.canExecute stdenv.hostPlatform then null else combinedFlags;
+
       defaultMeta = {
         homepage = "https://metacpan.org/dist/${attrs.pname}";
         inherit (perl.meta) platforms;
       };
+      combinedDisallowed = lib.optionals (disallowedReferences != null) disallowedReferences
+      ++ lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [ buildPerl ];
+      combinedPostFixup = if !stdenv.buildPlatform.canExecute stdenv.hostPlatform then attrs.postFixup or "" + ''
+        for output in $outputs; do
+          (grep -Irl ${buildPerl} ''${!output} || true) | while read -r filename; do
+            substituteInPlace "$filename" \
+              --replace-quiet "${buildPerl}/bin/perl" "${perl}/bin/perl" \
+              --replace-quiet "/usr/bin/perl" "${perl}/bin/perl" \
+              --replace-quiet "-I${buildPerl}/${buildPerl.libPrefix}/${buildPerl.version}" ""
+          done
+        done
+      '' else attrs.postFixup or null;
 
       package = stdenv.mkDerivation (
         attrs
@@ -58,7 +80,11 @@ lib.throwIf (attrs ? name)
           buildInputs = buildInputs ++ [ perl ];
           nativeBuildInputs =
             nativeBuildInputs
-            ++ (if !(stdenv.buildPlatform.canExecute stdenv.hostPlatform) then [ perl.mini ] else [ perl ]);
+            ++ (if !(stdenv.buildPlatform.canExecute stdenv.hostPlatform) then [ perl ] else [ perl ]);
+
+          makeMakerFlags = finalFlags;
+
+          postFixup = combinedPostFixup;
 
           inherit
             outputs
@@ -69,10 +95,12 @@ lib.throwIf (attrs ? name)
             ;
           env = {
             inherit PERL_AUTOINSTALL AUTOMATED_TESTING PERL_USE_UNSAFE_INC;
-            fullperl = perl.__spliced.buildHost or perl;
+            fullperl = buildPerl;
           } // env;
 
           meta = defaultMeta // (attrs.meta or { });
+        } // lib.optionalAttrs (combinedDisallowed != null) {
+          disallowedReferences = combinedDisallowed;
         }
       );
 

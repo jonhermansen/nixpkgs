@@ -56,7 +56,7 @@ stdenv.mkDerivation rec {
   meta = {
     homepage = "https://gitlab.gnome.org/GNOME/adwaita-icon-theme";
     changelog = "https://gitlab.gnome.org/GNOME/adwaita-icon-theme/-/blob/${version}/NEWS?ref_type=tags";
-    platforms = with lib.platforms; linux ++ darwin;
+    platforms = lib.platforms.unix;
     teams = [ lib.teams.gnome ];
     license = lib.licenses.cc-by-sa-30;
   };

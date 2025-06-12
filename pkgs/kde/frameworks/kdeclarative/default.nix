@@ -6,6 +6,6 @@
 mkKdeDerivation {
   pname = "kdeclarative";
 
-  extraNativeBuildInputs = [ spirv-tools ];
+  extraNativeBuildInputs = [ spirv-tools qtdeclarative ];
   extraBuildInputs = [ qtdeclarative ];
 }

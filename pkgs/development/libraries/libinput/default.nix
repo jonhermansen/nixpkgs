@@ -2,6 +2,7 @@
   lib,
   stdenv,
   fetchFromGitLab,
+  fetchpatch,
   gitUpdater,
   pkg-config,
   meson,
@@ -9,6 +10,7 @@
   libevdev,
   mtdev,
   udev,
+  epoll-shim,
   libwacom,
   documentationSupport ? false,
   doxygen,
@@ -103,6 +105,9 @@ stdenv.mkDerivation rec {
       glib
       gtk3
       wayland-scanner
+    ]
+    ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+      epoll-shim
     ];
 
   propagatedBuildInputs = [
@@ -120,6 +125,8 @@ stdenv.mkDerivation rec {
     (mkFlag testsSupport "tests")
     "--sysconfdir=/etc"
     "--libexecdir=${placeholder "bin"}/libexec"
+  ] ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    "-Depoll-dir=${lib.getDev epoll-shim}"
   ];
 
   doCheck = testsSupport && stdenv.hostPlatform == stdenv.buildPlatform;
@@ -150,7 +157,7 @@ stdenv.mkDerivation rec {
     mainProgram = "libinput";
     homepage = "https://www.freedesktop.org/wiki/Software/libinput/";
     license = licenses.mit;
-    platforms = platforms.linux;
+    platforms = platforms.linux ++ platforms.freebsd;
     maintainers = with maintainers; [ codyopel ];
     teams = [ teams.freedesktop ];
     changelog = "https://gitlab.freedesktop.org/libinput/libinput/-/releases/${version}";
