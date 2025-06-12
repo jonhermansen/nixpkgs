@@ -7,6 +7,7 @@
   expat,
   fetchCrate,
   fetchFromGitLab,
+  fetchpatch,
   file,
   flex,
   glslang,
@@ -43,6 +44,7 @@
   zstd,
   enablePatentEncumberedCodecs ? true,
   withValgrind ? lib.meta.availableOn stdenv.hostPlatform valgrind-light,
+  withSensors ? lib.meta.availableOn stdenv.hostPlatform lm_sensors,
 
   galliumDrivers ?
     [
@@ -80,12 +82,14 @@
       "asahi" # Apple AGX, built on non-aarch64 for cross tools
       "intel" # new Intel (aka ANV)
       "microsoft-experimental" # WSL virtualized GPU (aka DZN/Dozen)
-      "nouveau" # Nouveau (aka NVK)
       "swrast" # software renderer (aka Lavapipe)
+    ]
+    ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
+      "nouveau" # Nouveau (aka NVK)
     ]
     ++
       lib.optionals
-        (stdenv.hostPlatform.isAarch -> lib.versionAtLeast stdenv.hostPlatform.parsed.cpu.version "6")
+        ((stdenv.hostPlatform.isAarch -> lib.versionAtLeast stdenv.hostPlatform.parsed.cpu.version "6") && !stdenv.hostPlatform.isFreeBSD)
         [
           # QEMU virtualized GPU (aka VirGL)
           # Requires ATOMIC_INT_LOCK_FREE == 2.
@@ -166,6 +170,11 @@ stdenv.mkDerivation {
 
   patches = [
     ./opencl.patch
+    (fetchpatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/ac1345b88e7533206465277c9d99866571b83dbe/graphics/mesa-devel/files/patch-renderdoc";
+      hash = "sha256-mDvFK3blmNKqV6UyDZ7TT5YjEJ5BCx84FtbyxIvSP5U=";
+      extraPrefix = "";
+    })
   ];
 
   postPatch = ''
@@ -226,7 +235,7 @@ stdenv.mkDerivation {
       (lib.mesonEnable "gbm" true)
       (lib.mesonBool "libgbm-external" true)
 
-      (lib.mesonBool "gallium-nine" false) # Direct3D9 in Wine, largely supplanted by DXVK
+      (lib.mesonBool "gallium-nine" (!stdenv.hostPlatform.isFreeBSD)) # Direct3D9 in Wine, largely supplanted by DXVK
 
       # Only used by xf86-video-vmware, which has more features than VMWare's KMS driver,
       # so we're keeping it for now. Should be removed when that's no longer the case.
@@ -259,6 +268,9 @@ stdenv.mkDerivation {
 
       # Disable valgrind on targets where it's not available
       (lib.mesonEnable "valgrind" withValgrind)
+
+      # Disable lmsensors on targets where it's not available
+      (lib.mesonEnable "lmsensors" withSensors)
     ]
     ++ lib.optionals enablePatentEncumberedCodecs [
       (lib.mesonOption "video-codecs" "all")
@@ -301,7 +313,6 @@ stdenv.mkDerivation {
       llvmPackages.clang-unwrapped
       llvmPackages.libclc
       llvmPackages.libllvm
-      lm_sensors
       python3Packages.python # for shebang
       spirv-llvm-translator
       udev
@@ -314,6 +325,9 @@ stdenv.mkDerivation {
     ]
     ++ lib.optionals withValgrind [
       valgrind-light
+    ]
+    ++ lib.optionals withSensors [
+      lm_sensors
     ];
 
   depsBuildBuild = [
