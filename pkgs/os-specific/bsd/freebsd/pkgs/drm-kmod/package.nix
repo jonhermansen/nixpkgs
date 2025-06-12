@@ -21,7 +21,7 @@ let
 
   fetchOptions = (lib.importJSON ./versions.json).${branch};
 in
-mkDerivation {
+mkDerivation rec {
   # this derivation is tricky; it is not an in-tree FreeBSD build but it is meant to be built
   # at the same time as the in-tree FreeBSD code, so it expects the same environment. Therefore,
   # it is appropriate to use the freebsd mkDerivation.
@@ -31,6 +31,11 @@ mkDerivation {
 
   src = fetchFromGitHub fetchOptions;
 
+  outputs = [
+    "out"
+    "debug"
+  ];
+
   extraNativeBuildInputs = [ xargs-j ];
 
   hardeningDisable = [
@@ -39,16 +44,23 @@ mkDerivation {
   ];
 
   # hardeningDisable = stackprotector doesn't seem to be enough, put it in cflags too
-  NIX_CFLAGS_COMPILE = "-fno-stack-protector";
+  NIX_CFLAGS_COMPILE = "-fno-stack-protector -O1";  # XXX TODO remove -O1
 
   env = sys.passthru.env;
   SYSDIR = "${sys.src}/sys";
 
   KMODDIR = "${placeholder "out"}/kernel";
+  KERN_DEBUGDIR = "${placeholder "debug"}/lib/debug";
+  KERN_DEBUGDIR_KODIR = "${KERN_DEBUGDIR}/kernel";
+  KERN_DEBUGDIR_KMODDIR = "${KERN_DEBUGDIR}/kernel";
 
   preBuild = ''
     mkdir -p linuxkpi/dummy/include
   '';
+
+  makeFlags = [
+    "DEBUG_FLAGS=-g"
+  ];
 
   meta = {
     description = "Linux drm driver, ported to FreeBSD";
