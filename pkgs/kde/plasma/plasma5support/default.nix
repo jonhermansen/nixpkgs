@@ -14,5 +14,9 @@ mkKdeDerivation {
     qtdeclarative
   ];
 
+  excludeDependencies = lib.optionals stdenv.hostPlatform.isFreeBSD [
+    "networkmanager-qt"
+  ];
+
   extraBuildInputs = [ gpsd ];
 }

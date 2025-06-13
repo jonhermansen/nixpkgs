@@ -37,8 +37,6 @@ stdenv.mkDerivation rec {
       url = "https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing/-/commit/2083c9a5dd3482caee59544c1ffa9700c473e978.patch";
       hash = "sha256-PDTMJIwCkgMrJu9n8HhQUDflHoS2x5VRYsrAWK7VQ2A=";
     })
-    # rebase of https://gitlab.freedesktop.org/pulseaudio/webrtc-audio-processing/-/commit/2a318149f8d5094c82306b8091a7a8b5194bf9c1.patch";
-    ./freebsd-configure.patch
   ];
 
   outputs = [

@@ -44,16 +44,6 @@ stdenv.mkDerivation rec {
         [
           ./fuse3-install.patch
           ./fuse3-Do-not-set-FUSERMOUNT_DIR.patch
-          (fetchpatch {
-            name = "bsd-config.patch";
-            url = "https://github.com/libfuse/libfuse/commit/45effd5db890bb3b3fc46fe083de4babb6747a05.patch";
-            hash = "sha256-i+jSlyeA+3tQtv9CobXyJvlsQTq1+aELadwD74Q7MzY=";
-          })
-          (fetchpatch {
-            name = "bsd-no-hello-uds.patch";
-            url = "https://github.com/libfuse/libfuse/commit/0a62f5d76137b25f37b99caf726ceedbf094d60e.patch";
-            hash = "sha256-J1W0Ghymk0aEvyrd8GmpKrBhHcULpZIRWvXnyCrVJjg=";
-          })
         ]
       else
         [

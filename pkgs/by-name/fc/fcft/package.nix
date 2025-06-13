@@ -98,6 +98,6 @@ stdenv.mkDerivation rec {
       mit
       zlib
     ];
-    platforms = with lib.platforms; linux ++ freebsd;
+    platforms = lib.platforms.linux ++ lib.platforms.freebsd;
   };
 }

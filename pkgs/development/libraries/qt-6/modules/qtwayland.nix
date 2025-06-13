@@ -25,7 +25,7 @@ qtModule {
     (fetchpatch {
       url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/66259c9c641b1fc828becbe2959dbe7380e55fe1/graphics/qt6-wayland/files/patch-CMakeLists.txt";
       extraPrefix = "";
-      hash = "";
+      hash = "sha256-CYmIf6MlvdMea2PDAqroPEGKh2rdNNRpojDVYbAm9Vs=";
     })
   ];
 

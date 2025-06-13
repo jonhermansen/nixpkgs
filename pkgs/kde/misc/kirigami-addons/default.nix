@@ -15,9 +15,8 @@ mkKdeDerivation rec {
     hash = "sha256-AAKK5N+Z4lBRg0XqKNnN9J1wDprKxIJzS7UThNoR+UU=";
   };
 
-  extraNativeBuildInputs = [ (qttools.override { withClang = true; }) ];
+  extraNativeBuildInputs = [ (qttools.override { withClang = true; }) qtdeclarative ];
   extraBuildInputs = [ qtdeclarative ];
-  extraNativeBuildInputs = [ qtdeclarative ];
   extraPropagatedBuildInputs = [ qt5compat ];
 
   meta.license = with lib.licenses; [

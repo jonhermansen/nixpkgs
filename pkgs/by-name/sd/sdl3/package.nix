@@ -8,6 +8,7 @@
   darwinMinVersionHook,
   dbus,
   fetchFromGitHub,
+  freebsd,
   ibusMinimal,
   installShellFiles,
   libGL,
@@ -39,20 +40,20 @@
   sdl3-image,
   sdl3-ttf,
   alsaSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
-  dbusSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
-  drmSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
-  ibusSupport ? stdenv.hostPlatform.isUnix && !stdenv.hostPlatform.isDarwin,
+  dbusSupport ? (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid) || stdenv.hostPlatform.isFreeBSD,
+  drmSupport ? (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid) || stdenv.hostPlatform.isFreeBSD,
+  ibusSupport ? stdenv.hostPlatform.isUnix && !stdenv.hostPlatform.isDarwin && !stdenv.hostPlatform.isFreeBSD,
   jackSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
   libdecorSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
   openglSupport ? lib.meta.availableOn stdenv.hostPlatform libGL,
-  pipewireSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
+  pipewireSupport ? (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid) || stdenv.hostPlatform.isFreeBSD,
   pulseaudioSupport ?
     config.pulseaudio or stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
-  libudevSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
+  libudevSupport ? (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid) || stdenv.hostPlatform.isFreeBSD,
   sndioSupport ? false,
   testSupport ? true,
   traySupport ? true,
-  waylandSupport ? stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid,
+  waylandSupport ? (stdenv.hostPlatform.isLinux && !stdenv.hostPlatform.isAndroid) || stdenv.hostPlatform.isFreeBSD,
   x11Support ? !stdenv.hostPlatform.isAndroid && !stdenv.hostPlatform.isWindows,
 }:
 
@@ -139,7 +140,7 @@ stdenv.mkDerivation (finalAttrs: {
     ]
     ++ lib.optional jackSupport libjack2
     ++ lib.optional libdecorSupport libdecor
-    ++ lib.optional libudevSupport systemdLibs
+    ++ lib.optional libudevSupport (if stdenv.hostPlatform.isFreeBSD then freebsd.libudev-devd else systemdLibs)
     ++ lib.optional openglSupport libGL
     ++ lib.optional pipewireSupport pipewire
     ++ lib.optional pulseaudioSupport libpulseaudio
