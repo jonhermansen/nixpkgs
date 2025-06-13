@@ -13,11 +13,11 @@
     pname = "kdeHostTools";
     inherit (kconfig) version;
     paths = [
-      kdoctools.dev
-      kconfig.dev
-      kauth.dev
-      kcmutils.dev
-      kpackage.dev
+      (kdoctools.dev or null)
+      (kconfig.dev or null)
+      (kauth.dev or null)
+      (kcmutils.dev or null)
+      (kpackage.dev or null)
     ];
     postBuild = ''
       mkdir -p $out/nix-support

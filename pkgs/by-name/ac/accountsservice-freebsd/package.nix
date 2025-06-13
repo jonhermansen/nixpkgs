@@ -5,7 +5,7 @@
   buildPackages,
   gobject-introspection,
   coreutils,
-  substituteAll,
+  replaceVars,
   fetchFromGitLab,
   consolekit2,
   gettext,
@@ -30,10 +30,9 @@ accountsservice-linux.overrideAttrs (orig: rec {
 
   patches = [
     # Hardcode dependency paths.
-    (substituteAll ({
-      src = ./fix-paths.patch;
+    (replaceVars ./fix-paths.patch {
       inherit coreutils;
-    }))
+    })
 
     # Do not try to create directories in /var, that will not work in Nix sandbox.
     ../accountsservice-linux/no-create-dirs.patch

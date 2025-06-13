@@ -38,6 +38,8 @@ stdenv.mkDerivation (finalAttrs: {
     maintainers = [ ];
     pkgConfigModules = [ "pthread-stubs" ];
     # on these platforms according to the readme
-    platforms = with lib.platforms; linux ++ cygwin ++ darwin ++ [ "x86_64-solaris" ];
+    platforms = with lib.platforms; linux ++ cygwin ++ darwin ++ [ "x86_64-solaris" ]
+    # ...on these platforms emperically
+      ++ freebsd;
   };
 })

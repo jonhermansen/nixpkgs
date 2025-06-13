@@ -21,7 +21,9 @@ mkKdeDerivation {
 
   extraNativeBuildInputs = [
     qtdeclarative
-    kdeHostTools
+    (kdeHostTools.override {
+      kcmutils = null;
+    })
   ];
 
   extraBuildInputs = [
