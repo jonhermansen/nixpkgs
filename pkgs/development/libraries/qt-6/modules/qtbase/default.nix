@@ -227,10 +227,6 @@ in
     ./qmlimportscanner-import-path.patch
     # don't pass qtbase's QML directory to qmlimportscanner if it's empty
     ./skip-missing-qml-directory.patch
-    (fetchpatch {
-      url = "https://invent.kde.org/qt/qt/qtbase/-/commit/72cde6f7dd9102d0c3730a75a6c85af69b8a0e3c.patch";
-      hash = "sha256-qkeoTPTmDHBVX+RyBaiW1j8oUEsnZwm8GlzY6dOj0f4=";
-    })
   ];
 
   postPatch = lib.optionalString stdenv.hostPlatform.isDarwin ''
