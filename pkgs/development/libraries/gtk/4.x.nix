@@ -219,14 +219,6 @@ stdenv.mkDerivation (finalAttrs: {
       NIX_LDFLAGS = "-lexecinfo";
     };
 
-  patches = [
-    (fetchpatch {
-      url = "https://gitlab.gnome.org/GNOME/gtk/-/commit/e78451165ac5cb4381c7cc756b138a6f55f36300.patch";
-      name = "wayland-forgotten-guards.patch";
-      hash = "sha256-B2JUisWruOc8qqJEUZAzHlI3NxpInB/1zgQT3KIz3zk=";
-    })
-  ];
-
   postPatch = ''
     # this conditional gates the installation of share/gsettings-schemas/.../glib-2.0/schemas/gschemas.compiled.
     substituteInPlace meson.build \
