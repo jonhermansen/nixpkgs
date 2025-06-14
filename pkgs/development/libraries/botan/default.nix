@@ -99,6 +99,7 @@ let
           "--with-zlib"
           "--with-rst2man"
           "--cpu=${stdenv.hostPlatform.parsed.cpu.name}"
+          "--os=${stdenv.hostPlatform.parsed.kernel.name}"
         ]
         ++ lib.optionals stdenv.cc.isClang [
           "--cc=clang"
