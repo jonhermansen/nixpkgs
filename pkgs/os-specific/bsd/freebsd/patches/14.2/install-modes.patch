@@ -1,0 +1,392 @@
+find . -name Makefile -exec sed -E -i -e 's/^([[:alpha:]]*MODE[[:space:]]*=[[:space:]]*)[1-9]([0-9][0-9][0-9])/\10\2/g' {} +
+
+diff --git a/kerberos5/usr.bin/ksu/Makefile b/kerberos5/usr.bin/ksu/Makefile
+index a6d9043c1b91..8095a02b05c5 100644
+--- a/kerberos5/usr.bin/ksu/Makefile
++++ b/kerberos5/usr.bin/ksu/Makefile
+@@ -3,7 +3,7 @@ PACKAGE=	kerberos
+ 
+ PROG=	ksu
+ .if defined(ENABLE_SUID_K5SU)
+-BINMODE=4555
++BINMODE=0555
+ PRECIOUSPROG=
+ .endif
+ MAN=
+diff --git a/libexec/dma/dma-mbox-create/Makefile b/libexec/dma/dma-mbox-create/Makefile
+index 0b74fcb42e22..a54d0976e08f 100644
+--- a/libexec/dma/dma-mbox-create/Makefile
++++ b/libexec/dma/dma-mbox-create/Makefile
+@@ -4,6 +4,6 @@ MAN=
+ WARNS?=	2
+ 
+ PROG=	dma-mbox-create
+-BINMODE=	4554
++BINMODE=	0554
+ 
+ .include <bsd.prog.mk>
+diff --git a/libexec/dma/dmagent/Makefile b/libexec/dma/dmagent/Makefile
+index 0b38c5dca6b5..b5a2d3600ecc 100644
+--- a/libexec/dma/dmagent/Makefile
++++ b/libexec/dma/dmagent/Makefile
+@@ -26,7 +26,7 @@ CLEANFILES=	aliases_parse.i
+ FILES=	auth.conf mailer.conf
+ FILESDIR=	${SHAREDIR}/examples/dma
+ 
+-BINMODE=	2555
++BINMODE=	0555
+ 
+ .include <bsd.compiler.mk>
+ 
+diff --git a/libexec/ulog-helper/Makefile b/libexec/ulog-helper/Makefile
+index 12d498537343..8a7a79562639 100644
+--- a/libexec/ulog-helper/Makefile
++++ b/libexec/ulog-helper/Makefile
+@@ -1,7 +1,7 @@
+ 
+ PROG=	ulog-helper
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ MAN=
+ 
+ LIBADD=	ulog
+diff --git a/sbin/mksnap_ffs/Makefile b/sbin/mksnap_ffs/Makefile
+index b11bf0a25fa5..9d59ff28ef5a 100644
+--- a/sbin/mksnap_ffs/Makefile
++++ b/sbin/mksnap_ffs/Makefile
+@@ -12,7 +12,7 @@ CFLAGS+=-I${.CURDIR:H}/mount
+ .if defined(NOSUID)
+ BINMODE=554
+ .else
+-BINMODE=4554
++BINMODE=0554
+ BINOWN=	root
+ .endif
+ BINGRP=	operator
+diff --git a/sbin/ping/Makefile b/sbin/ping/Makefile
+index 1483a93ace37..ccc535ec6111 100644
+--- a/sbin/ping/Makefile
++++ b/sbin/ping/Makefile
+@@ -7,7 +7,7 @@ PROG=	ping
+ SRCS=	main.c
+ MAN=	ping.8
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ LIBADD=	m
+ 
+ .if ${MK_INET_SUPPORT}!= "no"
+diff --git a/sbin/shutdown/Makefile b/sbin/shutdown/Makefile
+index 32c9d6979934..c642d93c25ee 100644
+--- a/sbin/shutdown/Makefile
++++ b/sbin/shutdown/Makefile
+@@ -8,6 +8,6 @@ MLINKS=	shutdown.8 poweroff.8
+ 
+ BINOWN=	root
+ BINGRP=	operator
+-BINMODE=4554
++BINMODE=0554
+ 
+ .include <bsd.prog.mk>
+diff --git a/secure/libexec/ssh-keysign/Makefile b/secure/libexec/ssh-keysign/Makefile
+index e5aa05f40f1d..7510a7eef5cf 100644
+--- a/secure/libexec/ssh-keysign/Makefile
++++ b/secure/libexec/ssh-keysign/Makefile
+@@ -5,7 +5,7 @@
+ PROG=	ssh-keysign
+ SRCS=	ssh-keysign.c readconf.c uidswap.c
+ MAN=	ssh-keysign.8
+-BINMODE=4555
++BINMODE=0555
+ 
+ LIBADD=	ssh
+ 
+diff --git a/usr.bin/at/Makefile b/usr.bin/at/Makefile
+index 23e8e3c1da76..2707c40a54ac 100644
+--- a/usr.bin/at/Makefile
++++ b/usr.bin/at/Makefile
+@@ -16,7 +16,7 @@ MLINKS=	at.1 batch.1 \
+ NO_WFORMAT=
+ 
+ BINOWN=	root
+-BINMODE= 4555
++BINMODE= 0555
+ CLEANFILES+= at.1
+ 
+ at.1: at.man
+diff --git a/usr.bin/bluetooth/btsockstat/Makefile b/usr.bin/bluetooth/btsockstat/Makefile
+index 399705862859..302f7a662b20 100644
+--- a/usr.bin/bluetooth/btsockstat/Makefile
++++ b/usr.bin/bluetooth/btsockstat/Makefile
+@@ -4,7 +4,7 @@ PACKAGE=	bluetooth
+ PROG=		btsockstat
+ WARNS?=		2
+ BINGRP=		kmem
+-BINMODE=	2555
++BINMODE=	0555
+ 
+ LIBADD=		bluetooth kvm
+ 
+diff --git a/usr.bin/chpass/Makefile b/usr.bin/chpass/Makefile
+index a805ecba0db6..b87e0b1edf39 100644
+--- a/usr.bin/chpass/Makefile
++++ b/usr.bin/chpass/Makefile
+@@ -7,7 +7,7 @@
+ PROG=	chpass
+ SRCS=	chpass.c edit.c field.c pw_scan.c table.c util.c
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ PRECIOUSPROG=
+ .if ${MK_NIS} != "no"
+ CFLAGS+= -DYP
+diff --git a/usr.bin/lock/Makefile b/usr.bin/lock/Makefile
+index 15fd92467dc0..545b36f819e6 100644
+--- a/usr.bin/lock/Makefile
++++ b/usr.bin/lock/Makefile
+@@ -2,7 +2,7 @@
+ 
+ PROG=	lock
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ 
+ LIBADD=	pam
+ 
+diff --git a/usr.bin/login/Makefile b/usr.bin/login/Makefile
+index e460b7806560..7094337523a9 100644
+--- a/usr.bin/login/Makefile
++++ b/usr.bin/login/Makefile
+@@ -21,7 +21,7 @@ LIBADD+=	bsm
+ 
+ .if ${MK_SETUID_LOGIN} != "no"
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ PRECIOUSPROG=
+ .endif
+ 
+diff --git a/usr.bin/netstat/Makefile b/usr.bin/netstat/Makefile
+index 98bc7b866d9d..958e8169b4cb 100644
+--- a/usr.bin/netstat/Makefile
++++ b/usr.bin/netstat/Makefile
+@@ -53,7 +53,7 @@ CFLAGS+=-DPF
+ .endif
+ 
+ BINGRP=	kmem
+-BINMODE=2555
++BINMODE=0555
+ LIBADD=	kvm memstat xo util
+ 
+ .if ${MK_NETGRAPH_SUPPORT} != "no"
+diff --git a/usr.bin/newgrp/Makefile b/usr.bin/newgrp/Makefile
+index 245863d1e0c0..195e1a327c91 100644
+--- a/usr.bin/newgrp/Makefile
++++ b/usr.bin/newgrp/Makefile
+@@ -4,7 +4,7 @@ PROG=	newgrp
+ LIBADD=	crypt util
+ 
+ .if defined(ENABLE_SUID_NEWGRP)
+-BINMODE=	4555
++BINMODE=	0555
+ PRECIOUSPROG=
+ .endif
+ 
+diff --git a/usr.bin/passwd/Makefile b/usr.bin/passwd/Makefile
+index cae0fcdc5608..dadbc02ba866 100644
+--- a/usr.bin/passwd/Makefile
++++ b/usr.bin/passwd/Makefile
+@@ -5,7 +5,7 @@
+ PACKAGE	 = runtime
+ PROG	 = passwd
+ BINOWN	 = root
+-BINMODE	 = 4555
++BINMODE	 = 0555
+ PRECIOUSPROG=
+ LIBADD   = pam
+ .if ${MK_NIS} != "no"
+diff --git a/usr.bin/quota/Makefile b/usr.bin/quota/Makefile
+index e3447cfa11bf..60469cd5e036 100644
+--- a/usr.bin/quota/Makefile
++++ b/usr.bin/quota/Makefile
+@@ -2,7 +2,7 @@
+ 
+ PROG=	quota
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ 
+ LIBADD=	rpcsvc util
+ 
+diff --git a/usr.bin/su/Makefile b/usr.bin/su/Makefile
+index bfa4fa8d26d6..91f6364502da 100644
+--- a/usr.bin/su/Makefile
++++ b/usr.bin/su/Makefile
+@@ -12,7 +12,7 @@ LIBADD+=	bsm
+ .endif
+ 
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ PRECIOUSPROG=
+ 
+ .include <bsd.prog.mk>
+diff --git a/usr.bin/wall/Makefile b/usr.bin/wall/Makefile
+index 65abb61184c7..583bf9113002 100644
+--- a/usr.bin/wall/Makefile
++++ b/usr.bin/wall/Makefile
+@@ -3,6 +3,6 @@
+ PROG=	wall
+ SRCS=	ttymsg.c wall.c
+ BINGRP=	tty
+-BINMODE=2555
++BINMODE=0555
+ 
+ .include <bsd.prog.mk>
+diff --git a/usr.bin/write/Makefile b/usr.bin/write/Makefile
+index 8e6454bdc45c..4762cca1e720 100644
+--- a/usr.bin/write/Makefile
++++ b/usr.bin/write/Makefile
+@@ -1,7 +1,7 @@
+ #	@(#)Makefile	8.1 (Berkeley) 6/6/93
+ 
+ PROG=	write
+-BINMODE=2555
++BINMODE=0555
+ BINGRP=	tty
+ 
+ .include <bsd.prog.mk>
+diff --git a/usr.sbin/authpf/Makefile b/usr.sbin/authpf/Makefile
+index aa6c6e1058a5..ac0940424713 100644
+--- a/usr.sbin/authpf/Makefile
++++ b/usr.sbin/authpf/Makefile
+@@ -5,7 +5,7 @@ PROG=	authpf
+ MAN=	authpf.8
+ BINOWN=	root
+ BINGRP= authpf
+-BINMODE= 6555
++BINMODE= 0555
+ 
+ SRCS=   authpf.c
+ 
+diff --git a/usr.sbin/cron/crontab/Makefile b/usr.sbin/cron/crontab/Makefile
+index 7b4901b7a281..9b66c220f85b 100644
+--- a/usr.sbin/cron/crontab/Makefile
++++ b/usr.sbin/cron/crontab/Makefile
+@@ -4,7 +4,7 @@ BINDIR=	/usr/bin
+ PROG=	crontab
+ MAN=	crontab.1 crontab.5
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ PRECIOUSPROG=
+ 
+ WARNS?=	3
+diff --git a/usr.sbin/lpr/lpc/Makefile b/usr.sbin/lpr/lpc/Makefile
+index 0b96e15e2e6f..8d714b6ff53e 100644
+--- a/usr.sbin/lpr/lpc/Makefile
++++ b/usr.sbin/lpr/lpc/Makefile
+@@ -6,7 +6,7 @@ PROG=	lpc
+ MAN=	lpc.8
+ SRCS=	lpc.c cmds.c cmdtab.c movejobs.c
+ BINGRP=	daemon
+-BINMODE= 2555
++BINMODE= 0555
+ 
+ CFLAGS+= -I${.CURDIR:H}/common_source
+ 
+diff --git a/usr.sbin/lpr/lpq/Makefile b/usr.sbin/lpr/lpq/Makefile
+index 328304f2203f..b12a58a37a7c 100644
+--- a/usr.sbin/lpr/lpq/Makefile
++++ b/usr.sbin/lpr/lpq/Makefile
+@@ -5,7 +5,7 @@ BINDIR=	/usr/bin
+ PROG=	lpq
+ BINOWN=	root
+ BINGRP=	daemon
+-BINMODE= 6555
++BINMODE= 0555
+ 
+ CFLAGS+= -I${.CURDIR:H}/common_source
+ 
+diff --git a/usr.sbin/lpr/lpr/Makefile b/usr.sbin/lpr/lpr/Makefile
+index e55e879e4ae1..82d026a5a15e 100644
+--- a/usr.sbin/lpr/lpr/Makefile
++++ b/usr.sbin/lpr/lpr/Makefile
+@@ -8,7 +8,7 @@ PROG=	lpr
+ MAN=	lpr.1 printcap.5
+ BINOWN=	root
+ BINGRP=	daemon
+-BINMODE= 6555
++BINMODE= 0555
+ 
+ CFLAGS+= -I${.CURDIR:H}/common_source
+ 
+diff --git a/usr.sbin/lpr/lprm/Makefile b/usr.sbin/lpr/lprm/Makefile
+index da1fd69eded8..4dcf2c809c12 100644
+--- a/usr.sbin/lpr/lprm/Makefile
++++ b/usr.sbin/lpr/lprm/Makefile
+@@ -7,7 +7,7 @@ BINDIR=	/usr/bin
+ PROG=	lprm
+ BINOWN=	root
+ BINGRP=	daemon
+-BINMODE= 6555
++BINMODE= 0555
+ 
+ CFLAGS+= -I${.CURDIR:H}/common_source
+ 
+diff --git a/usr.sbin/ppp/Makefile b/usr.sbin/ppp/Makefile
+index d729d8adc748..ed45f55d34ae 100644
+--- a/usr.sbin/ppp/Makefile
++++ b/usr.sbin/ppp/Makefile
+@@ -28,7 +28,7 @@ PPP_NO_RADIUS=
+ .if defined(PPP_NO_SUID)
+ BINMODE=554
+ .else
+-BINMODE=4554
++BINMODE=0554
+ BINOWN=	root
+ .endif
+ BINGRP=	network
+diff --git a/usr.sbin/sendmail/Makefile b/usr.sbin/sendmail/Makefile
+index 5f0f5de1b175..eb923720321d 100644
+--- a/usr.sbin/sendmail/Makefile
++++ b/usr.sbin/sendmail/Makefile
+@@ -22,9 +22,9 @@ SRCS=	alias.c arpadate.c bf.c collect.c conf.c control.c \
+ BINOWN=	root
+ BINGRP=	smmsp
+ .ifdef SENDMAIL_SET_USER_ID
+-BINMODE=4555
++BINMODE=0555
+ .else
+-BINMODE=2555
++BINMODE=0555
+ .endif
+ 
+ # Define the database format to use for aliases et al.
+diff --git a/usr.sbin/traceroute/Makefile b/usr.sbin/traceroute/Makefile
+index 8ea7ee22d19a..5f6cfa21031d 100644
+--- a/usr.sbin/traceroute/Makefile
++++ b/usr.sbin/traceroute/Makefile
+@@ -9,7 +9,7 @@ PROG=	traceroute
+ MAN=	traceroute.8
+ SRCS=	as.c version.c traceroute.c ifaddrlist.c findsaddr-udp.c
+ BINOWN=	root
+-BINMODE=4555
++BINMODE=0555
+ CLEANFILES=	version.c
+ 
+ CFLAGS+= -DHAVE_SYS_SELECT_H=1 -DHAVE_SYS_SOCKIO_H=1 \
+diff --git a/usr.sbin/traceroute6/Makefile b/usr.sbin/traceroute6/Makefile
+index 5086b3c08706..b49dac5d634f 100644
+--- a/usr.sbin/traceroute6/Makefile
++++ b/usr.sbin/traceroute6/Makefile
+@@ -22,7 +22,7 @@ PROG=	traceroute6
+ MAN=	traceroute6.8
+ SRCS=	as.c traceroute6.c
+ BINOWN=	root
+-BINMODE= 4555
++BINMODE= 0555
+ 
+ CFLAGS+= -DIPSEC -DHAVE_POLL
+ CFLAGS+= -I${.CURDIR} -I${TRACEROUTE_DISTDIR} -I.

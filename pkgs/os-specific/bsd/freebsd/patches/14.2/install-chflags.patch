@@ -1,0 +1,64 @@
+diff --git a/libexec/rtld-elf/Makefile b/libexec/rtld-elf/Makefile
+index 37c3840538d5..2593bc8a532f 100644
+--- a/libexec/rtld-elf/Makefile
++++ b/libexec/rtld-elf/Makefile
+@@ -98,13 +98,6 @@ afterbuild:
+ 	fi
+ 
+ 
+-# Since moving rtld-elf to /libexec, we need to create a symlink.
+-# Fixup the existing binary that's there so we can symlink over it.
+-beforeinstall:
+-.if exists(${DESTDIR}/usr/libexec/${PROG}) && ${MK_STAGING} == "no"
+-	-chflags -h noschg ${DESTDIR}/usr/libexec/${PROG}
+-.endif
+-
+ .PATH: ${RTLD_ELF_DIR}/${RTLD_ARCH} ${SRCTOP}/lib/csu/common
+ 
+ .if ${.CURDIR} == ${RTLD_ELF_DIR}
+diff --git a/usr.bin/chpass/Makefile b/usr.bin/chpass/Makefile
+index a805ecba0db6..ea7b75dd4423 100644
+--- a/usr.bin/chpass/Makefile
++++ b/usr.bin/chpass/Makefile
+@@ -34,11 +34,4 @@ MLINKS=	chpass.1 chfn.1 chpass.1 chsh.1
+ MLINKS+= chpass.1 ypchpass.1 chpass.1 ypchfn.1 chpass.1 ypchsh.1
+ .endif
+ 
+-beforeinstall:
+-.for i in chpass chfn chsh ypchpass ypchfn ypchsh
+-.if exists(${DESTDIR}${BINDIR}/$i)
+-	-chflags noschg ${DESTDIR}${BINDIR}/$i
+-.endif
+-.endfor
+-
+ .include <bsd.prog.mk>
+diff --git a/usr.bin/passwd/Makefile b/usr.bin/passwd/Makefile
+index cae0fcdc5608..86f1bdcf4bb9 100644
+--- a/usr.bin/passwd/Makefile
++++ b/usr.bin/passwd/Makefile
+@@ -13,10 +13,4 @@ SYMLINKS = passwd ${BINDIR}/yppasswd
+ MLINKS	 = passwd.1 yppasswd.1
+ .endif
+ 
+-beforeinstall:
+-.for i in passwd yppasswd
+-	[ ! -e ${DESTDIR}${BINDIR}/$i ] || \
+-		chflags noschg ${DESTDIR}${BINDIR}/$i || true
+-.endfor
+-
+ .include <bsd.prog.mk>
+diff --git a/usr.bin/tip/tip/Makefile b/usr.bin/tip/tip/Makefile
+index 85c9ea0c1c29..b0b2a45c6307 100644
+--- a/usr.bin/tip/tip/Makefile
++++ b/usr.bin/tip/tip/Makefile
+@@ -51,10 +51,3 @@ acutab.o log.o remote.o: Makefile
+ remote: .MADE
+ 
+ .include <bsd.prog.mk>
+-
+-# Dirty, rotten hack. This can be removed when we are confident that there
+-# is no cu(1) with the schg-bit set.
+-beforeinstall:
+-.if exists(${DESTDIR}${BINDIR}/cu)
+-	-chflags noschg ${DESTDIR}${BINDIR}/cu
+-.endif
