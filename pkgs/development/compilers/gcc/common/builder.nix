@@ -211,6 +211,7 @@ originalAttrs:
         mkdir -p "$TMP/bin"
         export PATH="$PATH:$TMP/bin"
         ln -s "$(which ${targetPackages.stdenv.cc.bintools.targetPrefix}ar)" "$TMP/bin/${targetConfig'}-ar"
+        ln -s "$(which ${targetPackages.stdenv.cc.bintools.targetPrefix}ld)" "$TMP/bin/${targetConfig'}-ld"
         ln -s "$(which ${targetPackages.stdenv.cc.bintools.targetPrefix}ranlib)" "$TMP/bin/${targetConfig'}-ranlib"
         ln -s "$(which ${targetPackages.stdenv.cc.bintools.targetPrefix}nm)" "$TMP/bin/${targetConfig'}-nm"
       '';
