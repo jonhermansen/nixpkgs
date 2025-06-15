@@ -58,6 +58,7 @@ stdenv.mkDerivation rec {
   # https://bugs.freebsd.org/bugzilla/show_bug.cgi?id=275328
   # can likely be removed for freebsd 14.3
   postPatch = ''
+    substituteInPlace meson.build --replace-fail "add_project_arguments('-D_POSIX_C_SOURCE=200809L', language: 'c')" "add_project_arguments('-D_XOPEN_SOURCE=700', language: 'c')"
     substituteInPlace $(grep -lr 200809L) --replace-fail 'define _POSIX_C_SOURCE 200809L' 'define _XOPEN_SOURCE 700'
   '';
 
