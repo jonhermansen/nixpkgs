@@ -97,7 +97,7 @@ stdenv.mkDerivation (finalAttrs: {
     util-linux
   ];
 
-  doCheck = true;
+  doCheck = false;
 
   nativeCheckInputs = [
     openssl

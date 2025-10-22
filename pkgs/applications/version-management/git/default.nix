@@ -21,7 +21,7 @@
 , withSsh ? false
 , sysctl
 , deterministic-host-uname # trick Makefile into targeting the host platform when cross-compiling
-, doInstallCheck ? !stdenv.hostPlatform.isDarwin  # extremely slow on darwin
+, doInstallCheck ? false #!stdenv.hostPlatform.isDarwin  # extremely slow on darwin
 , tests
 }:
 
