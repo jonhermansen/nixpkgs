@@ -50,7 +50,7 @@ let
     postPatch =
       ''
         for f in sys/conf/kmod.mk sys/contrib/dev/acpica/acpica_prep.sh sys/contrib/dev/athk/ath12k/zzz_fw_ports_fwget.sh sys/contrib/dev/athk/ath11k/zzz_fw_ports_fwget.sh; do
-          substituteInPlace "$f" --replace-warn 'xargs -J' 'xargs-j '
+          substituteInPlace "$f" --replace-quiet 'xargs -J' 'xargs-j '
         done
         for f in sys/conf/*.mk; do
           substituteInPlace "$f" --replace-quiet ''\$'{XARGS} ''\$'{XARGS_J}' 'xargs-j'
