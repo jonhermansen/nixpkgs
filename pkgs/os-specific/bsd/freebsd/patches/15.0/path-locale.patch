@@ -1,8 +1,8 @@
 diff --git a/include/paths.h b/include/paths.h
-index 0f930ed5c03d..91cc61ce382c 100644
+index 26924bcdba91..97dfbb43a5a8 100644
 --- a/include/paths.h
 +++ b/include/paths.h
-@@ -36,67 +36,66 @@
+@@ -34,67 +34,66 @@
  
  #include <sys/cdefs.h>
  
@@ -42,10 +42,8 @@ index 0f930ed5c03d..91cc61ce382c 100644
 +#define	_PATH_FIRMWARE	"/run/current-system/sw/share/firmware"
  #define	_PATH_FTPUSERS	"/etc/ftpusers"
  #define	_PATH_FWMEM	"/dev/fwmem"
--#define	_PATH_GBDE	"/sbin/gbde"
 -#define	_PATH_GELI	"/sbin/geli"
 -#define	_PATH_HALT	"/sbin/halt"
-+#define	_PATH_GBDE	"/run/current-system/bin/gbde"
 +#define	_PATH_GELI	"/run/current-system/sw/bin/geli"
 +#define	_PATH_HALT	"/run/current-system/sw/bin/halt"
  #ifdef COMPAT_libcompat
@@ -76,6 +74,7 @@ index 0f930ed5c03d..91cc61ce382c 100644
 +#define	_PATH_MOUNT	"/run/current-system/sw/bin/mount"
 +#define	_PATH_NEWFS	"/run/current-system/sw/bin/newfs"
  #define	_PATH_NOLOGIN	"/var/run/nologin"
+ #define	_PATH_NOSHUTDOWN "/var/run/noshutdown"
 -#define	_PATH_RCP	"/bin/rcp"
 -#define	_PATH_REBOOT	"/sbin/reboot"
 -#define	_PATH_RLOGIN	"/usr/bin/rlogin"
