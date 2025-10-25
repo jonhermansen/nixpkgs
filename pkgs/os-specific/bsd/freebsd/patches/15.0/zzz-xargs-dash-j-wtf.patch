@@ -1,0 +1,18 @@
+diff -urpN freebsd-src.orig/sys/conf/kmod.mk freebsd-src/sys/conf/kmod.mk
+--- freebsd-src.orig/sys/conf/kmod.mk	2025-10-25 16:25:12.435130530 -0400
++++ freebsd-src/sys/conf/kmod.mk	2025-10-25 16:21:12.218893558 -0400
+@@ -278,12 +278,12 @@ ${FULLPROG}: ${OBJS} ${BLOB_OBJS}
+ 	grep -v '^#' < ${EXPORT_SYMS} > export_syms
+ .endif
+ 	${AWK} -f ${SYSDIR}/conf/kmod_syms.awk ${.TARGET} \
+-	    export_syms | ${XARGS} ${XARGS_J} % ${OBJCOPY} % ${.TARGET}
++	    export_syms | xargs-j % ${OBJCOPY} % ${.TARGET}
+ .endif
+ .endif # defined(EXPORT_SYMS)
+ .if defined(PREFIX_SYMS)
+ 	${AWK} -v prefix=${PREFIX_SYMS} -f ${SYSDIR}/conf/kmod_syms_prefix.awk \
+-	    ${.TARGET} /dev/null | ${XARGS} ${XARGS_J} % ${OBJCOPY} % ${.TARGET}
++	    ${.TARGET} /dev/null | xargs-j % ${OBJCOPY} % ${.TARGET}
+ .endif
+ .if !defined(DEBUG_FLAGS) && ${__KLD_SHARED} == no
+ 	${OBJCOPY} --strip-debug ${.TARGET}
