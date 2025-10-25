@@ -53,7 +53,7 @@ let
           substituteInPlace "$f" --replace-quiet 'xargs -J' 'xargs-j '
         done
         for f in sys/conf/*.mk; do
-          substituteInPlace "$f" --replace-quiet '\${XARGS} \${XARGS_J}' 'xargs-j'
+          substituteInPlace "$f" --replace-quiet '$${XARGS} $${XARGS_J}' 'xargs-j'
           substituteInPlace "$f" --replace-quiet 'KERN_DEBUGDIR}''${' 'KERN_DEBUGDIR_'
         done
       ''
