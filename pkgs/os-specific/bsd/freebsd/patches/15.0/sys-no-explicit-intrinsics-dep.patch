@@ -1,13 +1,14 @@
---- a/sys/modules/aesni/Makefile	2023-12-16 09:19:28.454892154 -0700
-+++ b/sys/Modules/aesni/Makefile	2023-12-16 09:19:41.975047684 -0700
-@@ -1,6 +1,5 @@
- 
+diff --git a/sys/modules/aesni/Makefile b/sys/modules/aesni/Makefile
+index 4219182f03fe..d3cc10654523 100644
+--- a/sys/modules/aesni/Makefile
++++ b/sys/modules/aesni/Makefile
+@@ -1,5 +1,4 @@
  .PATH: ${SRCTOP}/sys/crypto/aesni
 -.PATH: ${SRCTOP}/contrib/llvm-project/clang/lib/Headers
  
  KMOD=	aesni
  SRCS=	aesni.c
-@@ -39,8 +38,8 @@
+@@ -38,8 +37,8 @@ intel_sha256.o: intel_sha256.c
  aesni_ghash.o: aesni.h
  aesni_wrap.o: aesni.h
  aesni_ccm.o: aesni.h
@@ -19,10 +20,10 @@
  .include <bsd.kmod.mk>
  
 diff --git a/sys/modules/blake2/Makefile b/sys/modules/blake2/Makefile
-index e4b3fb9f126..5bfd9c2ae02 100644
+index 85d4bff8dede..9296ef5b3cf6 100644
 --- a/sys/modules/blake2/Makefile
 +++ b/sys/modules/blake2/Makefile
-@@ -3,7 +3,6 @@
+@@ -1,7 +1,6 @@
  .PATH:	${SRCTOP}/sys/contrib/libb2
  .PATH:	${SRCTOP}/sys/crypto/blake2
  .PATH:	${SRCTOP}/sys/opencrypto
@@ -30,7 +31,7 @@ index e4b3fb9f126..5bfd9c2ae02 100644
  
  KMOD	= blake2
  
-@@ -64,8 +63,7 @@ ${src:S/.c/.o/}: ${src}
+@@ -62,8 +61,7 @@ ${src:S/.c/.o/}: ${src}
  	    -D_MM_MALLOC_H_INCLUDED -Wno-unused-function ${.IMPSRC}
  	${CTFCONVERT_CMD}
  
