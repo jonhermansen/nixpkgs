@@ -1,19 +1,19 @@
 {
   "main": {
-    "hash": "sha256-xsgY5Ex/B5ngOTa5OZRauSaSYvET5lWI7veJRrSq1oY=",
+    "hash": "sha256-rIOfHAqmGT6dy7SuLlZ5b/R1A8eJVAlOVKdhxfrVir8=",
     "ref": "main",
     "refType": "branch",
-    "rev": "c5773d366ecc5271b9bd6e5506c00fb3520f19ae",
+    "rev": "e6e941e659ab7b3db6786103c1cdc30735a82e32",
     "supported": false,
     "version": {
       "branch": "CURRENT",
-      "major": 15,
+      "major": 16,
       "minor": 0,
-      "reldate": "1500035",
-      "release": "15.0-CURRENT",
-      "revision": "15.0",
+      "reldate": "1600002",
+      "release": "16.0-CURRENT",
+      "revision": "16.0",
       "type": "FreeBSD",
-      "version": "FreeBSD 15.0-CURRENT"
+      "version": "FreeBSD 16.0-CURRENT"
     }
   },
   "release/13.0.0": {
@@ -178,6 +178,24 @@
       "version": "FreeBSD 14.2-RELEASE"
     }
   },
+  "release/14.3.0": {
+    "hash": "sha256-iwr1aZdXN83BYSK7ZgQtpWAKGp8YbX8e9Y85HI06SHc=",
+    "ref": "release/14.3.0",
+    "refType": "tag",
+    "rev": "8c9ce319fef765890ce518cab85d3a470b669849",
+    "supported": false,
+    "version": {
+      "branch": "RELEASE",
+      "major": 14,
+      "minor": 3,
+      "patch": 0,
+      "reldate": "1403000",
+      "release": "14.3-RELEASE",
+      "revision": "14.3",
+      "type": "FreeBSD",
+      "version": "FreeBSD 14.3-RELEASE"
+    }
+  },
   "releng/13.0": {
     "hash": "sha256-7PrqTb2o21IQgQ2N+zjavlzX/ju60Rw+MXjMRICmQi0=",
     "ref": "releng/13.0",
@@ -251,38 +269,39 @@
     }
   },
   "releng/13.4": {
-    "hash": "sha256-y61CplXIRVDkGRtbH2TX9AKr0kiaNaqAT/+fXdkvy6g=",
+    "hash": "sha256-nkVvW/LfJYUzKPRNOpzl50yLI/ppuPHB7ISt7WN168s=",
     "ref": "releng/13.4",
     "refType": "branch",
-    "rev": "27f132c05c39138b375591d2bf9f73f680997de3",
-    "supported": true,
+    "rev": "3bc5467e7f6c9b29db95b35298e687435412a0ce",
+    "supported": false,
     "version": {
-      "branch": "RELEASE-p4",
+      "branch": "RELEASE-p5",
       "major": 13,
       "minor": 4,
-      "patch": "4",
+      "patch": "5",
       "reldate": "1304000",
-      "release": "13.4-RELEASE-p4",
+      "release": "13.4-RELEASE-p5",
       "revision": "13.4",
       "type": "FreeBSD",
-      "version": "FreeBSD 13.4-RELEASE-p4"
+      "version": "FreeBSD 13.4-RELEASE-p5"
     }
   },
   "releng/13.5": {
-    "hash": "sha256-53q7qR3ij5v3QAHx6Wa84F3yRSwFrBaey0NxVcNLMEk=",
+    "hash": "sha256-CU9qZ4xQlXYUi6dVaX2sAFX3LcJ/eSVI0Us+WI/thrE=",
     "ref": "releng/13.5",
     "refType": "branch",
-    "rev": "882b9f3f2218b50fc1d2d31ee71b7765c7f09f85",
+    "rev": "c4530d6e5f368592b6048a0c63892626c05f433f",
     "supported": true,
     "version": {
-      "branch": "RELEASE",
+      "branch": "RELEASE-p6",
       "major": 13,
       "minor": 5,
+      "patch": "6",
       "reldate": "1305000",
-      "release": "13.5-RELEASE",
+      "release": "13.5-RELEASE-p6",
       "revision": "13.5",
       "type": "FreeBSD",
-      "version": "FreeBSD 13.5-RELEASE"
+      "version": "FreeBSD 13.5-RELEASE-p6"
     }
   },
   "releng/14.0": {
@@ -322,34 +341,69 @@
     }
   },
   "releng/14.2": {
-    "hash": "sha256-XP8BFnXvziaC9wOJj8q31UZXFqCUE7WQ5FdJHEZWGbg=",
+    "hash": "sha256-zZD1/HKQ/b05CVMHTxklhUuEK2vWPz5ALBEXh0fMUEA=",
     "ref": "releng/14.2",
     "refType": "branch",
-    "rev": "ac2cbb46b5f1efa7f7b5d4eb15631337329ec5b2",
-    "supported": true,
+    "rev": "16a79708d089423ec0c3d32f25e7ca97ae58e97b",
+    "supported": false,
     "version": {
-      "branch": "RELEASE-p2",
+      "branch": "RELEASE-p7",
       "major": 14,
       "minor": 2,
-      "patch": "2",
+      "patch": "7",
       "reldate": "1402000",
-      "release": "14.2-RELEASE-p2",
+      "release": "14.2-RELEASE-p7",
       "revision": "14.2",
       "type": "FreeBSD",
-      "version": "FreeBSD 14.2-RELEASE-p2"
+      "version": "FreeBSD 14.2-RELEASE-p7"
+    }
+  },
+  "releng/14.3": {
+    "hash": "sha256-12AtkVqojhtKHqZPy5SAYxkX2AAGUmc8SoW/Fy7bsUk=",
+    "ref": "releng/14.3",
+    "refType": "branch",
+    "rev": "382f54740ee421cc0808d70fe79acab1f3d3e836",
+    "supported": true,
+    "version": {
+      "branch": "RELEASE-p5",
+      "major": 14,
+      "minor": 3,
+      "patch": "5",
+      "reldate": "1403000",
+      "release": "14.3-RELEASE-p5",
+      "revision": "14.3",
+      "type": "FreeBSD",
+      "version": "FreeBSD 14.3-RELEASE-p5"
+    }
+  },
+  "releng/15.0": {
+    "hash": "sha256-V4iJFn5rjO4aT8TlnplOQFXo3jRRZV5kBRY7OMDIk2k=",
+    "ref": "releng/15.0",
+    "refType": "branch",
+    "rev": "0fc5b401bdc7e9618c87c079ba5309bff613e15b",
+    "supported": false,
+    "version": {
+      "branch": "BETA3",
+      "major": 15,
+      "minor": 0,
+      "reldate": "1500068",
+      "release": "15.0-BETA3",
+      "revision": "15.0",
+      "type": "FreeBSD",
+      "version": "FreeBSD 15.0-BETA3"
     }
   },
   "stable/13": {
-    "hash": "sha256-J9SJKeR6Den3Sep2o4r0cqIDd2V5gbY0Ow9eP69Ny0o=",
+    "hash": "sha256-+0Sr6ixG8johbXh2OATCifxgtcikOaTaRngFfV7THok=",
     "ref": "stable/13",
     "refType": "branch",
-    "rev": "a8431b47adae8f8b731206dc38d82b2245ad245e",
+    "rev": "8a4e4d10f91e4f6b7f0019f1bd9198c73f5428d9",
     "supported": true,
     "version": {
       "branch": "STABLE",
       "major": 13,
       "minor": 5,
-      "reldate": "1305500",
+      "reldate": "1305502",
       "release": "13.5-STABLE",
       "revision": "13.5",
       "type": "FreeBSD",
@@ -357,20 +411,37 @@
     }
   },
   "stable/14": {
-    "hash": "sha256-tleB6J5Cg1SIN2LCfvV3Cfp4Lxx65UHmiILpin6UYGY=",
+    "hash": "sha256-pAG1P4sAQOzqtj3c1T4ZPHD/Tt2hV1guySjv97/djKE=",
     "ref": "stable/14",
     "refType": "branch",
-    "rev": "6e510d8fbaf8d91da235fe28250cd48124edda9f",
+    "rev": "3473db79f4b30d3080f99c5fb7c870fbedb973f6",
     "supported": true,
     "version": {
       "branch": "STABLE",
       "major": 14,
-      "minor": 2,
-      "reldate": "1402504",
-      "release": "14.2-STABLE",
-      "revision": "14.2",
+      "minor": 3,
+      "reldate": "1403506",
+      "release": "14.3-STABLE",
+      "revision": "14.3",
       "type": "FreeBSD",
-      "version": "FreeBSD 14.2-STABLE"
+      "version": "FreeBSD 14.3-STABLE"
+    }
+  },
+  "stable/15": {
+    "hash": "sha256-aAuHDm0sKkp1b6CY/0pCKF1+8+2CRsOXqaTMcDtDZx0=",
+    "ref": "stable/15",
+    "refType": "branch",
+    "rev": "51d5e8c8ca0f3c8bdd26b042973b3dbe8f30d607",
+    "supported": false,
+    "version": {
+      "branch": "STABLE",
+      "major": 15,
+      "minor": 0,
+      "reldate": "1500501",
+      "release": "15.0-STABLE",
+      "revision": "15.0",
+      "type": "FreeBSD",
+      "version": "FreeBSD 15.0-STABLE"
     }
   }
 }
