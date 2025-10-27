@@ -1,6 +1,7 @@
 {
   lib,
   stdenv,
+  fetchpatch,
   mkDerivation,
   libcMinimal,
   include,
@@ -31,6 +32,19 @@ mkDerivation {
     include
     libgcc
   ];
+
+  patches = [
+    # https://github.com/freebsd/freebsd-src/pull/1882
+    (fetchpatch {
+      name = "freebsd-libthr-use-notstring-attribute.patch";
+      url = "https://github.com/freebsd/freebsd-src/pull/1882/commits/163378029962e2d1d62f8507ace8f7abfc0e3bce.diff";
+      hash = "sha256-M/KmryB7x2ii8/GsSXF4jXnj8kK6v5yEofqdzBh4Xvk=";
+      includes = ["lib/libthr/thread/thr_printf.c"];
+    })
+  ];
+
+  # Presumably newer Clang has gotten more strict.
+  CWARNEXTRA = "-Wno-cast-function-type-mismatch";
 
   preBuild = ''
     export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"

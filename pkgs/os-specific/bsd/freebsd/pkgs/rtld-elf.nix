@@ -1,5 +1,6 @@
 {
   mkDerivation,
+  fetchpatch,
   include,
   rpcgen,
   flex,
@@ -29,6 +30,16 @@ mkDerivation {
     "sys/crypto"
   ]
   ++ extraSrc;
+
+  patches = [
+    # https://github.com/freebsd/freebsd-src/pull/1882
+    (fetchpatch {
+      name = "freebsd-rtld-use-notstring-attribute.patch";
+      url = "https://github.com/freebsd/freebsd-src/pull/1882/commits/163378029962e2d1d62f8507ace8f7abfc0e3bce.diff";
+      hash = "sha256-iaNWiSesh8JsvhTph1EggBNpwIxnT58B48CB1AgM7Cw=";
+      includes = ["libexec/rtld-elf/rtld.c"];
+    })
+  ];
 
   outputs = [
     "out"
