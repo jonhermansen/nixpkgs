@@ -15,6 +15,9 @@
   glib,
   gnome,
   gssdp-tools,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -24,6 +27,8 @@ stdenv.mkDerivation (finalAttrs: {
   outputs = [
     "out"
     "dev"
+  ]
+  ++ lib.optionals withIntrospection [
     "devdoc"
   ];
 
@@ -37,14 +42,20 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   nativeBuildInputs = [
+    glib
     meson
     ninja
     pkg-config
-    gobject-introspection
     vala
     gi-docgen
     python3
-  ] ++ lib.optionals enableManpages [ buildPackages.pandoc ];
+  ]
+  ++ lib.optionals withIntrospection [
+    gobject-introspection
+  ]
+  ++ lib.optionals enableManpages [
+    buildPackages.pandoc
+  ];
 
   buildInputs = [
     libsoup_3
@@ -55,15 +66,16 @@ stdenv.mkDerivation (finalAttrs: {
   ];
 
   mesonFlags = [
-    "-Dgtk_doc=true"
+    (lib.mesonBool "gtk_doc" withIntrospection)
     "-Dsniffer=false"
     (lib.mesonBool "manpages" enableManpages)
+    (lib.mesonBool "introspection" withIntrospection)
   ];
 
   # On Darwin: Failed to bind socket, Operation not permitted
   doCheck = !stdenv.hostPlatform.isDarwin;
 
-  postFixup = ''
+  postFixup = lib.optionalString withIntrospection ''
     # Move developer documentation to devdoc output.
     # Cannot be in postInstall, otherwise _multioutDocs hook in preFixup will move right back.
     find -L "$out/share/doc" -type f -regex '.*\.devhelp2?' -print0 \

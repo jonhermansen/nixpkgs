@@ -1,7 +1,5 @@
 {
   mkDerivation,
-  libncurses-tinfo,
-  libncurses,
   libncurses-form,
 }:
 mkDerivation {
@@ -15,8 +13,6 @@ mkDerivation {
     "debug"
   ];
   buildInputs = [
-    libncurses-tinfo
-    libncurses
     libncurses-form
   ];
   postFixup = ''

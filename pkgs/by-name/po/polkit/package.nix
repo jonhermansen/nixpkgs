@@ -23,6 +23,7 @@
   gtk-doc,
   coreutils,
   useSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
+  useConsolekit ? stdenv.hostPlatform.isFreeBSD,
   systemdMinimal,
   elogind,
   buildPackages,
@@ -153,9 +154,7 @@ stdenv.mkDerivation rec {
       "-Dgtk_doc=${lib.boolToString withIntrospection}"
       "-Dman=true"
       "-Dsystemdsystemunitdir=${placeholder "out"}/lib/systemd/system"
-    ]
-    ++ lib.optionals stdenv.hostPlatform.isLinux [
-      "-Dsession_tracking=${if useSystemd then "logind" else "elogind"}"
+      "-Dsession_tracking=${if useSystemd then "logind" else if useConsolekit then "ConsoleKit" else "elogind"}"
     ];
 
   inherit doCheck;

@@ -20,6 +20,8 @@
   libdevstat,
   libiconvModules,
   libdl,
+  libncurses-tinfo,
+  libncurses,
   i18n,
   rtld-elf,
   baseModules ? [
@@ -45,6 +47,8 @@
     libdl
     i18n
     rtld-elf
+    libncurses-tinfo
+    libncurses
   ],
   extraModules ? [ ],
 }:

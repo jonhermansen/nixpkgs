@@ -1,5 +1,4 @@
 {
-  pkgsBuildBuild,
   qtModule,
   stdenv,
   lib,
@@ -12,10 +11,17 @@
   withClang ? false,
 }:
 
+let
+  qttoolsSpliced = qttools.__spliced.buildHost or qttools;
+  qttoolsWithQdoc = qttoolsSpliced.override {
+    withClang = true;
+  };
+
+in
 qtModule {
   pname = "qttools";
   nativeBuildInputs = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-    qttools
+    qttoolsWithQdoc
     qtbase
   ];
   buildInputs = lib.optionals withClang [
@@ -26,8 +32,8 @@ qtModule {
     qtdeclarative
   ] ++ lib.optionals stdenv.hostPlatform.isDarwin [ cups ];
   cmakeFlags = lib.optionals (!stdenv.buildPlatform.canExecute stdenv.hostPlatform) [
-    "-DQt6LinguistTools_DIR=${pkgsBuildBuild.qt6.qttools}/lib/cmake/Qt6LinguistTools"
-    "-DQt6ToolsTools_DIR=${pkgsBuildBuild.qt6.qttools}/lib/cmake/Qt6ToolsTools"
+    "-DQt6LinguistTools_DIR=${qttoolsWithQdoc}/lib/cmake/Qt6LinguistTools"
+    "-DQt6ToolsTools_DIR=${qttoolsWithQdoc}/lib/cmake/Qt6ToolsTools"
   ];
   patches = [
     ./paths.patch
@@ -40,7 +46,7 @@ qtModule {
       src/qdoc/catch/CMakeLists.txt \
       src/qdoc/catch_generators/CMakeLists.txt \
       src/qdoc/catch_conversions/CMakeLists.txt \
-      --replace ''\'''${CMAKE_INSTALL_INCLUDEDIR}' "$out/include"
+      --replace-fail ''\'''${CMAKE_INSTALL_INCLUDEDIR}' "$out/include"
   '';
   postInstall = ''
     mkdir -p "$dev"

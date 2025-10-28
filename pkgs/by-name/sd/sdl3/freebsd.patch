@@ -1,0 +1,16 @@
+--- a/CMakeLists.txt	2025-06-16 16:13:48.010891162 -0700
++++ b/CMakeLists.txt	2025-06-16 16:13:58.552776845 -0700
+@@ -3529,12 +3529,7 @@
+ endif()
+ set(SDL_INSTALL_CMAKEDIR_ROOT "${SDL_INSTALL_CMAKEDIR_ROOT_DEFAULT}" CACHE STRING "Root folder where to install SDL3Config.cmake related files (SDL3 subfolder for MSVC projects)")
+ 
+-if(FREEBSD)
+-  # FreeBSD uses ${PREFIX}/libdata/pkgconfig
+-  set(SDL_PKGCONFIG_INSTALLDIR "libdata/pkgconfig")
+-else()
+-  set(SDL_PKGCONFIG_INSTALLDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+-endif()
++set(SDL_PKGCONFIG_INSTALLDIR "${CMAKE_INSTALL_LIBDIR}/pkgconfig")
+ 
+ if(WINDOWS AND NOT MINGW)
+   set(SDL_INSTALL_CMAKEDIR "${SDL_INSTALL_CMAKEDIR_ROOT}")

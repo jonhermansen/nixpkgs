@@ -1,7 +1,5 @@
 {
   mkDerivation,
-  libncurses-tinfo,
-  libncurses,
 }:
 mkDerivation {
   pname = "ncurses-form";
@@ -10,9 +8,5 @@ mkDerivation {
     "lib/ncurses"
     "contrib/ncurses"
     "lib/Makefile.inc"
-  ];
-  buildInputs = [
-    libncurses-tinfo
-    libncurses
   ];
 }

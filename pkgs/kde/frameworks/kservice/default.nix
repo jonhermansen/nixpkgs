@@ -1,7 +1,7 @@
 {
   qtdeclarative,
   mkKdeDerivation,
-  kdeHostTools,
+  pkgsBuildHost,
 }:
 mkKdeDerivation {
   pname = "kservice";
@@ -15,7 +15,7 @@ mkKdeDerivation {
   ];
   extraNativeBuildInputs = [
     qtdeclarative
-    (kdeHostTools.override {
+    (pkgsBuildHost.kdePackages.kdeHostTools.override {
       kcmutils = null;
     })
   ];

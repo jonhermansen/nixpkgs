@@ -83,6 +83,11 @@ stdenv.mkDerivation (finalAttrs: {
     hash = "sha256-xFWE/i4l3sU1KritwbqvN67kJ3/WUfNP3iScMfQUbwA=";
   };
 
+  patches = [
+    # similar to a patch in meson - the /libdata/ path is not what we want in nixpkgs
+    ./freebsd.patch
+  ];
+
   postPatch =
     # Tests timeout on Darwin
     # `testtray` loads assets from a relative path, which we are patching to be absolute
@@ -202,7 +207,7 @@ stdenv.mkDerivation (finalAttrs: {
   postInstall = lib.optionalString testSupport ''
     moveToOutput "share/installed-tests" "$installedTests"
     moveToOutput "libexec/installed-tests" "$installedTests"
-    install -Dm 444 -t $installedTests/share/assets test/*.bmp
+    install -Dm 444 -t $installedTests/share/assets ../test/*.bmp
   '';
 
   passthru = {

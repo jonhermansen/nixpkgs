@@ -6,7 +6,6 @@
   libcapsicum,
   libcasper,
   libxo,
-  libncurses-tinfo,
   libedit,
   lib,
   stdenv,
@@ -38,7 +37,6 @@ mkDerivation {
     libcapsicum
     libcasper
     libxo
-    libncurses-tinfo
     libedit
   ];
   nativeBuildInputs = [

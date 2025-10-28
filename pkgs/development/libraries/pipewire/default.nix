@@ -108,6 +108,12 @@ stdenv.mkDerivation (finalAttrs: {
     ./0070-installed-tests-path.patch
   ];
 
+  postPatch =
+  # https://gitlab.freedesktop.org/pipewire/pipewire/-/issues/4756
+  ''
+    sed -E -i -e '/result.h/i #include <src/pipewire/utils.h>' spa/plugins/filter-graph/filter-graph.c
+  '';
+
   strictDeps = true;
   depsBuildBuild = [ buildPackages.stdenv.cc ];
   nativeBuildInputs = [

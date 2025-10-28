@@ -7,7 +7,7 @@
   qttools,
   acl,
   attr,
-  kdeHostTools,
+  pkgsBuildHost,
 }:
 mkKdeDerivation {
   pname = "kio";
@@ -21,7 +21,7 @@ mkKdeDerivation {
 
   extraNativeBuildInputs = [
     qtdeclarative
-    (kdeHostTools.override {
+    (pkgsBuildHost.kdePackages.kdeHostTools.override {
       kcmutils = null;
     })
   ];

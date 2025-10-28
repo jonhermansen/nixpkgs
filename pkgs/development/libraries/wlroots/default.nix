@@ -103,7 +103,14 @@ let
         ++ lib.optional finalAttrs.enableXWayland xwayland
         ++ extraBuildInputs;
 
-      mesonFlags = lib.optional (!finalAttrs.enableXWayland) "-Dxwayland=disabled";
+      mesonFlags =
+        [
+          (lib.mesonEnable "xwayland" finalAttrs.enableXWayland)
+        ]
+        ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+          # it will automatically select gbm+udmabuf, and udmabuf requires linux headers
+          (lib.mesonOption "allocators" "gbm")
+        ];
 
       postFixup = ''
         # Install ALL example programs to $examples:

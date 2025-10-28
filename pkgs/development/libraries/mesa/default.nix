@@ -47,8 +47,10 @@
   withSensors ? lib.meta.availableOn stdenv.hostPlatform lm_sensors,
 
   galliumDrivers ?
-    [
+    lib.optionals stdenv.hostPlatform.isLinux [
       "asahi" # Apple AGX, built on non-aarch64 for cross tools
+    ]
+    ++ [
       "d3d12" # WSL emulated GPU (aka Dozen)
       "iris" # new Intel (Broadwell+)
       "llvmpipe" # software renderer
@@ -79,12 +81,12 @@
   vulkanDrivers ?
     [
       "amd" # AMD (aka RADV)
-      "asahi" # Apple AGX, built on non-aarch64 for cross tools
       "intel" # new Intel (aka ANV)
       "microsoft-experimental" # WSL virtualized GPU (aka DZN/Dozen)
       "swrast" # software renderer (aka Lavapipe)
     ]
-    ++ lib.optionals (!stdenv.hostPlatform.isFreeBSD) [
+    ++ lib.optionals stdenv.hostPlatform.isLinux [
+      "asahi" # Apple AGX, built on non-aarch64 for cross tools
       "nouveau" # Nouveau (aka NVK)
     ]
     ++
@@ -264,7 +266,7 @@ stdenv.mkDerivation {
       (lib.mesonEnable "microsoft-clc" false) # Only relevant on Windows (OpenCL 1.2 API on top of D3D12)
 
       # Enable more sensors in gallium-hud
-      (lib.mesonBool "gallium-extra-hud" true)
+      (lib.mesonBool "gallium-extra-hud" stdenv.hostPlatform.isLinux)
 
       # Disable valgrind on targets where it's not available
       (lib.mesonEnable "valgrind" withValgrind)
@@ -277,7 +279,7 @@ stdenv.mkDerivation {
     ]
     ++ lib.optionals (!needNativeCLC) [
       # Build and install extra tools for cross
-      (lib.mesonOption "tools" "asahi,panfrost")
+      (lib.mesonOption "tools" (if stdenv.hostPlatform.isLinux then "asahi,panfrost" else "panfrost"))
       (lib.mesonBool "install-mesa-clc" true)
       (lib.mesonBool "install-precomp-compiler" true)
     ]
@@ -371,8 +373,10 @@ stdenv.mkDerivation {
 
   doCheck = false;
 
-  postInstall = ''
+  postInstall = lib.optionalString stdenv.hostPlatform.isLinux ''
     moveToOutput bin/asahi_clc $cross_tools
+  ''
+  + ''
     moveToOutput bin/intel_clc $cross_tools
     moveToOutput bin/mesa_clc $cross_tools
     moveToOutput bin/panfrost_compile $cross_tools

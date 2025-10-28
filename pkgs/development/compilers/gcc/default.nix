@@ -44,7 +44,6 @@
   gnused ? null,
   buildPackages,
   pkgsBuildTarget,
-  pkgsTargetTarget,
   libxcrypt,
   disableGdbPlugin ?
     !enablePlugin
@@ -103,15 +102,12 @@ let
   #   "14.2.1.20250322" -> "14.2.1"
   #   "14.2.0" -> "14.2.0"
   baseVersion = lib.concatStringsSep "." (lib.take 3 (lib.splitVersion version));
+
   disableBootstrap = atLeast11 && !stdenv.hostPlatform.isDarwin && (atLeast12 -> !profiledCompiler);
 
   inherit (stdenv) buildPlatform hostPlatform targetPlatform;
-  targetConfig' =
-    targetPlatform.config
-    + lib.optionalString targetPlatform.isFreeBSD (
-      lib.versions.major targetPackages.stdenv.cc.libc.version
-    );
-  targetConfig = if (!lib.systems.equals targetPlatform hostPlatform) then targetConfig' else null;
+  targetConfig =
+    if (!lib.systems.equals targetPlatform hostPlatform) then targetPlatform.config else null;
 
   patches = callFile ./patches { };
 
@@ -132,7 +128,6 @@ let
       hostPlatform
       targetPlatform
       targetConfig
-      targetConfig'
       patches
       crossMingw
       stageNameAddon
@@ -182,7 +177,6 @@ let
       patchelf
       perl
       pkgsBuildTarget
-      pkgsTargetTarget
       profiledCompiler
       reproducibleBuild
       staticCompiler
@@ -280,6 +274,9 @@ pipe
 
           substituteInPlace libgfortran/configure \
             --replace "-install_name \\\$rpath/\\\$soname" "-install_name ''${!outputLib}/lib/\\\$soname"
+        ''
+        + optionalString stdenv.targetPlatform.isFreeBSD ''
+          sed -E -i -e 's/fbsd_major=.*/fbsd_major=${lib.versions.major stdenv.cc.libc.version}/' gcc/config.gcc
         ''
         + (optionalString ((!lib.systems.equals targetPlatform hostPlatform) || stdenv.cc.libc != null)
           # On NixOS, use the right path to the dynamic linker instead of
@@ -489,7 +486,6 @@ pipe
           langCC
           langJit
           targetPlatform
-          targetConfig
           hostPlatform
           withoutTargetLibc
           enableShared

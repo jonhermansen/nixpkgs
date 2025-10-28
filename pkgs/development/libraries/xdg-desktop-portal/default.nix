@@ -1,6 +1,8 @@
 {
   lib,
   fetchFromGitHub,
+  fetchpatch,
+  buildPackages,
   flatpak,
   fuse3,
   bubblewrap,
@@ -32,6 +34,9 @@
   enableSystemd ? lib.meta.availableOn stdenv.hostPlatform systemdMinimal,
   enableFlatpak ? lib.meta.availableOn stdenv.hostPlatform flatpak,
   enableBubblewrap ? lib.meta.availableOn stdenv.hostPlatform bubblewrap,
+  withIntrospection ?
+    lib.meta.availableOn stdenv.hostPlatform gobject-introspection
+    && stdenv.hostPlatform.emulatorAvailable buildPackages,
 }:
 
 stdenv.mkDerivation (finalAttrs: {
@@ -72,6 +77,13 @@ stdenv.mkDerivation (finalAttrs: {
 
     # test tries to read /proc/cmdline, which is not intended to be accessible in the sandbox
     ./trash-test.patch
+  ]
+  ++ lib.optionals stdenv.hostPlatform.isFreeBSD [
+    (fetchpatch {
+      url = "https://raw.githubusercontent.com/freebsd/freebsd-ports/f70a5664c09dcb2d93a364d74ba722ddf021d345/deskutils/xdg-desktop-portal/files/patch-src_xdp-app-info-flatpak.c";
+      extraPrefix = "";
+      hash = "sha256-ooTDSpZTO0K5zUdgaT1sW4dKl5iekMAZEVIGqG7u5WQ=";
+    })
   ];
 
   nativeBuildInputs = [
@@ -81,6 +93,17 @@ stdenv.mkDerivation (finalAttrs: {
     ninja
     pkg-config
     wrapGAppsNoGuiHook
+    # NB: this Python is used both for build-time tests
+    # and for installed (VM) tests, so it includes dependencies
+    # for both
+    (python3.withPackages (ps: lib.optionals finalAttrs.finalPackage.doCheck [
+      ps.pytest
+      ps.python-dbusmock
+      ps.dbus-python
+    ]
+    ++ lib.optionals withIntrospection [
+      ps.pygobject3
+    ]))
   ];
 
   buildInputs =
@@ -117,16 +140,6 @@ stdenv.mkDerivation (finalAttrs: {
     gst_all_1.gstreamer
     gst_all_1.gst-plugins-good
     gobject-introspection
-
-    # NB: this Python is used both for build-time tests
-    # and for installed (VM) tests, so it includes dependencies
-    # for both
-    (python3.withPackages (ps: [
-      ps.pytest
-      ps.python-dbusmock
-      ps.pygobject3
-      ps.dbus-python
-    ]))
     umockdev
   ];
 
@@ -142,9 +155,9 @@ stdenv.mkDerivation (finalAttrs: {
       (lib.mesonEnable "geoclue" enableGeoLocation)
       (lib.mesonEnable "flatpak-interfaces" enableFlatpak)
       # Flatpak development files are required to build DocBook docs
-      (lib.mesonEnable "docbook-docs" enableFlatpak)
-      (lib.mesonBool "sandboxed-image-validation" enableBubblewrap)
-      #(lib.mesonBool "sandboxed-sound-validation" enableBubblewrap)  # this is an option we will need for a future release
+      #(lib.mesonEnable "docbook-docs" enableFlatpak)
+      (lib.mesonEnable "sandboxed-image-validation" enableBubblewrap)
+      (lib.mesonEnable "sandboxed-sound-validation" enableBubblewrap)  # this is an option we will need for a future release
       (lib.mesonEnable "tests" finalAttrs.finalPackage.doCheck)
     ];
 
@@ -156,7 +169,8 @@ stdenv.mkDerivation (finalAttrs: {
     # until/unless bubblewrap ships a pkg-config file, meson has no way to find it when cross-compiling.
     substituteInPlace meson.build \
       --replace-fail "find_program('bwrap'"  "find_program('${lib.getExe bubblewrap}'"
-
+  ''
+  + ''
     patchShebangs src/generate-method-info.py
     patchShebangs tests/run-test.sh
   '';
