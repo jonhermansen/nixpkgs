@@ -31,6 +31,7 @@ mkDerivation {
   '';
 
   preBuild = ''
+    export NIX_CFLAGS_COMPILE="-Wno-error=typedef-redefinition $NIX_CFLAGS_COMPILE"
     export NIX_LDFLAGS="$NIX_LDFLAGS ${
       toString (
         [

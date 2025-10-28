@@ -172,7 +172,9 @@ stdenv.mkDerivation (finalAttrs: {
 
   doCheck =
     # routinely hangs on powerpc64le
-    !stdenv.hostPlatform.isPower64;
+    !stdenv.hostPlatform.isPower64 &&
+    # udp_connect fails on freebsd
+    !stdenv.hostPlatform.isFreeBSD;
 
   # Some of the tests use localhost networking.
   __darwinAllowLocalNetworking = true;
