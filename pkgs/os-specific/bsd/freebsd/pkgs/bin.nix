@@ -64,7 +64,7 @@ mkDerivation {
   '';
 
   preBuild = ''
-    export NIX_CFLAGS_COMPILE="-I$BSDSRCDIR/sys $NIX_CFLAGS_COMPILE"
+    export NIX_CFLAGS_COMPILE="-Wno-error=typedef-redefinition -I$BSDSRCDIR/sys $NIX_CFLAGS_COMPILE"
 
     make -C $BSDSRCDIR/lib/libsm $makeFlags
 

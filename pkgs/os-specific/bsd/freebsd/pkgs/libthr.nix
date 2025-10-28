@@ -47,7 +47,7 @@ mkDerivation {
   CWARNEXTRA = "-Wno-cast-function-type-mismatch";
 
   preBuild = ''
-    export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -B${csu}/lib"
+    export NIX_CFLAGS_COMPILE="-Wno-error=unknown-attributes  $NIX_CFLAGS_COMPILE -B${csu}/lib"
   '';
 
   postInstall = lib.optionalString stdenv.hostPlatform.isStatic ''
