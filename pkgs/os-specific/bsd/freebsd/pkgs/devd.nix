@@ -33,6 +33,15 @@ mkDerivation {
   MK_USB = "yes";
   MK_ZFS = "yes";
 
+  postPatch = ''
+    substituteInPlace $BSDSRCDIR/sbin/devd/Makefile --replace-fail /etc $etc/etc
+  '';
+
+  NIX_CFLAGS_COMPILE = [
+    "-Wno-c++20-extensions"
+    "-Wno-nullability-completeness"
+  ];
+
   postInstall = ''
     make $makeFlags installconfig
   '';

@@ -48,7 +48,7 @@ let
       "include"
     ];
     postPatch = ''
-      for f in sys/conf/kmod.mk sys/contrib/dev/acpica/acpica_prep.sh; do
+      for f in sys/contrib/dev/acpica/acpica_prep.sh; do
         substituteInPlace "$f" --replace-warn 'xargs -J' 'xargs-j '
       done
 
@@ -111,10 +111,17 @@ mkDerivation rec {
   NIX_CFLAGS_COMPILE = [
     "-fno-stack-protector"
     "-Wno-unneeded-internal-declaration" # some openzfs code trips this
+    "-Wno-default-const-init-field-unsafe" # added in clang 21
+    "-Wno-uninitialized-const-pointer" # added in clang 21
+    "-Wno-format" # error: passing 'printf' format string where 'freebsd_kprintf' format string is expected
+    "-Wno-sometimes-uninitialized" # this one is actually kind of concerning but it does trip
+    "-Wno-unused-function"
   ];
 
   inherit env;
   passthru.env = env;
+
+  makeFlags = ["XARGS_J=xargs-j"];
 
   KODIR = "${placeholder "out"}/kernel";
   KMODDIR = "${placeholder "out"}/kernel";

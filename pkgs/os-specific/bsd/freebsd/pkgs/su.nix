@@ -18,6 +18,10 @@ mkDerivation {
     libbsm
   ];
 
+  postPatch = ''
+    sed -E -i -e '/BINOWN|BINMODE|PRECIOUSPROG/d' $BSDSRCDIR/usr.bin/su/Makefile
+  '';
+
   meta.mainProgram = "su";
   meta.platforms = lib.platforms.freebsd;
 }
