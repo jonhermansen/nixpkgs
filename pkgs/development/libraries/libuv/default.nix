@@ -137,6 +137,9 @@ stdenv.mkDerivation (finalAttrs: {
           # Fails when built on non-nix FreeBSD
           # https://github.com/libuv/libuv/issues/4606
           "fs_event_watch_delete_dir"
+          # JAH TODO: finalize PR https://github.com/libuv/libuv/pull/4919
+          "connect_unspecified"
+          "udp_connect"
         ];
       tdRegexp = lib.concatStringsSep "\\|" toDisable;
     in
