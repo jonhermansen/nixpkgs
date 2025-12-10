@@ -17651,7 +17651,7 @@ with pkgs;
     inherit (darwin.apple_sdk.frameworks) Security;
   });
 
-  nix = nixVersions.stable;
+  nix = nixVersions.nix_2_26;
 
   nixStatic = pkgsStatic.nix;
 

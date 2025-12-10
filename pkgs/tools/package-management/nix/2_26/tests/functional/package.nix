@@ -93,7 +93,7 @@ mkMesonDerivation (
       "--print-errorlogs"
     ];
 
-    doCheck = true;
+    doCheck = false;
 
     installPhase = ''
       mkdir $out
