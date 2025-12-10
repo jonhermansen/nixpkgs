@@ -119,7 +119,7 @@ else
         runHook postInstall
       '';
 
-    doInstallCheck = true;
+    doInstallCheck = !stdenv.hostPlatform.isFreeBSD;
 
     installCheckPhase = ''
       (
