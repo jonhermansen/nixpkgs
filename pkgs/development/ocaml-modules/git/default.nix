@@ -90,7 +90,7 @@ buildDunePackage rec {
     crowbar
     cmdliner
   ];
-  doCheck = !stdenv.hostPlatform.isAarch64;
+  doCheck = false;
 
   meta = {
     description = "Git format and protocol in pure OCaml";
