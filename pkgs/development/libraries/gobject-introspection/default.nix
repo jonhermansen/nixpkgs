@@ -1,4 +1,5 @@
 {
+  freebsd,
   stdenv,
   lib,
   fetchurl,
@@ -100,7 +101,8 @@ stdenv.mkDerivation (finalAttrs: {
 
   buildInputs = [
     (python3.withPackages pythonModules)
-  ];
+  ]
+  ++ lib.optional stdenv.hostPlatform.isFreeBSD freebsd.ldd;
 
   nativeCheckInputs = lib.optionals stdenv.hostPlatform.isDarwin [
     cctools # for otool
