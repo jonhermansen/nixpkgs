@@ -237,7 +237,7 @@ stdenv.mkDerivation (
 
     setupHook = ./setup-hook.sh;
 
-    env = lib.optionalAttrs (stdenv.cc.isClang && lib.versionAtLeast stdenv.cc.version "21") {
+    env = {
       # https://github.com/llvm/llvm-project/issues/152241
       NIX_CFLAGS_COMPILE = "-fno-strict-aliasing";
     };
