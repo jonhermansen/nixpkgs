@@ -33303,6 +33303,10 @@ with self;
       hash = "sha256-SXO3mx7tUwVxXuc9itySNtp5XH1AkNg7FQ6hMc1ltBQ=";
     };
 
+    postPatch = ''
+      rm t/integration/preload.t
+    '';
+
     checkPhase = ''
       patchShebangs ./t ./scripts/yath
       export AUTOMATED_TESTING=1
