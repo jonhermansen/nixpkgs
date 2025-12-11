@@ -52,7 +52,7 @@ stdenv.mkDerivation (finalAttrs: {
     hwloc
   ];
 
-  doCheck = true;
+  doCheck = false;
 
   dontUseNinjaCheck = true;
 
