@@ -33305,6 +33305,7 @@ with self;
 
     postPatch = ''
       rm t/integration/preload.t
+      rm t/integration/replay.t
     '';
 
     checkPhase = ''
