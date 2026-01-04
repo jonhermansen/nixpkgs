@@ -142,7 +142,7 @@
   ./installer/tools/tools.nix
   ./misc/assertions.nix
   ./misc/crashdump.nix
-  ./misc/documentation.nix
+  #./misc/documentation.nix
   ./misc/documentation/modular-services.nix
   ./misc/extra-arguments.nix
   ./misc/ids.nix
