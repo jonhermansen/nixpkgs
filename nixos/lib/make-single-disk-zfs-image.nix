@@ -337,6 +337,8 @@ let
             umount /mnt/boot
             ${unmountDatasets}
 
+            # JAH TODO: hack, remove this later
+            zfs create ${rootPoolName}/rootfs
             zpool export ${rootPoolName}
           ''
       );
