@@ -33,7 +33,7 @@ stdenv.mkDerivation rec {
   };
 
   # https://github.com/kristapsdz/lowdown/pull/171
-  patches = [ ./fix-cygwin-build.patch ];
+  patches = lib.optional stdenv.hostPlatform.isCygwin ./fix-cygwin-build.patch;
 
   nativeBuildInputs = [
     which
