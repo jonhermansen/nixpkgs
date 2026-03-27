@@ -2,7 +2,9 @@
 
 let
   k3s_builder = import ./builder.nix lib;
+  k3s_builder_1_30 = import ./builder_1_30.nix lib;
   common = opts: callPackage (k3s_builder opts);
+  common_1_30 = opts: callPackage (k3s_builder_1_30 opts);
   # extraArgs is the extra arguments passed in by the caller to propagate downward.
   # This is to allow all-packages.nix to do:
   #
@@ -12,6 +14,7 @@ let
   extraArgs = removeAttrs args [ "callPackage" ];
 in
 {
+  k3s_1_30 = common_1_30 (import ./1_30/versions.nix) extraArgs;
   k3s_1_32 = common (import ./1_32/versions.nix) extraArgs;
 
   k3s_1_33 = common (import ./1_33/versions.nix) extraArgs;
