@@ -306,23 +306,49 @@ let
       (builtins.concatStringsSep "")
     ]}
 
+    # Start virtiofsd instances for each shared directory.
+    ${concatStringsSep "\n    " (
+      mapAttrsToList (
+        tag: share:
+        ''
+          ${hostPkgs.virtiofsd}/bin/virtiofsd \
+            --socket-path "virtiofs-${tag}.sock" \
+            --shared-dir ${share.source} \
+            --sandbox none --seccomp none &
+        ''
+      ) config.virtualisation.sharedDirectories
+    )}
+
+    # Wait for virtiofsd sockets.
+    ${concatStringsSep "\n    " (
+      mapAttrsToList (
+        tag: _: "until [ -e \"virtiofs-${tag}.sock\" ]; do sleep 0.1; done"
+      ) config.virtualisation.sharedDirectories
+    )}
+
+    # Runtime-overridable VM resources (defaults from nix config)
+    QEMU_MEM="''${QEMU_MEM:-${toString config.virtualisation.memorySize}}"
+    QEMU_CORES="''${QEMU_CORES:-${toString config.virtualisation.cores}}"
+
     # Start QEMU.
     exec ${qemu-common.qemuBinary qemu} \
         -name ${config.system.name} \
-        -m ${toString config.virtualisation.memorySize} \
-        -smp ${toString config.virtualisation.cores} \
+        -m "$QEMU_MEM" \
+        -smp "$QEMU_CORES" \
         -device virtio-rng-pci \
         ${concatStringsSep " " config.virtualisation.qemu.networkingOptions} \
         ${
           concatStringsSep " \\\n    " (
             mapAttrsToList (
               tag: share:
-              "-virtfs local,path=${share.source},security_model=${share.securityModel},mount_tag=${tag}"
+              "-chardev socket,id=${tag},path=virtiofs-${tag}.sock -device vhost-user-fs-pci,chardev=${tag},tag=${tag}"
             ) config.virtualisation.sharedDirectories
           )
         } \
         ${drivesCmdLine config.virtualisation.qemu.drives} \
         ${concatStringsSep " \\\n    " config.virtualisation.qemu.options} \
+        -object memory-backend-memfd,id=mem,size="$QEMU_MEM"M,share=on \
+        -numa node,memdev=mem \
         $QEMU_OPTS \
         "$@"
   '';
@@ -1243,7 +1269,9 @@ in
     '';
 
     boot.initrd.availableKernelModules =
-      optional (cfg.qemu.diskInterface == "scsi") "sym53c8xx" ++ optional (cfg.tpm.enable) "tpm_tis";
+      optional (cfg.qemu.diskInterface == "scsi") "sym53c8xx"
+      ++ optional (cfg.tpm.enable) "tpm_tis"
+      ++ [ "virtiofs" ];
 
     virtualisation.additionalPaths = [ config.system.build.toplevel ];
 
@@ -1401,16 +1429,11 @@ in
         mkSharedDir = tag: share: {
           name = share.target;
           value.device = tag;
-          value.fsType = "9p";
+          value.fsType = "virtiofs";
           value.neededForBoot = true;
-          value.options = [
-            "trans=virtio"
-            "version=9p2000.L"
-            "msize=${toString cfg.msize}"
-            "x-systemd.requires=modprobe@9pnet_virtio.service"
-          ]
-          ++ lib.optional (tag == "nix-store") "cache=${cfg.nixStore9pCache}";
+          value.options = [ "defaults" ];
         };
+
       in
       lib.mkMerge [
         (lib.mapAttrs' mkSharedDir cfg.sharedDirectories)
