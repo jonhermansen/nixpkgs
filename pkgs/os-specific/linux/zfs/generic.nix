@@ -123,15 +123,6 @@ let
             --replace-fail '"/usr/bin/env", "mount"'  '"${util-linux}/bin/mount", "-n"'
         ''
         + optionalString buildUser ''
-          substituteInPlace ./lib/libshare/os/linux/nfs.c --replace-fail "/usr/sbin/exportfs" "${
-            # We don't *need* python support, but we set it like this to minimize closure size:
-            # If it's disabled by default, no need to enable it, even if we have python enabled
-            # And if it's enabled by default, only change that if we explicitly disable python to remove python from the closure
-            nfs-utils.override (old: {
-              enablePython = old.enablePython or true && enablePython;
-            })
-          }/bin/exportfs"
-          substituteInPlace ./lib/libshare/smb.h        --replace-fail "/usr/bin/net"            "/run/current-system/sw/bin/net"
           # Disable dynamic loading of libcurl
           substituteInPlace ./config/user-libfetch.m4   --replace-fail "curl-config --built-shared" "true"
           substituteInPlace ./config/user-systemd.m4    --replace-fail "/usr/lib/modules-load.d" "$out/etc/modules-load.d"
