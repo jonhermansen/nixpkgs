@@ -32,7 +32,7 @@ stdenv.mkDerivation rec {
       url = "https://lore.kernel.org/netdev/20260223223435.289652-1-slyich@gmail.com/raw";
       hash = "sha256-H45PUilF1D+1DxgtxSRBCgH4RQ7+APBfIW4QE9v6gUE=";
     })
-  ];
+  ] ++ lib.optional stdenv.buildPlatform.isDarwin ./netem-darwin-cross.patch;
 
   postPatch = ''
     substituteInPlace Makefile \
