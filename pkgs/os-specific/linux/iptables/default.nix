@@ -44,6 +44,152 @@ stdenv.mkDerivation (finalAttrs: {
     sha256 = "jn7pYmAUkt5lA9Fx1KlICSqxj4nxEd5y4wN8H0DPuEY=";
   };
 
+  # Workaround: case-insensitive build filesystem (e.g. default macOS APFS).
+  #
+  # iptables ships pairs of files that differ only in case:
+  #   include/linux/netfilter/xt_FOO.h ↔ xt_foo.h
+  #   extensions/libxt_FOO.{c,man,t,…}  ↔ libxt_foo.{…}
+  # On case-insensitive FS, one variant clobbers the other at unpack time.
+  #
+  # Approach: restore both contents from the source tarball — uppercase
+  # variants go under uc/ subdirectories so they don't case-collide — then
+  # patch GNUmakefile.in to link the uppercase target .o into the *same*
+  # .so as its lowercase match counterpart. The resulting libxt_mark.so
+  # exports both libxt_mark_init (match) and libxt_MARK_init (target);
+  # iptables computes the dlsym name from the user-supplied extension
+  # name, so on case-insensitive FS where dlopen("libxt_MARK.so") resolves
+  # to libxt_mark.so, the right init still gets called. Works whether the
+  # runtime FS is case-sensitive or not, with no wrappers or env tricks.
+  prePatch = lib.optionalString stdenv.buildPlatform.isDarwin ''
+    # 1. Normalize basenames to lowercase. After unpack on a case-insensitive
+    #    FS, files may be named with either case depending on tar order.
+    for f in extensions/libxt_CONNMARK.* extensions/libxt_DSCP.* \
+             extensions/libxt_MARK.* extensions/libxt_RATEEST.* \
+             extensions/libxt_SET.* extensions/libxt_TCPMSS.* \
+             extensions/libxt_TOS.* extensions/libipt_TTL.* \
+             extensions/libip6t_HL.* \
+             include/linux/netfilter/xt_CONNMARK.h \
+             include/linux/netfilter/xt_DSCP.h \
+             include/linux/netfilter/xt_MARK.h \
+             include/linux/netfilter/xt_RATEEST.h \
+             include/linux/netfilter/xt_TCPMSS.h \
+             include/linux/netfilter_ipv4/ipt_TTL.h \
+             include/linux/netfilter_ipv6/ip6t_HL.h ; do
+      [ -e "$f" ] || continue
+      lc="$(dirname "$f")/$(basename "$f" | tr A-Z a-z)"
+      [ "$f" = "$lc" ] && continue
+      # On case-insensitive FS, $f and $lc resolve to the same inode,
+      # so go via a temp name to force the on-disk casing.
+      mv -f "$f" "$f.casetmp"
+      mv -f "$f.casetmp" "$lc"
+    done
+
+    # 2. Restore correct lowercase HEADER content (the unpack may have
+    #    clobbered with the uppercase variant's content).
+    for hdr in netfilter/xt_connmark.h netfilter/xt_dscp.h \
+               netfilter/xt_mark.h     netfilter/xt_rateest.h \
+               netfilter/xt_tcpmss.h \
+               netfilter_ipv4/ipt_ttl.h netfilter_ipv6/ip6t_hl.h ; do
+      tar -xOf $src "iptables-${version}/include/linux/$hdr" \
+        > "include/linux/$hdr"
+    done
+
+    # 3. Restore uppercase HEADER content under include/.../uc/.
+    mkdir -p include/linux/netfilter/uc \
+             include/linux/netfilter_ipv4/uc \
+             include/linux/netfilter_ipv6/uc
+    for hdr in netfilter/xt_CONNMARK.h netfilter/xt_DSCP.h \
+               netfilter/xt_MARK.h     netfilter/xt_RATEEST.h \
+               netfilter/xt_TCPMSS.h \
+               netfilter_ipv4/ipt_TTL.h netfilter_ipv6/ip6t_HL.h ; do
+      base="$(basename "$hdr")"
+      dir="$(dirname "$hdr")"
+      tar -xOf $src "iptables-${version}/include/linux/$hdr" \
+        > "include/linux/$dir/uc/$base"
+    done
+
+    # 4. Rewrite #includes that reference uppercase headers → uc/ paths.
+    find extensions include -name '*.[ch]' -print0 | xargs -0 sed -i \
+      -e 's|<linux/netfilter/xt_CONNMARK\.h>|<linux/netfilter/uc/xt_CONNMARK.h>|g' \
+      -e 's|<linux/netfilter/xt_DSCP\.h>|<linux/netfilter/uc/xt_DSCP.h>|g' \
+      -e 's|<linux/netfilter/xt_MARK\.h>|<linux/netfilter/uc/xt_MARK.h>|g' \
+      -e 's|<linux/netfilter/xt_RATEEST\.h>|<linux/netfilter/uc/xt_RATEEST.h>|g' \
+      -e 's|<linux/netfilter/xt_TCPMSS\.h>|<linux/netfilter/uc/xt_TCPMSS.h>|g' \
+      -e 's|<linux/netfilter_ipv4/ipt_TTL\.h>|<linux/netfilter_ipv4/uc/ipt_TTL.h>|g' \
+      -e 's|<linux/netfilter_ipv6/ip6t_HL\.h>|<linux/netfilter_ipv6/uc/ip6t_HL.h>|g'
+
+    # 5. Restore correct lowercase EXTENSION content for all colliding pairs.
+    for ext in extensions/libxt_connmark extensions/libxt_dscp \
+               extensions/libxt_mark    extensions/libxt_rateest \
+               extensions/libxt_set     extensions/libxt_tcpmss \
+               extensions/libxt_tos     extensions/libipt_ttl \
+               extensions/libip6t_hl ; do
+      tar -xOf $src "iptables-${version}/$ext.c" > "$ext.c"
+    done
+
+    # 6. Restore uppercase EXTENSION targets under extensions/uc/.
+    mkdir -p extensions/uc
+    for ext in libxt_CONNMARK libxt_DSCP libxt_MARK libxt_RATEEST \
+               libxt_SET libxt_TCPMSS libxt_TOS \
+               libipt_TTL libip6t_HL ; do
+      tar -xOf $src "iptables-${version}/extensions/$ext.c" \
+        > "extensions/uc/$ext.c"
+    done
+
+    # Some sources use quoted includes for files that live in extensions/
+    # (e.g. libxt_SET.c → "libxt_set.h"; libxt_DSCP.c → "dscp_helper.c";
+    # libxt_TOS.c → "tos_values.c"). Quoted-include search starts in the
+    # source file's directory, so symlink those files into uc/ for the
+    # relocated sources.
+    for f in extensions/*.h extensions/dscp_helper.c extensions/tos_values.c ; do
+      [ -e "$f" ] || continue
+      ln -sf "../$(basename "$f")" "extensions/uc/$(basename "$f")"
+    done
+
+    # Re-run the include rewrite from step 4 on the freshly-extracted uc/
+    # sources (they didn't exist at step 4 time).
+    sed -i \
+      -e 's|<linux/netfilter/xt_CONNMARK\.h>|<linux/netfilter/uc/xt_CONNMARK.h>|g' \
+      -e 's|<linux/netfilter/xt_DSCP\.h>|<linux/netfilter/uc/xt_DSCP.h>|g' \
+      -e 's|<linux/netfilter/xt_MARK\.h>|<linux/netfilter/uc/xt_MARK.h>|g' \
+      -e 's|<linux/netfilter/xt_RATEEST\.h>|<linux/netfilter/uc/xt_RATEEST.h>|g' \
+      -e 's|<linux/netfilter/xt_TCPMSS\.h>|<linux/netfilter/uc/xt_TCPMSS.h>|g' \
+      -e 's|<linux/netfilter_ipv4/ipt_TTL\.h>|<linux/netfilter_ipv4/uc/ipt_TTL.h>|g' \
+      -e 's|<linux/netfilter_ipv6/ip6t_HL\.h>|<linux/netfilter_ipv6/uc/ip6t_HL.h>|g' \
+      extensions/uc/*.c
+
+    # 7. Patch GNUmakefile.in: compile uppercase sources to lib<pfx>_<UC>_uc.oo,
+    #    then override the default lib%.so pattern rule for each pair so the
+    #    lowercase match's .so additionally links the uppercase target .o.
+    {
+      printf '\n# === Case-insensitive FS workaround ===\n'
+      printf '# Compile uppercase target sources from extensions/uc/.\n'
+      printf 'define _uc_oo_rule\n'
+      printf 'lib$(2)_$(1)_uc.oo: ''${srcdir}/uc/lib$(2)_$(1).c\n'
+      printf '\t''$''${AM_V_CC} ''$''${CC} ''$''${AM_CPPFLAGS} ''$''${AM_DEPFLAGS} ''$''${AM_CFLAGS} -D_INIT=lib$(2)_$(1)_init -DPIC -fPIC ''$''${CFLAGS} -o $$@ -c $$<\n'
+      printf 'endef\n\n'
+      printf '# args: (uppercase-name, prefix-without-lib_)\n'
+      for pair in 'CONNMARK xt' 'DSCP xt' 'MARK xt' 'RATEEST xt' \
+                  'SET xt' 'TCPMSS xt' 'TOS xt' 'TTL ipt' 'HL ip6t' ; do
+        # unquoted expansion: shell word-splits so printf gets 2 args for 2 %s
+        printf '$(eval $(call _uc_oo_rule,%s,%s))\n' $pair
+      done
+      printf '\n'
+
+      printf '# Merge uppercase target into the lowercase match .so.\n'
+      printf 'define _combined_so_rule\n'
+      printf 'lib$(3)_$(1).so: lib$(3)_$(1).oo lib$(3)_$(2)_uc.oo\n'
+      printf '\t''$''${AM_V_CCLD} ''$''${CCLD} ''$''${AM_LDFLAGS} ''$''${LDFLAGS} -shared -o $$@ lib$(3)_$(1).oo lib$(3)_$(2)_uc.oo -L../libxtables/.libs -lxtables $(4)\n'
+      printf 'endef\n\n'
+      printf '# args: (lowercase-match, uppercase-target, prefix, extra-libs)\n'
+      for entry in 'connmark CONNMARK xt' 'dscp DSCP xt' 'mark MARK xt' \
+                   'rateest RATEEST xt -lm' 'set SET xt' 'tcpmss TCPMSS xt' \
+                   'tos TOS xt' 'ttl TTL ipt' 'hl HL ip6t' ; do
+        printf '$(eval $(call _combined_so_rule,%s,%s,%s,%s))\n' $entry
+      done
+    } >> extensions/GNUmakefile.in
+  '';
+
   outputs = [
     "out"
     "lib"
