@@ -10,7 +10,16 @@
   pam ? null,
   isStatic ? stdenv.hostPlatform.isStatic,
   go,
-  withGo ? lib.meta.availableOn stdenv.buildPlatform go && stdenv.hostPlatform.go.GOARCH != null,
+  withGo ?
+    lib.meta.availableOn stdenv.buildPlatform go
+    && stdenv.hostPlatform.go.GOARCH != null
+    # mknames.go is a build-time helper that links via cgo on the build
+    # platform. When cross-compiling from Darwin, the build's Go toolchain
+    # can't link cgo binaries inside the sandbox (missing -lresolv), so
+    # default Go bindings off in that case.
+    && !(
+      stdenv.buildPlatform.isDarwin && stdenv.buildPlatform.system != stdenv.hostPlatform.system
+    ),
 
   # passthru.tests
   bind,
