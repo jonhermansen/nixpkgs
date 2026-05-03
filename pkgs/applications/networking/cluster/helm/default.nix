@@ -17,6 +17,7 @@ buildGoModule (finalAttrs: {
     rev = "v${finalAttrs.version}";
     sha256 = "sha256-fSMfHJCl2/Lc6mcYn/m0kR0viH88rRgRTMOoJjFVERQ=";
   };
+  proxyVendor = true;
   vendorHash = "sha256-kqx23LekpuZJFisVZUoXBY9vHh9zviKyaW5NSa4ecxM=";
 
   subPackages = [ "cmd/helm" ];

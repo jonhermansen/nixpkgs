@@ -1,0 +1,55 @@
+diff -urN before/netem/maketable.c after/netem/maketable.c
+--- before/netem/maketable.c	2026-05-02 17:45:33
++++ after/netem/maketable.c	2026-05-02 17:45:33
+@@ -11,7 +11,6 @@
+ #include <stdio.h>
+ #include <stdlib.h>
+ #include <math.h>
+-#include <malloc.h>
+ #include <string.h>
+ #include <sys/types.h>
+ #include <sys/stat.h>
+diff -urN before/netem/normal.c after/netem/normal.c
+--- before/netem/normal.c	2026-05-02 17:45:31
++++ after/netem/normal.c	2026-05-02 17:45:33
+@@ -9,8 +9,8 @@
+ #include <string.h>
+ #include <limits.h>
+ 
+-#include <linux/types.h>
+-#include <linux/pkt_sched.h>
++/* NETEM_DIST_SCALE inlined for portability (avoids linux/ headers) */
++#define NETEM_DIST_SCALE 8192
+ 
+ #define TABLESIZE 16384
+ #define TABLEFACTOR NETEM_DIST_SCALE
+diff -urN before/netem/pareto.c after/netem/pareto.c
+--- before/netem/pareto.c	2026-05-02 17:45:32
++++ after/netem/pareto.c	2026-05-02 17:45:33
+@@ -8,8 +8,8 @@
+ #include <math.h>
+ #include <limits.h>
+ 
+-#include <linux/types.h>
+-#include <linux/pkt_sched.h>
++/* NETEM_DIST_SCALE inlined for portability (avoids linux/ headers) */
++#define NETEM_DIST_SCALE 8192
+ 
+ static const double a=3.0;
+ #define TABLESIZE	16384
+diff -urN before/netem/paretonormal.c after/netem/paretonormal.c
+--- before/netem/paretonormal.c	2026-05-02 17:45:32
++++ after/netem/paretonormal.c	2026-05-02 17:45:55
+@@ -15,10 +15,9 @@
+ #include <string.h>
+ #include <math.h>
+ #include <limits.h>
+-#include <malloc.h>
+ 
+-#include <linux/types.h>
+-#include <linux/pkt_sched.h>
++/* NETEM_DIST_SCALE inlined for portability (avoids linux/ headers) */
++#define NETEM_DIST_SCALE 8192
+ 
+ #define TABLESIZE	16384
+ #define TABLEFACTOR	NETEM_DIST_SCALE
