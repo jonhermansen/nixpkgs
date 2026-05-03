@@ -92,7 +92,10 @@ stdenv.mkDerivation (finalAttrs: {
     "PYTHON=${python3.pythonOnBuildForHost.interpreter}"
     "PYTHONLIBDIR=$(py)/${python3.sitePackages}"
     "PYTHON_SETUP_ARGS=--no-build-isolation"
-  ];
+  ]
+  # Makefile uses `uname` to pick linker flags (Darwin → -install_name).
+  # Force OS to the host platform when cross-compiling from Darwin to Linux.
+  ++ lib.optional (stdenv.buildPlatform.isDarwin && stdenv.hostPlatform.isLinux) "OS=Linux";
 
   preInstall = lib.optionalString enablePython ''
     mkdir -p $py/${python3.sitePackages}/selinux
