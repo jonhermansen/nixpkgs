@@ -50,6 +50,12 @@ buildGoModule (finalAttrs: {
 
   nativeBuildInputs = [ installShellFiles ];
   postInstall = ''
+    mkdir -p $out/share/k9s/skins
+    cp -r $src/skins/* $out/share/k9s/skins/
+  ''
+  # Shell completions require executing the cross-built binary, which only
+  # works when the build platform can execute host platform binaries.
+  + lib.optionalString (stdenv.buildPlatform.canExecute stdenv.hostPlatform) ''
     # k9s requires a writeable log directory
     # Otherwise an error message is printed
     # into the completion scripts
@@ -59,9 +65,6 @@ buildGoModule (finalAttrs: {
       --bash <($out/bin/k9s completion bash) \
       --fish <($out/bin/k9s completion fish) \
       --zsh <($out/bin/k9s completion zsh)
-
-    mkdir -p $out/share/k9s/skins
-    cp -r $src/skins/* $out/share/k9s/skins/
   '';
 
   nativeCheckInputs = [ writableTmpDirAsHomeHook ];
