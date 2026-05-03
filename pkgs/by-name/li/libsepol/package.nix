@@ -35,7 +35,8 @@ stdenv.mkDerivation (finalAttrs: {
   ]
   ++ lib.optionals stdenv.hostPlatform.isStatic [
     "DISABLE_SHARED=y"
-  ];
+  ]
+  ++ lib.optional (stdenv.buildPlatform.isDarwin && stdenv.hostPlatform.isLinux) "OS=Linux";
 
   env.NIX_CFLAGS_COMPILE = "-Wno-error";
 
